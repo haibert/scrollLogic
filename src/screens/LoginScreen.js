@@ -47,7 +47,7 @@ const LoginScreen = (props) => {
     return (
         <View style={styles.screen}>
             <LinearGradient
-                colors={['rgba(255, 237, 187, 1)', 'rgba(255, 227, 255, 1)']}
+                colors={['rgba(255, 237, 187, 1)', 'rgba(150, 227, 255, 1)']}
                 style={{ flex: 1 }}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
@@ -85,7 +85,9 @@ const LoginScreen = (props) => {
                             />
                             <Button
                                 style={styles.button}
-                                onPress={() => {}}
+                                onPress={() => {
+                                    props.navigation.navigate('DrawerNav')
+                                }}
                                 text="Login"
                             />
                             <TouchableOpacity
@@ -114,7 +116,9 @@ const LoginScreen = (props) => {
                                 </Text>
                                 <TouchableOpacity
                                     onPress={() => {
-                                        setSignUpShown(true)
+                                        props.navigation.navigate(
+                                            'SignUpNavigation'
+                                        )
                                     }}
                                 >
                                     <Text
@@ -123,7 +127,7 @@ const LoginScreen = (props) => {
                                             colors.maxFontSizeMultiplier
                                         }
                                     >
-                                        {'  Sing Up.'}
+                                        {'  Sign Up.'}
                                     </Text>
                                 </TouchableOpacity>
                             </View>
@@ -131,13 +135,16 @@ const LoginScreen = (props) => {
                     </View>
                 </TouchableWithoutFeedback>
             </LinearGradient>
-            <Modal
+            {/* <Modal
                 visible={signUpShown}
                 animationType="slide"
                 statusBarTranslucent={true}
             >
-                <SignupScreen closeSignUpSheet={closeSignup} />
-            </Modal>
+                <SignupScreen
+                    closeSignUpSheet={closeSignup}
+                    navigation={props.navigation}
+                />
+            </Modal> */}
         </View>
     )
 }

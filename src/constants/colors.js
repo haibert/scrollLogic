@@ -5,6 +5,8 @@ export default {
     textInputBg: 'rgba(197,198,186,1)',
     mediumTint: 'rgba(107,0,188,1)',
     lightTint: 'rgba(177,77,255,1)',
+    buttonPurple: 'rgba(155,97,234,1)',
+    buttonPink: 'rgba(252,140,250,1)',
 
     maxFontSizeMultiplier: 1.2,
 

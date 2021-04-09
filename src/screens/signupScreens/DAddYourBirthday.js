@@ -1,12 +1,5 @@
 import React, { useState } from 'react'
-import {
-    View,
-    Text,
-    StyleSheet,
-    TextInput,
-    Keyboard,
-    Dimensions,
-} from 'react-native'
+import { View, Text, StyleSheet, Keyboard } from 'react-native'
 import {
     TouchableOpacity,
     TouchableWithoutFeedback,
@@ -15,6 +8,9 @@ import {
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+// to calculate safe area dimensions
+import StaticSafeAreaInsets from 'react-native-static-safe-area-insets'
+
 //ionicons
 import { Ionicons } from '@expo/vector-icons'
 
@@ -22,22 +18,20 @@ import { Ionicons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 
 //colors
-import colors from '../constants/colors'
+import colors from '../../constants/colors'
 
 //custom button
-import Button from '../components/Button'
+import Button from '../../components/Button'
+
+//picker
+import DateTimePicker from '@react-native-community/datetimepicker'
 
 function hideKeyboard() {
     Keyboard.dismiss()
 }
 
-const { height, width } = Dimensions.get('window')
-
-const SignupScreen = (props) => {
+const DAddYourBirthday = (props) => {
     const insets = useSafeAreaInsets()
-
-    const [emailSelected, setEmailSelected] = useState(true)
-    const [phoneSelected, setPhoneSelected] = useState(false)
 
     const [topDimensions, setTopDimensions] = useState({ height: 0, width: 0 })
     const [useableScreenDimensions, setUseableScreenDimensions] = useState({
@@ -45,14 +39,27 @@ const SignupScreen = (props) => {
         width: 0,
     })
 
-    function togglePhone() {
-        setPhoneSelected(true)
-        setEmailSelected(false)
+    const [date, setDate] = useState(new Date())
+    const [mode, setMode] = useState('date')
+    const [show, setShow] = useState(false)
+
+    const onChange = (event, selectedDate) => {
+        const currentDate = selectedDate || date
+        setShow(Platform.OS === 'ios')
+        setDate(currentDate)
     }
 
-    function toggleEmail() {
-        setPhoneSelected(false)
-        setEmailSelected(true)
+    const showMode = (currentMode) => {
+        setShow(true)
+        setMode(currentMode)
+    }
+
+    const showDatepicker = () => {
+        showMode('date')
+    }
+
+    const showTimepicker = () => {
+        showMode('time')
     }
 
     return (
@@ -105,33 +112,22 @@ const SignupScreen = (props) => {
                             }}
                         >
                             <View style={styles.titleCont}>
-                                <Text style={styles.title}>
-                                    Enter Phone or Email
+                                <Text
+                                    style={styles.title}
+                                    maxFontSizeMultiplier={
+                                        colors.maxFontSizeMultiplier
+                                    }
+                                >
+                                    Add Your Birthday
                                 </Text>
-                            </View>
-                            <View style={styles.topBottomCont}>
-                                <TouchableOpacity onPress={togglePhone}>
-                                    <Text style={styles.buttonText}>Phone</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity onPress={toggleEmail}>
-                                    <Text style={styles.buttonText}>Email</Text>
-                                </TouchableOpacity>
-                            </View>
-                            <View style={styles.bottomLineCont}>
-                                {phoneSelected ? (
-                                    <View style={styles.selectedLine}></View>
-                                ) : (
-                                    <View
-                                        style={styles.noneSelectedLine}
-                                    ></View>
-                                )}
-                                {emailSelected ? (
-                                    <View style={styles.selectedLine}></View>
-                                ) : (
-                                    <View
-                                        style={styles.noneSelectedLine}
-                                    ></View>
-                                )}
+                                <Text
+                                    style={styles.underTitle}
+                                    maxFontSizeMultiplier={
+                                        colors.maxFontSizeMultiplier
+                                    }
+                                >
+                                    This won't be part of your public profile.
+                                </Text>
                             </View>
                         </View>
                         <View
@@ -144,40 +140,47 @@ const SignupScreen = (props) => {
                                 },
                             ]}
                         >
-                            {emailSelected ? (
-                                <TextInput
+                            <View style={styles.textInputCont}>
+                                <Text
                                     style={styles.input}
-                                    placeholder="Email"
-                                    placeholderTextColor={colors.placeHolder}
                                     selectionColor={colors.lightTint}
                                     underlineColorAndroid="rgba(255,255,255,0)"
                                     maxFontSizeMultiplier={
                                         colors.maxFontSizeMultiplier
                                     }
-                                    keyboardType="email-address"
+                                >
+                                    {`${date.toLocaleDateString('en-EN', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                    })}`}
+                                </Text>
+                            </View>
+                            <View>
+                                <Button
+                                    style={styles.button}
+                                    onPress={() => {
+                                        props.navigation.navigate(
+                                            'FUserNameFork'
+                                        )
+                                    }}
+                                    text="Next"
                                 />
-                            ) : (
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Phone Number"
-                                    placeholderTextColor={colors.placeHolder}
-                                    selectionColor={colors.lightTint}
-                                    underlineColorAndroid="rgba(255,255,255,0)"
-                                    maxFontSizeMultiplier={
-                                        colors.maxFontSizeMultiplier
-                                    }
-                                    keyboardType="phone-pad"
-                                />
-                            )}
-                            <Button
-                                style={styles.button}
-                                onPress={() => {
-                                    props.navigation.navigate(
-                                        'AConfirmationScreen'
-                                    )
-                                }}
-                                text="Next"
-                            />
+                                <View>
+                                    <DateTimePicker
+                                        style={{
+                                            width: '100%',
+                                            height: 200,
+                                        }}
+                                        testID="dateTimePicker"
+                                        value={date}
+                                        mode={mode}
+                                        // is24Hour={true}
+                                        display="spinner"
+                                        onChange={onChange}
+                                    />
+                                </View>
+                            </View>
                         </View>
                     </TouchableWithoutFeedback>
                 </View>
@@ -195,11 +198,22 @@ const styles = StyleSheet.create({
     titleCont: {
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 30,
     },
     title: {
         fontSize: 25,
         color: colors.placeHolder,
+    },
+
+    underTitle: {
+        color: colors.mediumTint,
+        fontSize: 15,
+        textAlign: 'center',
+        marginTop: 15,
+    },
+    underTitleBold: {
+        color: colors.mediumTint,
+        fontWeight: 'bold',
+        fontSize: 15,
     },
     topBottomCont: {
         borderBottomColor: colors.mediumTint,
@@ -235,22 +249,26 @@ const styles = StyleSheet.create({
     },
     midCont: {
         alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    textInputCont: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderBottomWidth: 1,
+        borderColor: colors.lightTint,
     },
     input: {
-        marginTop: 30,
-
         width: '100%',
-        borderBottomWidth: 1,
         height: 50,
-        borderColor: colors.lightTint,
         borderRadius: 5,
         padding: 10,
         color: colors.textColor,
         fontSize: 17,
+        marginTop: 30,
     },
     button: {
         marginTop: 40,
     },
 })
 
-export default SignupScreen
+export default DAddYourBirthday
