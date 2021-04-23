@@ -3,16 +3,31 @@ import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import { createDrawerNavigator } from '@react-navigation/drawer'
 
+// signup screens
+import ASignupScreen from '../screens/signupScreens/ASignupScreen'
+import BConfirmationScreen from '../screens/signupScreens/BConfirmationScreen'
+import CAddYourName from '../screens/signupScreens/CAddYourName'
+import DCreatePassword from '../screens/signupScreens/DCreatePassword'
+import EAddYourBirthday from '../screens/signupScreens/EAddYourBirthday'
+import FUserName from '../screens/signupScreens/FUserName'
+
 //screens
 import LoginScreen from '../screens/LoginScreen'
-import SignupScreen from '../screens/SignupScreen'
 import DashboardScreen from '../screens/DashboardScreen'
-// signup screens
-import AConfirmationScreen from '../screens/signupScreens/AConfirmationScreen'
-import BAddYourName from '../screens/signupScreens/BAddYourName'
-import CCreatePassword from '../screens/signupScreens/CCreatePassword'
-import DAddYourBirthday from '../screens/signupScreens/DAddYourBirthday'
-import FUserNameFork from '../screens/signupScreens/FUserNameFork'
+
+//event creation
+import CreateEventScreen from '../screens/eventCreation/CreateEventScreen'
+import QrCodeScreen from '../screens/eventCreation/QrCodeScreen'
+import JoinEventScreen from '../screens/eventCreation/JoinEventScreen'
+
+//custom drawer content
+import DrawerContent from '../screens/drawerContent/DrawerContent'
+
+//colors
+import colors from '../constants/colors'
+
+//ionicons
+import { Ionicons } from '@expo/vector-icons'
 
 const MainStack = createStackNavigator()
 const Drawer = createDrawerNavigator()
@@ -24,21 +39,56 @@ const SignUpNavigation = () => {
                 headerShown: false,
             }}
         >
-            <MainStack.Screen name="SignupScreen" component={SignupScreen} />
+            <MainStack.Screen name="ASignupScreen" component={ASignupScreen} />
             <MainStack.Screen
-                name="AConfirmationScreen"
-                component={AConfirmationScreen}
+                name="BConfirmationScreen"
+                component={BConfirmationScreen}
             />
-            <MainStack.Screen name="BAddYourName" component={BAddYourName} />
+            <MainStack.Screen name="CAddYourName" component={CAddYourName} />
             <MainStack.Screen
-                name="CCreatePassword"
-                component={CCreatePassword}
+                name="DCreatePassword"
+                component={DCreatePassword}
             />
             <MainStack.Screen
-                name="DAddYourBirthday"
-                component={DAddYourBirthday}
+                name="EAddYourBirthday"
+                component={EAddYourBirthday}
             />
-            <MainStack.Screen name="FUserNameFork" component={FUserNameFork} />
+            <MainStack.Screen name="FUserName" component={FUserName} />
+        </MainStack.Navigator>
+    )
+}
+
+const MainInnerNavigation = () => {
+    return (
+        <MainStack.Navigator>
+            <MainStack.Screen
+                name="DashboardScreen"
+                component={DashboardScreen}
+                options={{
+                    headerShown: false,
+                }}
+            />
+            <MainStack.Screen
+                name="CreateEventScreen"
+                component={CreateEventScreen}
+                options={{
+                    headerShown: false,
+                }}
+            />
+            <MainStack.Screen
+                name="QrCodeScreen"
+                component={QrCodeScreen}
+                options={{
+                    headerShown: false,
+                }}
+            />
+            <MainStack.Screen
+                name="JoinEventScreen"
+                component={JoinEventScreen}
+                options={{
+                    headerShown: false,
+                }}
+            />
         </MainStack.Navigator>
     )
 }
@@ -46,12 +96,31 @@ const SignUpNavigation = () => {
 function DrawerNav() {
     return (
         <Drawer.Navigator
-        // drawerStyle={{
-        //     backgroundColor: '',
-        //     width: 240,
-        // }}
+            drawerContent={(props) => <DrawerContent {...props} />}
+            drawerStyle={{
+                width: '60%',
+            }}
+            initialRouteName="DashboardScreen"
+            drawerContentOptions={{
+                activeTintColor: colors.lightTint,
+                activeBackgroundColor: colors.buttonPinkTransparent,
+            }}
+            detachInactiveScreens
         >
-            <Drawer.Screen name="DashboardScreen" component={DashboardScreen} />
+            <Drawer.Screen
+                name="DashboardScreen"
+                component={MainInnerNavigation}
+                options={{
+                    drawerLabel: 'Home',
+                    drawerIcon: (config) => (
+                        <Ionicons
+                            name="home-outline"
+                            color={config.color}
+                            size={config.size}
+                        />
+                    ),
+                }}
+            />
         </Drawer.Navigator>
     )
 }
@@ -81,6 +150,8 @@ const AppNavigator = (props) => {
                     component={DrawerNav}
                     options={{
                         headerShown: false,
+                        gestureEnabled: false,
+                        animationEnabled: false,
                     }}
                 />
             </MainStack.Navigator>

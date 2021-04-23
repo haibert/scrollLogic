@@ -21,7 +21,7 @@ const Button = (props) => {
                     style={styles.touchable}
                 >
                     <Text
-                        maxFontSizeMultiplier={1.2}
+                        maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
                         style={{ ...styles.text, ...props.textStyle }}
                     >
                         {props.text}

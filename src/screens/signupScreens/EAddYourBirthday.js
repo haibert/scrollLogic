@@ -1,12 +1,5 @@
 import React, { useState } from 'react'
-import {
-    View,
-    Text,
-    StyleSheet,
-    TextInput,
-    Keyboard,
-    Dimensions,
-} from 'react-native'
+import { View, Text, StyleSheet, Keyboard, Platform } from 'react-native'
 import {
     TouchableOpacity,
     TouchableWithoutFeedback,
@@ -14,6 +7,9 @@ import {
 
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
+// to calculate safe area dimensions
+import StaticSafeAreaInsets from 'react-native-static-safe-area-insets'
 
 //ionicons
 import { Ionicons } from '@expo/vector-icons'
@@ -27,13 +23,18 @@ import colors from '../../constants/colors'
 //custom button
 import Button from '../../components/Button'
 
+//picker
+import DateTimePicker from '@react-native-community/datetimepicker'
+
+//redux
+import { addBirthday } from '../../store/signup/actions'
+import { useDispatch, useSelector } from 'react-redux'
+
 function hideKeyboard() {
     Keyboard.dismiss()
 }
 
-const { height, width } = Dimensions.get('window')
-
-const AConfirmationScreen = (props) => {
+const DAddYourBirthday = (props) => {
     const insets = useSafeAreaInsets()
 
     const [topDimensions, setTopDimensions] = useState({ height: 0, width: 0 })
@@ -41,6 +42,51 @@ const AConfirmationScreen = (props) => {
         height: 0,
         width: 0,
     })
+
+    const dispatch = useDispatch()
+
+    const [dateError, setDateError] = useState(' ')
+
+    const [date, setDate] = useState(new Date())
+    const [mode, setMode] = useState('date')
+    const [show, setShow] = useState(false)
+
+    const onDateChange = (event, selectedDate) => {
+        const currentDate = selectedDate || date
+        setShow(Platform.OS === 'ios')
+
+        var todayDate = new Date()
+
+        if (todayDate < selectedDate) {
+            setDate(todayDate)
+            setDateError('Please select a valid date.')
+            return
+        }
+        setDate(currentDate)
+        setDateError(' ')
+    }
+
+    const showMode = (currentMode) => {
+        setShow(true)
+        setMode(currentMode)
+    }
+
+    const showDatepicker = () => {
+        showMode('date')
+    }
+
+    const showTimepicker = () => {
+        showMode('time')
+    }
+
+    function nextPressedHandler() {
+        // console.log(dateError)
+        // if (dateError !== ' ') {
+        //     return
+        // }
+        dispatch(addBirthday(date))
+        props.navigation.navigate('FUserName')
+    }
 
     return (
         <LinearGradient
@@ -98,7 +144,7 @@ const AConfirmationScreen = (props) => {
                                         colors.maxFontSizeMultiplier
                                     }
                                 >
-                                    Enter Confirmation Code
+                                    Add Your Birthday
                                 </Text>
                                 <Text
                                     style={styles.underTitle}
@@ -106,18 +152,7 @@ const AConfirmationScreen = (props) => {
                                         colors.maxFontSizeMultiplier
                                     }
                                 >
-                                    Enter the confirmation code we sent to
-                                    haibertbarfian@gmail.com.
-                                    <TouchableOpacity onPress={() => {}}>
-                                        <Text
-                                            style={styles.underTitleBold}
-                                            maxFontSizeMultiplier={
-                                                colors.maxFontSizeMultiplier
-                                            }
-                                        >
-                                            {'  Resend Code.'}
-                                        </Text>
-                                    </TouchableOpacity>
+                                    This won't be part of your public profile.
                                 </Text>
                             </View>
                         </View>
@@ -131,33 +166,49 @@ const AConfirmationScreen = (props) => {
                                 },
                             ]}
                         >
-                            <View style={styles.textInputCont}>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Confirmation Code"
-                                    placeholderTextColor={colors.placeHolder}
-                                    selectionColor={colors.lightTint}
-                                    underlineColorAndroid="rgba(255,255,255,0)"
-                                    maxFontSizeMultiplier={
-                                        colors.maxFontSizeMultiplier
-                                    }
-                                    keyboardType="number-pad"
-                                />
-                                <Ionicons
-                                    name="close-circle"
-                                    size={20}
-                                    color={colors.mediumTint}
-                                    onPress={() => {}}
-                                    style={{ marginTop: 30 }}
-                                />
+                            <View>
+                                <View style={styles.textInputCont}>
+                                    <Text
+                                        style={styles.input}
+                                        selectionColor={colors.lightTint}
+                                        underlineColorAndroid="rgba(255,255,255,0)"
+                                        maxFontSizeMultiplier={
+                                            colors.maxFontSizeMultiplier
+                                        }
+                                    >
+                                        {`${date.toLocaleDateString('en-EN', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                        })}`}
+                                    </Text>
+                                </View>
+                                <Text style={styles.errorText}>
+                                    {dateError}
+                                </Text>
                             </View>
-                            <Button
-                                style={styles.button}
-                                onPress={() => {
-                                    props.navigation.navigate('BAddYourName')
-                                }}
-                                text="Next"
-                            />
+
+                            <View>
+                                <Button
+                                    style={styles.button}
+                                    onPress={nextPressedHandler}
+                                    text="Next"
+                                />
+                                <View>
+                                    <DateTimePicker
+                                        style={{
+                                            width: '100%',
+                                            height: 200,
+                                        }}
+                                        testID="dateTimePicker"
+                                        value={date}
+                                        mode={mode}
+                                        // is24Hour={true}
+                                        display="spinner"
+                                        onChange={onDateChange}
+                                    />
+                                </View>
+                            </View>
                         </View>
                     </TouchableWithoutFeedback>
                 </View>
@@ -226,6 +277,7 @@ const styles = StyleSheet.create({
     },
     midCont: {
         alignItems: 'center',
+        justifyContent: 'space-between',
     },
     textInputCont: {
         flexDirection: 'row',
@@ -233,10 +285,15 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderColor: colors.lightTint,
     },
+    errorText: {
+        marginHorizontal: 5,
+        marginTop: 10,
+        color: colors.lightTint,
+        fontSize: 15,
+    },
     input: {
         marginTop: 30,
-
-        width: '90%',
+        width: '92%',
         height: 50,
         borderRadius: 5,
         padding: 10,
@@ -248,4 +305,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default AConfirmationScreen
+export default DAddYourBirthday

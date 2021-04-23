@@ -1,5 +1,12 @@
 import React, { useState } from 'react'
-import { View, Text, StyleSheet, TextInput, Keyboard } from 'react-native'
+import {
+    View,
+    Text,
+    StyleSheet,
+    TextInput,
+    Keyboard,
+    Dimensions,
+} from 'react-native'
 import {
     TouchableOpacity,
     TouchableWithoutFeedback,
@@ -20,11 +27,17 @@ import colors from '../../constants/colors'
 //custom button
 import Button from '../../components/Button'
 
+//redux
+import { addEmail } from '../../store/signup/actions'
+import { useDispatch, useSelector } from 'react-redux'
+
 function hideKeyboard() {
     Keyboard.dismiss()
 }
 
-const BAddYourName = (props) => {
+const { height, width } = Dimensions.get('window')
+
+const AConfirmationScreen = (props) => {
     const insets = useSafeAreaInsets()
 
     const [topDimensions, setTopDimensions] = useState({ height: 0, width: 0 })
@@ -32,6 +45,31 @@ const BAddYourName = (props) => {
         height: 0,
         width: 0,
     })
+
+    const [enteredNumber, setEnteredNumber] = useState()
+    const [confirmLengthValid, setConfirmLengthValid] = useState()
+    const [confirmationErrorMessage, setConfirmationErrorMessage] = useState(
+        ' '
+    )
+
+    const dispatch = useDispatch()
+
+    function inputChangeHandler(number) {
+        if (number.trim().length === 7) {
+            setConfirmLengthValid(true)
+        } else {
+            setConfirmLengthValid(false)
+        }
+        setEnteredNumber(number.replace(/[^0-9]/g, ''))
+    }
+
+    function nextPressedHandler() {
+        if (confirmLengthValid) {
+            props.navigation.navigate('CAddYourName')
+        } else {
+            setConfirmationErrorMessage('Incorrect confirmation code.')
+        }
+    }
 
     return (
         <LinearGradient
@@ -89,7 +127,7 @@ const BAddYourName = (props) => {
                                         colors.maxFontSizeMultiplier
                                     }
                                 >
-                                    Add Your Name
+                                    Enter Confirmation Code
                                 </Text>
                                 <Text
                                     style={styles.underTitle}
@@ -97,7 +135,18 @@ const BAddYourName = (props) => {
                                         colors.maxFontSizeMultiplier
                                     }
                                 >
-                                    Add your name so friends can find you.
+                                    Enter the confirmation code we sent to
+                                    haibertbarfian@gmail.com.
+                                    <TouchableOpacity onPress={() => {}}>
+                                        <Text
+                                            style={styles.underTitleBold}
+                                            maxFontSizeMultiplier={
+                                                colors.maxFontSizeMultiplier
+                                            }
+                                        >
+                                            {'  Resend Code.'}
+                                        </Text>
+                                    </TouchableOpacity>
                                 </Text>
                             </View>
                         </View>
@@ -114,7 +163,7 @@ const BAddYourName = (props) => {
                             <View style={styles.textInputCont}>
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="Full name"
+                                    placeholder="Confirmation Code"
                                     placeholderTextColor={colors.placeHolder}
                                     selectionColor={colors.lightTint}
                                     underlineColorAndroid="rgba(255,255,255,0)"
@@ -122,20 +171,34 @@ const BAddYourName = (props) => {
                                         colors.maxFontSizeMultiplier
                                     }
                                     keyboardType="number-pad"
+                                    maxLength={7}
+                                    onChangeText={inputChangeHandler}
+                                    value={enteredNumber}
+                                    autoFocus
                                 />
-                                <Ionicons
-                                    name="close-circle"
-                                    size={20}
-                                    color={colors.mediumTint}
-                                    onPress={() => {}}
-                                    style={{ marginTop: 30 }}
-                                />
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        setEnteredNumber('')
+                                        setConfirmationErrorMessage(' ')
+                                        setConfirmLengthValid(false)
+                                    }}
+                                >
+                                    <Ionicons
+                                        name="close-circle"
+                                        size={20}
+                                        color={colors.mediumTint}
+                                        style={{ marginTop: 30 }}
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                            <View style={{ width: '100%' }}>
+                                <Text style={styles.errorText}>
+                                    {confirmationErrorMessage}
+                                </Text>
                             </View>
                             <Button
                                 style={styles.button}
-                                onPress={() => {
-                                    props.navigation.navigate('CCreatePassword')
-                                }}
+                                onPress={nextPressedHandler}
                                 text="Next"
                             />
                         </View>
@@ -213,9 +276,15 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderColor: colors.lightTint,
     },
+    errorText: {
+        marginHorizontal: 5,
+        marginTop: 10,
+        color: colors.lightTint,
+        fontSize: 15,
+    },
     input: {
         marginTop: 30,
-        width: '90%',
+        width: '92%',
         height: 50,
         borderRadius: 5,
         padding: 10,
@@ -227,4 +296,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default BAddYourName
+export default AConfirmationScreen

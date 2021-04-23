@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { View, Text, StyleSheet, TextInput, Keyboard } from 'react-native'
 import {
     TouchableOpacity,
@@ -20,6 +20,10 @@ import colors from '../../constants/colors'
 //custom button
 import Button from '../../components/Button'
 
+//redux
+import { addUsername, signupUser } from '../../store/signup/actions'
+import { useDispatch, useSelector } from 'react-redux'
+
 function hideKeyboard() {
     Keyboard.dismiss()
 }
@@ -32,6 +36,31 @@ const FUserNameFork = (props) => {
         height: 0,
         width: 0,
     })
+
+    const dispatch = useDispatch()
+
+    const [usernameValidError, setUsernameValidError] = useState()
+    const [userTxtChange, setUserTextChange] = useState()
+
+    function userNameChangeHandler(enteredText) {
+        setUserTextChange(enteredText)
+        if (enteredText.trim().length >= 4) {
+            setUsernameValidError(null)
+            return
+        }
+        setUsernameValidError('Please enter a valid username.')
+    }
+
+    const nextPressedHandler = useCallback(async () => {
+        if (usernameValidError) {
+            return
+        }
+        dispatch(addUsername(userTxtChange))
+        await dispatch(signupUser())
+        props.navigation.navigate('DrawerNav', {
+            screen: 'DashboardScreen',
+        })
+    }, [userTxtChange])
 
     return (
         <LinearGradient
@@ -111,31 +140,45 @@ const FUserNameFork = (props) => {
                                 },
                             ]}
                         >
-                            <View style={styles.textInputCont}>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Username"
-                                    placeholderTextColor={colors.placeHolder}
-                                    selectionColor={colors.lightTint}
-                                    underlineColorAndroid="rgba(255,255,255,0)"
-                                    maxFontSizeMultiplier={
-                                        colors.maxFontSizeMultiplier
-                                    }
-                                    secureTextEntry={true}
-                                />
-                                <Ionicons
-                                    name="close-circle"
-                                    size={20}
-                                    color={colors.mediumTint}
-                                    onPress={() => {}}
-                                    style={{ marginTop: 30 }}
-                                />
+                            <View>
+                                <View style={styles.textInputCont}>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Username"
+                                        placeholderTextColor={
+                                            colors.placeHolder
+                                        }
+                                        selectionColor={colors.lightTint}
+                                        underlineColorAndroid="rgba(255,255,255,0)"
+                                        maxFontSizeMultiplier={
+                                            colors.maxFontSizeMultiplier
+                                        }
+                                        onChangeText={(text) =>
+                                            userNameChangeHandler(text)
+                                        }
+                                        value={userTxtChange}
+                                        autoFocus
+                                    />
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            setUserTextChange('')
+                                        }}
+                                    >
+                                        <Ionicons
+                                            name="close-circle"
+                                            size={20}
+                                            color={colors.mediumTint}
+                                            style={{ marginTop: 30 }}
+                                        />
+                                    </TouchableOpacity>
+                                </View>
+                                <Text style={styles.errorText}>
+                                    {usernameValidError}
+                                </Text>
                             </View>
                             <Button
                                 style={styles.button}
-                                onPress={() => {
-                                    props.navigation.navigate('DrawerNav')
-                                }}
+                                onPress={nextPressedHandler}
                                 text="Next"
                             />
                         </View>
@@ -213,18 +256,25 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderColor: colors.lightTint,
     },
+
     input: {
         marginTop: 30,
-
-        width: '90%',
+        width: '92%',
         height: 50,
         borderRadius: 5,
         padding: 10,
         color: colors.textColor,
         fontSize: 17,
     },
+    errorText: {
+        marginHorizontal: 5,
+        marginTop: 10,
+        color: colors.lightTint,
+        fontSize: 15,
+        height: 20,
+    },
     button: {
-        marginTop: 40,
+        marginTop: 30,
     },
 })
 

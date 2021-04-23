@@ -1,10 +1,11 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
     View,
     Text,
     StyleSheet,
     Dimensions,
     TouchableWithoutFeedback,
+    Modal,
 } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
@@ -24,10 +25,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { Icon } from 'react-native-elements'
 
+//redux
+import { useDispatch, useSelector } from 'react-redux'
+
 const { height, width } = Dimensions.get('screen')
 
 const DashboardScreen = (props) => {
     const insets = useSafeAreaInsets()
+
+    const [showModal, setShowModal] = useState(false)
 
     return (
         <View style={styles.screen}>
@@ -57,7 +63,7 @@ const DashboardScreen = (props) => {
                             />
                         </TouchableOpacity>
 
-                        <TouchableOpacity
+                        {/* <TouchableOpacity
                             onPress={() => {
                                 props.navigation.toggleDrawer()
                             }}
@@ -67,7 +73,7 @@ const DashboardScreen = (props) => {
                                 size={26}
                                 color={colors.buttonPurple}
                             />
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                     </View>
                     <View
                         style={{
@@ -126,7 +132,9 @@ const DashboardScreen = (props) => {
                     >
                         <TouchableOpacity
                             activeOpacity={0.9}
-                            onPress={() => {}}
+                            onPress={() => {
+                                setShowModal(true)
+                            }}
                         >
                             <View style={styles.bigPlusButton}>
                                 <Icon
@@ -140,6 +148,38 @@ const DashboardScreen = (props) => {
                     </View>
                 </View>
             </LinearGradient>
+            <Modal visible={showModal} transparent animationType="slide">
+                <View style={styles.modal}>
+                    <View>
+                        <View style={styles.modalActions}>
+                            <Button
+                                text="Join Event"
+                                style={styles.innerButton}
+                                onPress={() => {
+                                    setShowModal(false)
+                                    props.navigation.navigate('JoinEventScreen')
+                                }}
+                            ></Button>
+                            <Button
+                                text="Create Event"
+                                onPress={() => {
+                                    setShowModal(false)
+                                    props.navigation.navigate(
+                                        'CreateEventScreen'
+                                    )
+                                }}
+                            ></Button>
+                        </View>
+                        <Button
+                            style={styles.cancelButton}
+                            onPress={() => {
+                                setShowModal(false)
+                            }}
+                            text="Cancel"
+                        ></Button>
+                    </View>
+                </View>
+            </Modal>
         </View>
     )
 }
@@ -154,6 +194,35 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 15,
+    },
+    modal: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    modalActions: {
+        width: '80%',
+        height: 200,
+        shadowColor: 'black',
+        shadowRadius: 10,
+        shadowOpacity: 0.26,
+        backgroundColor: 'white',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        borderRadius: 10,
+        elevation: 5,
+        alignItems: 'center',
+        justifyContent: 'space-around',
+        padding: 30,
+    },
+    innerButton: {
+        marginBottom: 20,
+    },
+    cancelButton: {
+        marginTop: 30,
+        width: `80%`,
     },
     tabBar: {
         height: 50,

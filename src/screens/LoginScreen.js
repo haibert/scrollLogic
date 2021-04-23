@@ -27,9 +27,6 @@ import Button from '../components/Button'
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-//login page
-import SignupScreen from '../screens/SignupScreen'
-
 const { height, width } = Dimensions.get('screen')
 
 function hideKeyboard() {
