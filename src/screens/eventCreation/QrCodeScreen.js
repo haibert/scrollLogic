@@ -42,6 +42,7 @@ const QrCodeScreen = (props) => {
         Math.random().toFixed(3) * 1000
     ).toString()
 
+    // let base64Logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAA..';
     return (
         <View style={styles.screen}>
             <LinearGradient
@@ -105,6 +106,9 @@ const QrCodeScreen = (props) => {
                                     'rgb(107,0,188,1)',
                                     'rgba(252,140,250,1)',
                                 ]}
+                                // logo={{ uri: base64Logo }}
+                                // logoSize={30}
+                                // logoBackgroundColor='transparent'
                             />
                         </View>
                     </View>

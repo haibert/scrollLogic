@@ -100,7 +100,7 @@ const DrawerContent = (props) => {
                     </Drawer.Section>
                 </DrawerContentScrollView>
 
-                <Drawer.Section style={styles.bottomDrawerSection}>
+                <Drawer.Section style={styles.bottomDrawerSection} >
                     <DrawerItem
                         label="Sign Out"
                         icon={({ color, size }) => (

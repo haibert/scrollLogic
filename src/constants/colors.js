@@ -8,6 +8,7 @@ export default {
     buttonPurple: 'rgba(155,97,234,1)',
     buttonPink: 'rgba(252,140,250,1)',
     buttonPinkTransparent: 'rgba(252,140,250,.25)',
+    bottomBorderTint: 'rgba(177,77,255,1)',
 
     maxFontSizeMultiplier: 1.2,
 

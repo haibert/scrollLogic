@@ -74,7 +74,6 @@ const CreateEventScreen = (props) => {
                             selectionColor={colors.lightTint}
                             underlineColorAndroid="rgba(255,255,255,0)"
                             maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
-                            maxLength={7}
                             // onChangeText={inputChangeHandler}
                             // value={enteredNumber}
                             autoFocus

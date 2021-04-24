@@ -90,7 +90,7 @@ const DashboardScreen = (props) => {
                         >
                             <TouchableWithoutFeedback
                                 onPress={() => {
-                                    props.navigation.navigate('Home')
+                                    // props.navigation.navigate('Home')
                                 }}
                             >
                                 <View style={styles.tabButton}></View>

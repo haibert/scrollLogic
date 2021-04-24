@@ -6,35 +6,32 @@ import colors from '../constants/colors'
 
 const CustomInput = (props) => {
     return (
-        <View style={{ ...styles.button, ...props.viewStyle }}>
+        <View style={{ ...styles.view, ...props.viewStyle }}>
             <TextInput
                 maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
-                style={{ ...styles.text, ...props.textStyle }}
+                style={{ ...styles.input, ...props.textStyle }}
                 keyboardType={props.keyboardType}
                 placeholder={props.placeholder}
                 placeholderTextColor={colors.placeHolder}
                 selectionColor={colors.lightTint}
                 underlineColorAndroid="rgba(255,255,255,0)"
-            >
-                {props.children}
-            </TextInput>
+                onChangeText={props.onChangeText}
+                value={props.value}
+            ></TextInput>
         </View>
     )
 }
 
 const styles = StyleSheet.create({
     view: {
-        height: 50,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.bottomBorderTint,
     },
-
-    Input: {
-        input: {
-            height: 50,
-            borderRadius: 5,
-            padding: 10,
-            color: colors.textColor,
-            fontSize: 17,
-        },
+    input: {
+        height: 50,
+        padding: 10,
+        color: colors.textColor,
+        fontSize: 17,
     },
 })
 
