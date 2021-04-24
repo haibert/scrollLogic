@@ -273,7 +273,6 @@ const SignupScreen = (props) => {
                                 <Formik
                                     initialValues={{ phone: '' }}
                                     onSubmit={(values) => {
-                                        console.log(values)
                                         !validationSchemaPhone.isValidSync(
                                             values.phone
                                         )
