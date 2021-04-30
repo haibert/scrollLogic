@@ -28,6 +28,7 @@ const ScreenWrapper = (props) => {
                         paddingTop: insets.top,
                         paddingBottom: insets.bottom,
                         flex: 1,
+                        ...props.style,
                     }}
                 >
                     {props.children}

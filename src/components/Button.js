@@ -47,6 +47,7 @@ const styles = StyleSheet.create({
         width: '100%',
         minWidth: '100%',
         borderRadius: 5,
+        height: 50,
     },
     text: {
         fontSize: 18,

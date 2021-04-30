@@ -27,7 +27,7 @@ import Button from '../components/Button'
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-const { height, width } = Dimensions.get('screen')
+const { height } = Dimensions.get('screen')
 
 function hideKeyboard() {
     Keyboard.dismiss()

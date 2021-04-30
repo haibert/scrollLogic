@@ -15,9 +15,11 @@ import AppNavigator from './src/navigation/navigation'
 enableScreens()
 
 import signupReducer from './src/store/signup/reducer'
+import cameraReducer from './src/store/camera/reducer'
 
 const rootReducer = combineReducers({
     signupReducer: signupReducer,
+    cameraReducer: cameraReducer,
 })
 
 const store = createStore(rootReducer, applyMiddleware(ReduxThunk))

@@ -14,6 +14,7 @@ import FUserName from '../screens/signupScreens/FUserName'
 //screens
 import LoginScreen from '../screens/LoginScreen'
 import DashboardScreen from '../screens/DashboardScreen'
+import CameraScreen from '../screens/CameraScreen'
 
 //event creation
 import CreateEventScreen from '../screens/eventCreation/CreateEventScreen'
@@ -85,6 +86,13 @@ const MainInnerNavigation = () => {
             <MainStack.Screen
                 name="JoinEventScreen"
                 component={JoinEventScreen}
+                options={{
+                    headerShown: false,
+                }}
+            />
+            <MainStack.Screen
+                name="CameraScreen"
+                component={CameraScreen}
                 options={{
                     headerShown: false,
                 }}

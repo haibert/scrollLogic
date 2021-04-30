@@ -6,6 +6,7 @@ import {
     Dimensions,
     TouchableWithoutFeedback,
     Modal,
+    FlatList,
 } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
@@ -15,8 +16,9 @@ import { LinearGradient } from 'expo-linear-gradient'
 //colors
 import colors from '../constants/colors'
 
-// custom button
+// custom components
 import Button from '../components/Button'
+import Thumbnail from '../components/Thumbnail'
 
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -28,13 +30,35 @@ import { Icon } from 'react-native-elements'
 //redux
 import { useDispatch, useSelector } from 'react-redux'
 
+//expo camera
+import { Camera } from 'expo-camera'
+
+//dummy data
+import images from '../data/images'
+
 const { height, width } = Dimensions.get('screen')
 
 const DashboardScreen = (props) => {
     const insets = useSafeAreaInsets()
+    console.log('🚀 ~ file: DashboardScreen.js ~ line 38 ~ images', images)
+
+    const [hasPermission, setHasPermission] = useState(null)
+    const [type, setType] = useState(Camera.Constants.Type.back)
 
     const [showModal, setShowModal] = useState(false)
 
+    const cameraPressedHandler = async () => {
+        const { status } = await Camera.requestPermissionsAsync()
+
+        setHasPermission(status === 'granted')
+        if (status === 'granted') {
+            props.navigation.navigate('CameraScreen')
+        } else {
+            return
+        }
+    }
+
+    function galleryPressedHandler() {}
     return (
         <View style={styles.screen}>
             <LinearGradient
@@ -75,6 +99,28 @@ const DashboardScreen = (props) => {
                             />
                         </TouchableOpacity> */}
                     </View>
+                    <FlatList
+                        style={styles.flatList}
+                        data={images}
+                        keyExtractor={(item) => `${item.id}`}
+                        renderItem={(item) => {
+                            return (
+                                <View>
+                                    <View style={{ height: 10 }}></View>
+                                    <Thumbnail
+                                        images={item.item}
+                                        galleryPressedHandler={
+                                            galleryPressedHandler
+                                        }
+                                    />
+                                </View>
+                            )
+                        }}
+                        showsVerticalScrollIndicator={false}
+                        numColumns={2}
+                        columnWrapperStyle={{ marginLeft: 10 }}
+                        // contentStyle={{ paddingBottom: 50 }}
+                    />
                     <View
                         style={{
                             ...styles.tabBar,
@@ -90,19 +136,21 @@ const DashboardScreen = (props) => {
                         >
                             <TouchableWithoutFeedback
                                 onPress={() => {
-                                    // props.navigation.navigate('Home')
+                                    // props.navigation.navigate('CameraScreen')
                                 }}
                             >
                                 <View style={styles.tabButton}></View>
                             </TouchableWithoutFeedback>
 
                             <View style={{ width: 50 }}></View>
-                            <TouchableWithoutFeedback onPress={() => {}}>
+                            <TouchableWithoutFeedback
+                                onPress={cameraPressedHandler}
+                            >
                                 <View style={styles.tabButton}></View>
                             </TouchableWithoutFeedback>
 
                             <Ionicons
-                                name="person"
+                                name="camera"
                                 color="white"
                                 size={22}
                                 style={{
@@ -110,6 +158,7 @@ const DashboardScreen = (props) => {
                                     top: 14.5,
                                     right: (width - 26) / 6,
                                 }}
+                                onPress={cameraPressedHandler}
                             />
 
                             <Ionicons
@@ -199,6 +248,9 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    flatList: {
+        flex: 1,
     },
     modalActions: {
         width: '80%',
