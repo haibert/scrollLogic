@@ -8,7 +8,7 @@ const TitleText = (props) => {
     return (
         <View style={styles.titleCont}>
             <Text
-                style={styles.title}
+                style={{ ...styles.title, ...props.style }}
                 maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
             >
                 {props.children}

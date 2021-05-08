@@ -14,7 +14,7 @@ const HeaderX = (props) => {
             <TouchableOpacity onPress={props.goBack}>
                 <Ionicons
                     name="close-outline"
-                    size={40}
+                    size={50}
                     color={!props.color ? colors.mediumTint : props.color}
                     style={styles.xShadow}
                 />
@@ -31,6 +31,7 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     xShadow: {
+        marginLeft: 10,
         shadowColor: 'black',
         shadowRadius: 0.7,
         shadowOpacity: 0.8,

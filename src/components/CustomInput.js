@@ -18,6 +18,7 @@ const CustomInput = (props) => {
                     underlineColorAndroid="rgba(255,255,255,0)"
                     onChangeText={props.onChangeText}
                     value={props.value}
+                    autoFocus={props.autoFocus}
                 ></TextInput>
             </View>
         </View>

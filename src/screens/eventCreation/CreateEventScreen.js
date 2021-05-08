@@ -134,10 +134,11 @@ const styles = StyleSheet.create({
     bottomCont: {
         flex: 1,
         alignItems: 'center',
-        justifyContent: 'flex-end',
+        // justifyContent: 'flex-end',
         paddingBottom: 80,
     },
     button: {
+        marginTop: 50,
         width: '80%',
     },
 })

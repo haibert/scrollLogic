@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { enableScreens } from 'react-native-screens'
 
 //redux
@@ -10,9 +10,18 @@ import ReduxThunk from 'redux-thunk'
 
 // navigation
 import AppNavigator from './src/navigation/navigation'
+import { init } from './src/sql/database'
 
 //enableScreens
 enableScreens()
+
+init()
+    .then(() => {
+        console.log('Initialized DB')
+    })
+    .catch((err) => {
+        console.log(`Initializing DB failed. Error: ${err}`)
+    })
 
 import signupReducer from './src/store/signup/reducer'
 import cameraReducer from './src/store/camera/reducer'

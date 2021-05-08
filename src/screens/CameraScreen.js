@@ -6,7 +6,7 @@ import {
     Dimensions,
     Modal,
     ImageBackground,
-    StatusBar,
+    Animated,
 } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
@@ -15,7 +15,6 @@ import { Camera } from 'expo-camera'
 
 //custom components
 import HeaderX from '../components/HeaderX'
-import Button from '../components/Button'
 
 //ionicons
 import { Entypo, Ionicons } from '@expo/vector-icons'
@@ -35,6 +34,25 @@ import { useDispatch, useSelector } from 'react-redux'
 // MediaLibrary
 import * as MediaLibrary from 'expo-media-library'
 
+//gesture handlers
+import {
+    PinchGestureHandler,
+    PinchGestureHandlerGestureEvent,
+    State,
+    TapGestureHandler,
+    TapGestureHandlerStateChangeEvent,
+} from 'react-native-gesture-handler'
+import Reanimated, {
+    Extrapolate,
+    interpolate,
+    useAnimatedGestureHandler,
+    useAnimatedProps,
+    useSharedValue,
+    useAnimatedStyle,
+    runOnJS,
+    runOnUI,
+} from 'react-native-reanimated'
+
 const { height, width } = Dimensions.get('screen')
 
 const CameraScreen = (props) => {
@@ -49,11 +67,18 @@ const CameraScreen = (props) => {
 
     const dispatch = useDispatch()
 
+    const [zooming, setZooming] = useState(0)
+
+    //camera settings
+    const [flashMode, setFlashMode] = useState('off')
+
     // const picTaken = useSelector((state) => state.cameraReducer.pictureUri)
     // console.log(
     //     '🚀 ~ file: CameraScreen.js ~ line 36 ~ CameraScreen ~ picTaken',
     //     picTaken
     // )
+
+    // camera Functions
     async function takePictureHandler() {
         try {
             if (cameraRef.current) {
@@ -83,6 +108,15 @@ const CameraScreen = (props) => {
         )
     }
 
+    function flashSwitchHandler() {
+        if (flashMode === 'off') {
+            setFlashMode('on')
+        }
+        if (flashMode === 'on') {
+            setFlashMode('off')
+        }
+    }
+
     async function savePictureLocallyHandler(localUri) {
         const { status } = await MediaLibrary.getPermissionsAsync()
         if (status === 'undetermined') {
@@ -100,64 +134,129 @@ const CameraScreen = (props) => {
         }
 
         if (status === 'denied') {
-            console.log('Open settings and give permissin')
+            console.log('Open settings and give permission')
         }
     }
 
+    // zoom gesture handler
+    const zoom = useSharedValue(0)
+    const MAX_ZOOM_FACTOR = 20
+    const SCALE_FULL_ZOOM = 20
+    const formatMaxZoom = 1
+    const maxZoomFactor = Math.min(formatMaxZoom, MAX_ZOOM_FACTOR)
+    const neutralZoomScaled = (neutralZoom / maxZoomFactor) * formatMaxZoom
+    const maxZoomScaled = (1 / formatMaxZoom) * maxZoomFactor
+
+    const neutralZoom = 0
+    useAnimatedProps(
+        () => ({
+            zoom: interpolate(
+                zoom.value,
+                [0, neutralZoomScaled, 1],
+                [0, neutralZoom, maxZoomScaled],
+                Extrapolate.CLAMP
+            ),
+        }),
+        [maxZoomScaled, neutralZoom, neutralZoomScaled, zoom]
+    )
+
+    function updateValue() {
+        setZooming(zoom.value)
+    }
+
+    function willThisWork() {
+        'worklet'
+        runOnJS(updateValue)()
+    }
+
+    const onPinchGesture = useAnimatedGestureHandler({
+        onStart: (_, context) => {
+            context.startZoom = zoom.value
+        },
+        onActive: (event, context) => {
+            // trying to map the scale gesture to a linear zoom here
+            const startZoom = context.startZoom ?? 0
+            const scale = interpolate(
+                event.scale,
+                [1 - 1 / SCALE_FULL_ZOOM, 1, SCALE_FULL_ZOOM],
+                [-1, 0, 1],
+                Extrapolate.CLAMP
+            )
+            zoom.value = interpolate(
+                scale,
+                [-1, 0, 1],
+                [0, startZoom, 1],
+                Extrapolate.CLAMP
+            )
+            willThisWork()
+        },
+    })
+
     return (
         <View style={styles.container}>
-            {/* <StatusBar backgroundColor="blue" transparent={false} hidden /> */}
-            <Camera
-                style={{
-                    paddingTop: insets.top,
-                    paddingBottom: insets.bottom,
-                    flex: 1,
-                    borderWidth: 1,
-                }}
-                ref={cameraRef}
-                type={type}
-            >
-                {/* <StatusBar
-                    translucent
-                    backgroundColor={backgroundColor}
-                    {...props}
-                /> */}
-                <View style={styles.cameraInner}>
-                    <View style={styles.topLeftCont}>
-                        {/* <TouchableOpacity
-                            onPress={flipCameraHandler}
-                        > */}
-                        <Entypo
-                            name="loop"
-                            size={30}
-                            color="white"
-                            style={styles.flipIcon}
-                            onPress={flipCameraHandler}
-                        />
-                        {/* </TouchableOpacity> */}
-                    </View>
-                    <View
+            <PinchGestureHandler onGestureEvent={onPinchGesture}>
+                <Reanimated.View style={StyleSheet.absoluteFill}>
+                    <Camera
                         style={{
-                            ...styles.floatingPlusCont,
-                            left: width / 2 - 40,
+                            flex: 1,
                         }}
+                        ref={cameraRef}
+                        type={type}
+                        flashMode={flashMode}
+                        zoom={zooming}
                     >
-                        <TouchableOpacity
-                            activeOpacity={0.9}
-                            onPress={takePictureHandler}
+                        <View
+                            style={[
+                                styles.contentContainer,
+                                {
+                                    paddingTop: insets.top,
+                                    paddingBottom: insets.bottom,
+                                    top: insets.top,
+                                    bottom: insets.bottom,
+                                },
+                            ]}
                         >
-                            <View style={styles.bigPlusButton}>
-                                <Icon
-                                    name="camera-outline"
-                                    type="material-community"
-                                    size={30}
-                                    color="white"
-                                />
+                            <View style={styles.topLeftCont}>
+                                <TouchableOpacity onPress={flipCameraHandler}>
+                                    <Entypo
+                                        name="loop"
+                                        size={27}
+                                        color="white"
+                                        style={styles.flipIcon}
+                                    />
+                                </TouchableOpacity>
+
+                                <TouchableOpacity onPress={flashSwitchHandler}>
+                                    <Ionicons
+                                        name={
+                                            flashMode !== 'off'
+                                                ? 'flash'
+                                                : 'flash-off'
+                                        }
+                                        size={27}
+                                        color="white"
+                                        style={styles.cameraSettingsButton}
+                                    />
+                                </TouchableOpacity>
                             </View>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Camera>
+                            <View
+                                style={{
+                                    ...styles.floatingPlusCont,
+                                    left: width / 2 - 40,
+                                }}
+                            >
+                                <TouchableOpacity
+                                    activeOpacity={0.9}
+                                    onPress={takePictureHandler}
+                                >
+                                    <View style={styles.bigPlusButton}></View>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </Camera>
+                </Reanimated.View>
+            </PinchGestureHandler>
+
             <Modal visible={showModal} transparent animationType="none">
                 <View style={styles.modal}>
                     <ImageBackground
@@ -209,32 +308,40 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
+    contentContainer: {
+        flex: 1,
+        borderWidth: 1,
+        position: 'absolute',
+        right: 0,
+        left: 0,
+        borderWidth: 0,
+    },
     camera: {
         flex: 1,
         flexDirection: 'row',
     },
-    cameraInner: {
-        flex: 1,
-    },
+
     topLeftCont: {
         position: 'absolute',
-        width: 50,
+        width: 45,
         top: 0,
         right: 10,
         borderRadius: 20,
         backgroundColor: 'rgba(184,184,184,0.42)',
-        alignContent: 'center',
-        justifyContent: 'center',
-        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        // flexDirection: 'row',
         padding: 5,
     },
     flipIcon: {
+        marginVertical: 7,
         transform: [
             {
                 rotate: '90deg',
             },
         ],
     },
+    cameraSettingsButton: { marginVertical: 7 },
     modal: {
         flex: 1,
     },
@@ -253,12 +360,21 @@ const styles = StyleSheet.create({
     bigPlusButton: {
         backgroundColor: 'transparent',
         borderColor: 'white',
-        borderWidth: 4,
+        borderWidth: 7,
         width: 80,
         height: 80,
         borderRadius: 40,
         alignItems: 'center',
         justifyContent: 'center',
+        shadowColor: 'black',
+        shadowRadius: 6,
+        shadowOpacity: 0.1,
+        // backgroundColor: 'white',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        elevation: 5,
     },
     floatingPlusCont: {
         bottom: 23,
@@ -267,7 +383,7 @@ const styles = StyleSheet.create({
         height: 80,
         borderRadius: 40,
         // overflow: Platform.OS === 'android' ? 'hidden' : 'visible',
-        elevation: 10,
+        elevation: 1,
     },
 })
 

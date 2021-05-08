@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useCallback, useEffect } from 'react'
 import {
     View,
     Text,
@@ -7,6 +7,9 @@ import {
     TouchableWithoutFeedback,
     Modal,
     FlatList,
+    AppState,
+    Alert,
+    Linking,
 } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
@@ -20,6 +23,9 @@ import colors from '../constants/colors'
 import Button from '../components/Button'
 import Thumbnail from '../components/Thumbnail'
 
+//customHooks
+import useAppState from '../hooks/useAppState'
+
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -27,38 +33,149 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { Icon } from 'react-native-elements'
 
-//redux
-import { useDispatch, useSelector } from 'react-redux'
-
 //expo camera
 import { Camera } from 'expo-camera'
 
+//expo qr scanner
+import { BarCodeScanner } from 'expo-barcode-scanner'
+
 //dummy data
 import images from '../data/images'
+
+//redux
+import {
+    savePermissionsStatus,
+    loadPermissions,
+} from '../store/permissions/actions'
+
+import { useDispatch } from 'react-redux'
 
 const { height, width } = Dimensions.get('screen')
 
 const DashboardScreen = (props) => {
     const insets = useSafeAreaInsets()
-    console.log('🚀 ~ file: DashboardScreen.js ~ line 38 ~ images', images)
 
-    const [hasPermission, setHasPermission] = useState(null)
+    const dispatch = useDispatch()
+
+    const [hasCameraPermission, setHasCameraPermission] = useState(null)
     const [type, setType] = useState(Camera.Constants.Type.back)
 
     const [showModal, setShowModal] = useState(false)
 
-    const cameraPressedHandler = async () => {
-        const { status } = await Camera.requestPermissionsAsync()
+    // useEffect(() => {
+    //     dispatch(loadPermissions())
+    // }, [dispatch])
 
-        setHasPermission(status === 'granted')
+    //app state
+    // const appState = useRef(AppState.currentState)
+    // const [appStateVisible, setAppStateVisible] = useState(appState.current)
+
+    const cameraPressedHandler = async () => {
+        const { status } = await Camera.getPermissionsAsync()
+        console.log(
+            '🚀 ~ file: DashboardScreen.js ~ line 61 ~ cameraPressedHandler ~ status',
+            status
+        )
+
+        // setHasCameraPermission(status === 'granted')
         if (status === 'granted') {
+            dispatch(savePermissionsStatus('granted'))
             props.navigation.navigate('CameraScreen')
-        } else {
-            return
+        } else if (status === 'undetermined') {
+            const results = await Camera.requestPermissionsAsync()
+            if (results.status === 'granted') {
+                props.navigation.navigate('CameraScreen')
+            } else if (status === 'denied') {
+                sendUserToSettingsHandler()
+                return
+            }
+        } else if (status === 'denied') {
+            const results2 = await Camera.requestPermissionsAsync()
+            if (results2.status === 'granted') {
+                props.navigation.navigate('CameraScreen')
+            } else {
+                sendUserToSettingsHandler()
+                return
+            }
         }
     }
 
+    const askForQRScannerPermissions = async () => {
+        const { status } = await BarCodeScanner.requestPermissionsAsync()
+        setShowModal(false)
+
+        setHasCameraPermission(status === 'granted')
+        if (status === 'granted') {
+            props.navigation.navigate('JoinEventScreen', {
+                permission: status,
+            })
+        } else {
+            props.navigation.navigate('JoinEventScreen', {
+                permission: status,
+            })
+        }
+    }
+
+    function joinEventHandler() {
+        askForQRScannerPermissions()
+    }
+
     function galleryPressedHandler() {}
+
+    // handle checking permissions after app state change
+    const checkPermissionsAppState = useCallback(async () => {
+        const { status } = await Camera.getPermissionsAsync()
+        switch (status) {
+            case 'granted':
+                setHasCameraPermission(true)
+                console.log('Camera permission has been granted.')
+                break
+            case 'denied':
+                setHasCameraPermission(false)
+                console.log(
+                    'Camera permission has not been requested / is denied but request-able'
+                )
+                break
+            case 'undetermined':
+                setHasCameraPermission(false)
+                console.log('Camera permission is undetermined')
+                break
+        }
+    }, [])
+
+    const { appStateVisible } = useAppState(checkPermissionsAppState)
+
+    // native alert for camera settings
+    function openSettings() {
+        Linking.canOpenURL('app-settings:')
+            .then((supported) => {
+                if (!supported) {
+                    console.log("Can't handle settings url")
+                } else {
+                    return Linking.openURL('app-settings:')
+                }
+            })
+            .catch((err) => console.error('An error occurred', err))
+    }
+    function sendUserToSettingsHandler() {
+        Alert.alert(
+            'Turn On Camera Permissions to Allow Event Share to Use Your Camera',
+            '',
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Settings',
+                    onPress: () => {
+                        openSettings()
+                    },
+                },
+            ]
+        )
+    }
+
     return (
         <View style={styles.screen}>
             <LinearGradient
@@ -118,7 +235,9 @@ const DashboardScreen = (props) => {
                         }}
                         showsVerticalScrollIndicator={false}
                         numColumns={2}
-                        columnWrapperStyle={{ marginLeft: 10 }}
+                        columnWrapperStyle={{
+                            marginLeft: 10,
+                        }}
                         // contentStyle={{ paddingBottom: 50 }}
                     />
                     <View
@@ -204,10 +323,7 @@ const DashboardScreen = (props) => {
                             <Button
                                 text="Join Event"
                                 style={styles.innerButton}
-                                onPress={() => {
-                                    setShowModal(false)
-                                    props.navigation.navigate('JoinEventScreen')
-                                }}
+                                onPress={joinEventHandler}
                             ></Button>
                             <Button
                                 text="Create Event"
@@ -248,9 +364,11 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
+        backgroundColor: 'rgba(0,0,0,0.43)',
     },
     flatList: {
         flex: 1,
+        paddingBottom: 50,
     },
     modalActions: {
         width: '80%',
@@ -258,7 +376,8 @@ const styles = StyleSheet.create({
         shadowColor: 'black',
         shadowRadius: 10,
         shadowOpacity: 0.26,
-        backgroundColor: 'white',
+        backgroundColor: colors.pinkLESSTransparent,
+
         shadowOffset: {
             width: 0,
             height: 2,
