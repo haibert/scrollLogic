@@ -35,7 +35,7 @@ const CreateEventScreen = (props) => {
     return (
         <View style={styles.screen}>
             <LinearGradient
-                colors={['rgba(255, 237, 187, 1)', 'rgba(150, 227, 255, 1)']}
+                colors={['rgba(252,140,250,1)', colors.evenLighterTint]}
                 style={{ flex: 1 }}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 25,
-        color: colors.placeHolder,
+        color: colors.textColor,
     },
     underTitle: {
         color: colors.mediumTint,

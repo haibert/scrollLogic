@@ -1,5 +1,10 @@
 import React from 'react'
-import { View, StyleSheet } from 'react-native'
+import {
+    View,
+    StyleSheet,
+    TouchableWithoutFeedback,
+    Platform,
+} from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
 //ionicons
@@ -9,16 +14,21 @@ import { Ionicons } from '@expo/vector-icons'
 import colors from '../constants/colors'
 
 const HeaderX = (props) => {
+    let TouchableCmp = TouchableOpacity
+
+    if (Platform.OS === 'android' && Platform.Version >= 21) {
+        TouchableCmp = TouchableWithoutFeedback
+    }
     return (
         <View style={styles.xCont}>
-            <TouchableOpacity onPress={props.goBack}>
+            <TouchableCmp onPress={props.goBack}>
                 <Ionicons
                     name="close-outline"
                     size={50}
                     color={!props.color ? colors.mediumTint : props.color}
                     style={styles.xShadow}
                 />
-            </TouchableOpacity>
+            </TouchableCmp>
         </View>
     )
 }

@@ -16,9 +16,14 @@ const ScreenWrapper = (props) => {
     const insets = useSafeAreaInsets()
 
     return (
-        <View style={styles.screen}>
+        <View
+            style={styles.screen}
+            onStartShouldSetResponderCapture={() =>
+                props.onStartShouldSetResponderCapture
+            }
+        >
             <LinearGradient
-                colors={['rgba(255, 237, 187, 1)', 'rgba(150, 227, 255, 1)']}
+                colors={['rgba(252,140,250,1)', colors.blue]}
                 style={{ flex: 1 }}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}

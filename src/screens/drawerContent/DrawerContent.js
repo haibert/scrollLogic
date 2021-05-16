@@ -24,7 +24,9 @@ const DrawerContent = (props) => {
     return (
         <View style={{ flex: 1 }}>
             <LinearGradient
-                colors={['rgba(255, 237, 187, 1)', 'rgba(150, 227, 255, 1)']}
+                // colors={['rgba(255, 237, 187, 1)', 'rgba(150, 227, 255, 1)']}
+                // colors={['rgba(252,140,250,1)', 'rgba(255, 237, 187, 1)']}
+                colors={['rgba(252,140,250,1)', colors.evenLighterTint]}
                 style={{ flex: 1 }}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
@@ -100,7 +102,7 @@ const DrawerContent = (props) => {
                     </Drawer.Section>
                 </DrawerContentScrollView>
 
-                <Drawer.Section style={styles.bottomDrawerSection} >
+                <Drawer.Section style={styles.bottomDrawerSection}>
                     <DrawerItem
                         label="Sign Out"
                         icon={({ color, size }) => (

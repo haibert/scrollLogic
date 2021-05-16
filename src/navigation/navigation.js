@@ -1,7 +1,15 @@
-import React from 'react'
+import React, { useEffect, useCallback } from 'react'
+
 import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import { createDrawerNavigator } from '@react-navigation/drawer'
+import { enableScreens } from 'react-native-screens'
+
+//enableScreens
+enableScreens()
+
+//shared element
+import { createSharedElementStackNavigator } from 'react-navigation-shared-element'
 
 // signup screens
 import ASignupScreen from '../screens/signupScreens/ASignupScreen'
@@ -15,6 +23,8 @@ import FUserName from '../screens/signupScreens/FUserName'
 import LoginScreen from '../screens/LoginScreen'
 import DashboardScreen from '../screens/DashboardScreen'
 import CameraScreen from '../screens/CameraScreen'
+import GalleryView from '../screens/GalleryView'
+import GalleryDetailScreen from '../screens/GalleryDetailScreen'
 
 //event creation
 import CreateEventScreen from '../screens/eventCreation/CreateEventScreen'
@@ -29,6 +39,17 @@ import colors from '../constants/colors'
 
 //ionicons
 import { Ionicons } from '@expo/vector-icons'
+
+//redux
+import {
+    savePermissionsStatus,
+    loadPermissions,
+} from '../store/permissions/actions'
+import { useDispatch } from 'react-redux'
+
+//expo camera
+import { Camera } from 'expo-camera'
+import { Audio } from 'expo-av'
 
 const MainStack = createStackNavigator()
 const Drawer = createDrawerNavigator()
@@ -59,12 +80,84 @@ const SignUpNavigation = () => {
     )
 }
 
+const DashStackShared = createSharedElementStackNavigator()
+const DashModalStack = () => {
+    return (
+        <DashStackShared.Navigator
+            mode="modal"
+            initialRouteName="DashboardScreen"
+            screenOptions={{
+                gestureResponseDistance: {
+                    vertical: 1000,
+                },
+                gestureDirection: 'vertical',
+            }}
+        >
+            <DashStackShared.Screen
+                name="DashboardScreen"
+                component={DashboardScreen}
+                options={{
+                    headerShown: false,
+                }}
+            />
+
+            <DashStackShared.Screen
+                name="GalleryView"
+                component={GalleryView}
+                options={() => ({
+                    headerShown: false,
+                    useNativeDriver: true,
+                    gestureEnabled: true,
+                    // cardStyleInterpolator: ({ current: { progress } }) => {
+                    //     return {
+                    //         cardStyle: {
+                    //             opacity: progress,
+                    //         },
+                    //     }
+                    // },
+                    cardStyle: {
+                        backgroundColor: 'transparent',
+                    },
+                })}
+                sharedElementsConfig={(route) => {
+                    const { image } = route.params
+                    return [
+                        {
+                            id: image.id,
+                            // animation: 'move',
+                            // resize: 'clip',
+                            // align: 'left-top',
+                        },
+                    ]
+                }}
+            />
+            <DashStackShared.Screen
+                name="GalleryDetailScreen"
+                component={GalleryDetailScreen}
+                options={{
+                    headerShown: false,
+                }}
+            />
+        </DashStackShared.Navigator>
+    )
+}
+
 const MainInnerNavigation = () => {
     return (
         <MainStack.Navigator>
+            {/* 
+            this used to be the dash screen before shared elements 
+            was implemented.
             <MainStack.Screen
                 name="DashboardScreen"
                 component={DashboardScreen}
+                options={{
+                    headerShown: false,
+                }}
+            /> */}
+            <MainStack.Screen
+                name="DashModalStack"
+                component={DashModalStack}
                 options={{
                     headerShown: false,
                 }}
@@ -110,7 +203,7 @@ function DrawerNav() {
             }}
             initialRouteName="DashboardScreen"
             drawerContentOptions={{
-                activeTintColor: colors.lightTint,
+                activeTintColor: colors.textColor,
                 activeBackgroundColor: colors.buttonPinkTransparent,
             }}
             detachInactiveScreens
@@ -133,7 +226,24 @@ function DrawerNav() {
     )
 }
 
-const AppNavigator = (props) => {
+const AppNavigator = () => {
+    const dispatch = useDispatch()
+    const checkPermission = useCallback(async () => {
+        const { status } = await Camera.getPermissionsAsync()
+        const audioStatus = await Audio.getPermissionsAsync()
+
+        if (status && audioStatus.status === 'granted') {
+            dispatch(loadPermissions('granted'))
+        } else if (status === 'undetermined') {
+            dispatch(loadPermissions('undetermined'))
+        } else if (status === 'denied') {
+            dispatch(loadPermissions('denied'))
+        }
+    }, [])
+    useEffect(() => {
+        checkPermission()
+    }, [dispatch])
+
     return (
         <NavigationContainer>
             <MainStack.Navigator>

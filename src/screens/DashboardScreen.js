@@ -10,6 +10,8 @@ import {
     AppState,
     Alert,
     Linking,
+    Image,
+    Platform,
 } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
@@ -22,6 +24,7 @@ import colors from '../constants/colors'
 // custom components
 import Button from '../components/Button'
 import Thumbnail from '../components/Thumbnail'
+import CustomHeaderBasic from '../components/HeaderBasic'
 
 //customHooks
 import useAppState from '../hooks/useAppState'
@@ -35,6 +38,7 @@ import { Icon } from 'react-native-elements'
 
 //expo camera
 import { Camera } from 'expo-camera'
+import { Audio } from 'expo-av'
 
 //expo qr scanner
 import { BarCodeScanner } from 'expo-barcode-scanner'
@@ -47,14 +51,21 @@ import {
     savePermissionsStatus,
     loadPermissions,
 } from '../store/permissions/actions'
+import { useDispatch, useSelector } from 'react-redux'
 
-import { useDispatch } from 'react-redux'
+//blurview
+import { BlurView } from 'expo-blur'
 
 const { height, width } = Dimensions.get('screen')
 
 const DashboardScreen = (props) => {
     const insets = useSafeAreaInsets()
 
+    let tabBarBottomPosition = insets.bottom > 0 ? insets.bottom / 2 + 2 : 10
+
+    if (tabBarBottomPosition === 10 && Platform.OS === 'android') {
+        tabBarBottomPosition = 55
+    }
     const dispatch = useDispatch()
 
     const [hasCameraPermission, setHasCameraPermission] = useState(null)
@@ -62,40 +73,39 @@ const DashboardScreen = (props) => {
 
     const [showModal, setShowModal] = useState(false)
 
-    // useEffect(() => {
-    //     dispatch(loadPermissions())
-    // }, [dispatch])
-
-    //app state
-    // const appState = useRef(AppState.currentState)
-    // const [appStateVisible, setAppStateVisible] = useState(appState.current)
+    const greenLightOnPermissions = useSelector(
+        (state) => state.permissionsReducer.permissions.camera
+    )
 
     const cameraPressedHandler = async () => {
-        const { status } = await Camera.getPermissionsAsync()
-        console.log(
-            '🚀 ~ file: DashboardScreen.js ~ line 61 ~ cameraPressedHandler ~ status',
-            status
-        )
-
-        // setHasCameraPermission(status === 'granted')
-        if (status === 'granted') {
-            dispatch(savePermissionsStatus('granted'))
+        if (greenLightOnPermissions === 'granted') {
             props.navigation.navigate('CameraScreen')
-        } else if (status === 'undetermined') {
-            const results = await Camera.requestPermissionsAsync()
-            if (results.status === 'granted') {
+        } else {
+            const { status } = await Camera.getPermissionsAsync()
+            const audioStatus = await Audio.getPermissionsAsync()
+
+            // setHasCameraPermission(status === 'granted')
+            if (status && audioStatus.status === 'granted') {
+                dispatch(loadPermissions('granted'))
                 props.navigation.navigate('CameraScreen')
-            } else if (status === 'denied') {
-                sendUserToSettingsHandler()
-                return
-            }
-        } else if (status === 'denied') {
-            const results2 = await Camera.requestPermissionsAsync()
-            if (results2.status === 'granted') {
-                props.navigation.navigate('CameraScreen')
-            } else {
-                sendUserToSettingsHandler()
-                return
+            } else if (status || audioStatus.status === 'undetermined') {
+                const results = await Camera.requestPermissionsAsync()
+                const audioResults = await Audio.requestPermissionsAsync()
+                if (results.status && audioResults.status === 'granted') {
+                    props.navigation.navigate('CameraScreen')
+                } else if (results.status || audioResults.status === 'denied') {
+                    sendUserToSettingsHandler()
+                    return
+                }
+            } else if (status || audioResults.status === 'denied') {
+                const results2 = await Camera.requestPermissionsAsync()
+                const audioResults2 = await Audio.requestPermissionsAsync()
+                if (results2.status && audioResults2 === 'granted') {
+                    props.navigation.navigate('CameraScreen')
+                } else {
+                    sendUserToSettingsHandler()
+                    return
+                }
             }
         }
     }
@@ -120,48 +130,57 @@ const DashboardScreen = (props) => {
         askForQRScannerPermissions()
     }
 
-    function galleryPressedHandler() {}
-
-    // handle checking permissions after app state change
-    const checkPermissionsAppState = useCallback(async () => {
-        const { status } = await Camera.getPermissionsAsync()
-        switch (status) {
-            case 'granted':
-                setHasCameraPermission(true)
-                console.log('Camera permission has been granted.')
-                break
-            case 'denied':
-                setHasCameraPermission(false)
-                console.log(
-                    'Camera permission has not been requested / is denied but request-able'
-                )
-                break
-            case 'undetermined':
-                setHasCameraPermission(false)
-                console.log('Camera permission is undetermined')
-                break
-        }
-    }, [])
-
-    const { appStateVisible } = useAppState(checkPermissionsAppState)
-
-    // native alert for camera settings
-    function openSettings() {
-        Linking.canOpenURL('app-settings:')
-            .then((supported) => {
-                if (!supported) {
-                    console.log("Can't handle settings url")
-                } else {
-                    return Linking.openURL('app-settings:')
-                }
-            })
-            .catch((err) => console.error('An error occurred', err))
+    function galleryPressedHandler(image) {
+        props.navigation.navigate('GalleryView', {
+            image,
+        })
     }
+
+    // // handle checking permissions after app state change
+    // const checkPermissionsAppState = useCallback(async () => {
+    //     const { status } = await Camera.getPermissionsAsync()
+    //     switch (status) {
+    //         case 'granted':
+    //             setHasCameraPermission(true)
+    //             console.log('Camera permission has been granted.')
+    //             break
+    //         case 'denied':
+    //             setHasCameraPermission(false)
+    //             console.log(
+    //                 'Camera permission has not been requested / is denied but request-able'
+    //             )
+    //             break
+    //         case 'undetermined':
+    //             setHasCameraPermission(false)
+    //             console.log('Camera permission is undetermined')
+    //             break
+    //     }
+    // }, [])
+
+    // const { appStateVisible } = useAppState(checkPermissionsAppState)
+
+    // opening app settings
+    function openSettings() {
+        Platform.OS === 'android'
+            ? Linking.openSettings()
+            : Linking.canOpenURL('app-settings:')
+                  .then((supported) => {
+                      if (!supported) {
+                          console.log("Can't handle settings url")
+                      } else {
+                          return Linking.openURL('app-settings:')
+                      }
+                  })
+                  .catch((err) => console.error('An error occurred', err))
+    }
+
     function sendUserToSettingsHandler() {
-        Alert.alert(
-            'Turn On Camera Permissions to Allow Event Share to Use Your Camera',
-            '',
-            [
+        const alertMessage =
+            'Turn On Camera Permissions to Allow Event Share to Scan QR Codes'
+        Platform.OS === 'android' ? androidAlert() : IOSAlert()
+
+        function IOSAlert() {
+            Alert.alert(alertMessage, '', [
                 {
                     text: 'Cancel',
                     style: 'cancel',
@@ -172,14 +191,31 @@ const DashboardScreen = (props) => {
                         openSettings()
                     },
                 },
-            ]
-        )
+            ])
+        }
+        function androidAlert() {
+            Alert.alert('', alertMessage, [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Settings',
+                    onPress: () => {
+                        openSettings()
+                    },
+                },
+            ])
+        }
     }
 
     return (
         <View style={styles.screen}>
             <LinearGradient
-                colors={['rgba(255, 237, 187, 1)', 'rgba(150, 227, 255, 1)']}
+                // colors={['rgba(255, 237, 187, 1)', 'rgba(150, 227, 255, 1)']}
+                // colors={['rgba(252,140,250,1)', 'rgba(255, 237, 187, 1)']}
+                // colors={['rgba(252,140,250,1)', colors.lightTint]}
+                colors={['rgba(252,140,250,1)', colors.blue]}
                 style={{ flex: 1 }}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
@@ -187,35 +223,19 @@ const DashboardScreen = (props) => {
                 <View
                     style={{
                         paddingTop: insets.top,
-                        paddingBottom: insets.bottom,
+                        // paddingBottom: insets.bottom,
                         flex: 1,
                     }}
                 >
-                    <View style={styles.xCont}>
-                        <TouchableOpacity
-                            onPress={() => {
-                                props.navigation.toggleDrawer()
-                            }}
-                        >
-                            <Ionicons
-                                name="menu-outline"
-                                size={35}
-                                color={colors.buttonPurple}
-                            />
-                        </TouchableOpacity>
+                    <CustomHeaderBasic
+                        iconName="menu-outline"
+                        goBack={() => {
+                            props.navigation.toggleDrawer()
+                        }}
+                        header="Gallery"
+                        headerColor={{ color: colors.textColor }}
+                    />
 
-                        {/* <TouchableOpacity
-                            onPress={() => {
-                                props.navigation.toggleDrawer()
-                            }}
-                        >
-                            <Ionicons
-                                name="person"
-                                size={26}
-                                color={colors.buttonPurple}
-                            />
-                        </TouchableOpacity> */}
-                    </View>
                     <FlatList
                         style={styles.flatList}
                         data={images}
@@ -226,9 +246,9 @@ const DashboardScreen = (props) => {
                                     <View style={{ height: 10 }}></View>
                                     <Thumbnail
                                         images={item.item}
-                                        galleryPressedHandler={
-                                            galleryPressedHandler
-                                        }
+                                        galleryPressedHandler={() => {
+                                            galleryPressedHandler(item.item)
+                                        }}
                                     />
                                 </View>
                             )
@@ -238,20 +258,26 @@ const DashboardScreen = (props) => {
                         columnWrapperStyle={{
                             marginLeft: 10,
                         }}
-                        // contentStyle={{ paddingBottom: 50 }}
+                        contentContainerStyle={{
+                            paddingBottom: tabBarBottomPosition + 60,
+                        }}
                     />
                     <View
                         style={{
-                            ...styles.tabBar,
-                            width: width - 26,
+                            ...styles.tabBarShadow,
+                            width: width - 20,
+                            bottom: tabBarBottomPosition,
                         }}
                     >
                         <LinearGradient
                             colors={[
-                                'rgba(252,140,250,1)',
-                                'rgba(155,97,234,1)',
+                                'rgba(247, 37, 133, 1)',
+                                'rgba(171,67,239,1)',
+                                'rgba(76, 201, 240, 1)',
                             ]}
-                            style={styles.tabBarGradient}
+                            style={{ flex: 1, borderRadius: 15 }}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
                         >
                             <TouchableWithoutFeedback
                                 onPress={() => {
@@ -269,12 +295,13 @@ const DashboardScreen = (props) => {
                             </TouchableWithoutFeedback>
 
                             <Ionicons
-                                name="camera"
-                                color="white"
-                                size={22}
+                                name="camera-outline"
+                                // color={colors.mediumTint}
+                                color={colors.textColor}
+                                size={29}
                                 style={{
                                     position: 'absolute',
-                                    top: 14.5,
+                                    top: 10,
                                     right: (width - 26) / 6,
                                 }}
                                 onPress={cameraPressedHandler}
@@ -282,11 +309,12 @@ const DashboardScreen = (props) => {
 
                             <Ionicons
                                 name="search-outline"
-                                size={22}
-                                color="white"
+                                size={28}
+                                // color={colors.mediumTint}
+                                color={colors.textColor}
                                 style={{
                                     position: 'absolute',
-                                    top: 14.5,
+                                    top: 11,
                                     left: (width - 26) / 6,
                                 }}
                             />
@@ -295,7 +323,8 @@ const DashboardScreen = (props) => {
                     <View
                         style={{
                             ...styles.floatingPlusCont,
-                            left: width / 2 - 30,
+                            left: width / 2 - 40,
+                            bottom: tabBarBottomPosition,
                         }}
                     >
                         <TouchableOpacity
@@ -305,23 +334,37 @@ const DashboardScreen = (props) => {
                             }}
                         >
                             <View style={styles.bigPlusButton}>
-                                <Icon
-                                    name="plus"
-                                    type="material-community"
-                                    size={38}
-                                    color={colors.buttonPurple}
-                                />
+                                <LinearGradient
+                                    colors={[
+                                        // 'rgba(255, 237, 187, 1)',
+                                        // 'rgba(150, 227, 255, 1)',
+                                        colors.lightTint,
+                                        colors.lightTint,
+                                        // colors.buttonPink,
+                                    ]}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 0 }}
+                                    style={styles.bigPlusButton}
+                                >
+                                    <Icon
+                                        name="plus"
+                                        type="material-community"
+                                        size={38}
+                                        color={colors.textColor}
+                                    />
+                                </LinearGradient>
                             </View>
                         </TouchableOpacity>
                     </View>
                 </View>
             </LinearGradient>
+
             <Modal visible={showModal} transparent animationType="slide">
                 <View style={styles.modal}>
                     <View>
                         <View style={styles.modalActions}>
                             <Button
-                                text="Join Event"
+                                text="Join Gallery"
                                 style={styles.innerButton}
                                 onPress={joinEventHandler}
                             ></Button>
@@ -368,7 +411,6 @@ const styles = StyleSheet.create({
     },
     flatList: {
         flex: 1,
-        paddingBottom: 50,
     },
     modalActions: {
         width: '80%',
@@ -397,14 +439,20 @@ const styles = StyleSheet.create({
     },
     tabBar: {
         height: 50,
-        backgroundColor: 'rgba(255, 227, 255, 1)',
+        // backgroundColor: 'rgba(255, 227, 255, 1)',
         justifyContent: 'space-evenly',
         flexDirection: 'row',
         borderRadius: 15,
-        marginHorizontal: 13,
+        marginHorizontal: 10,
         position: 'absolute',
-        bottom: 22,
         alignItems: 'center',
+        overflow: 'hidden',
+    },
+    tabBarImage: {
+        height: 50,
+        borderRadius: 15,
+        marginHorizontal: 10,
+        position: 'absolute',
     },
     tabBarGradient: {
         flex: 1,
@@ -425,12 +473,27 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 10,
     },
-
-    bigPlusButton: {
+    tabBarShadow: {
+        position: 'absolute',
+        height: 50,
         backgroundColor: 'white',
-        width: 60,
-        height: 60,
-        borderRadius: 30,
+        flexDirection: 'row',
+        borderRadius: 15,
+        marginHorizontal: 10,
+        shadowColor: 'black',
+        shadowRadius: 3,
+        shadowOpacity: 0.3,
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        elevation: 5,
+    },
+    bigPlusButton: {
+        backgroundColor: colors.mediumTint,
+        width: 80,
+        height: 80,
+        borderRadius: 40,
         alignItems: 'center',
         justifyContent: 'center',
         shadowColor: 'black',
@@ -442,19 +505,17 @@ const styles = StyleSheet.create({
         },
     },
     floatingPlusCont: {
-        bottom: 23,
         position: 'absolute',
-        width: 60,
-        height: 60,
-        borderRadius: 30,
+        width: 80,
+        height: 80,
+        borderRadius: 40,
         // overflow: Platform.OS === 'android' ? 'hidden' : 'visible',
         elevation: 10,
     },
     floatingTouchable: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        bottom: 2,
+        width: 80,
+        height: 80,
+        borderRadius: 40,
         borderWidth: 2,
         borderColor: 'black',
         backgroundColor: 'red',

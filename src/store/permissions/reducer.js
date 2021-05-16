@@ -1,4 +1,4 @@
-import { SAVE_PERMISSION_STATUS, SET_PERMISSIONS } from './actions'
+import { SAVE_PERMISSION_STATUS, LOAD_PERMISSIONS } from './actions'
 
 const initialState = {
     permissions: {
@@ -6,7 +6,7 @@ const initialState = {
     },
 }
 
-const signupReducer = (state = initialState, action) => {
+const permissionsReducer = (state = initialState, action) => {
     switch (action.type) {
         case SAVE_PERMISSION_STATUS: {
             console.log(action.status)
@@ -18,7 +18,7 @@ const signupReducer = (state = initialState, action) => {
                 },
             }
         }
-        case SET_PERMISSIONS: {
+        case LOAD_PERMISSIONS: {
             console.log(action.permissions)
             return {
                 ...state,
@@ -33,4 +33,4 @@ const signupReducer = (state = initialState, action) => {
     }
 }
 
-export default signupReducer
+export default permissionsReducer

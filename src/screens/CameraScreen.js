@@ -7,11 +7,15 @@ import {
     Modal,
     ImageBackground,
     Animated,
+    StatusBar,
 } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
 //expo camera
 import { Camera } from 'expo-camera'
+
+//expo AV
+import { Video, AVPlaybackStatus } from 'expo-av'
 
 //custom components
 import HeaderX from '../components/HeaderX'
@@ -53,11 +57,74 @@ import Reanimated, {
     runOnUI,
 } from 'react-native-reanimated'
 
-const { height, width } = Dimensions.get('screen')
+//nav 5
+import { useFocusEffect } from '@react-navigation/native'
+
+const { height, width } = Dimensions.get('window')
 
 const CameraScreen = (props) => {
+    // RATIO SETTER
+    const [imagePadding, setImagePadding] = useState(0)
+    const [ratio, setRatio] = useState('4:3') // default is 4:3
+    const screenRatio = height / width
+    const [isRatioSet, setIsRatioSet] = useState(false)
+    async function prepareRatio() {
+        let desiredRatio = '4:3' // Start with the system default
+        // This issue only affects Android
+        if (Platform.OS === 'android') {
+            const ratios = await cameraRef.current.getSupportedRatiosAsync()
+            let distances = {}
+            let realRatios = {}
+            let minDistance = null
+            for (const ratio of ratios) {
+                const parts = ratio.split(':')
+                const realRatio = parseInt(parts[0]) / parseInt(parts[1])
+                realRatios[ratio] = realRatio
+                // ratio can't be taller than screen, so we don't want an abs()
+                const distance = screenRatio - realRatio
+                distances[ratio] = realRatio
+                if (minDistance == null) {
+                    minDistance = ratio
+                } else {
+                    if (distance >= 0 && distance < distances[minDistance]) {
+                        minDistance = ratio
+                    }
+                }
+            }
+            // set the best match
+            desiredRatio = minDistance
+
+            //  calculate the difference between the camera width and the screen height
+            const remainder = Math.floor(
+                (height - realRatios[desiredRatio] * width) / 2
+            )
+            // set the preview padding and preview ratio
+            setImagePadding(remainder / 2)
+            setRatio(desiredRatio)
+            // Set a flag so we don't do this
+            // calculation each time the screen refreshes
+            setIsRatioSet(true)
+        }
+    }
+
+    const setCameraReady = async () => {
+        if (!isRatioSet) {
+            await prepareRatio()
+        }
+    }
+    // RATIO SETTER
+
     const [type, setType] = useState(Camera.Constants.Type.back)
+    const [activateCamera, setActivateCamera] = useState(false)
+    const [video, setVideo] = useState('')
+    const [showVideoModal, setShowVideoModal] = useState(false)
     const insets = useSafeAreaInsets()
+
+    useFocusEffect(() => {
+        if (props.navigation.isFocused()) {
+            setActivateCamera(true)
+        }
+    })
 
     const [pic, setPic] = useState(null)
 
@@ -192,72 +259,109 @@ const CameraScreen = (props) => {
         },
     })
 
+    // VIDEO RECORDING
+    async function beginRecording() {
+        console.log('started')
+        let video = await cameraRef.current.recordAsync()
+        setVideo(video)
+        // setPic(photo.uri)
+        // dispatch(takePicture(photo.uri))
+    }
+
+    async function endRecording() {
+        console.log('ended')
+        cameraRef.current.stopRecording()
+        setShowVideoModal(true)
+    }
+
     return (
         <View style={styles.container}>
             <PinchGestureHandler onGestureEvent={onPinchGesture}>
                 <Reanimated.View style={StyleSheet.absoluteFill}>
-                    <Camera
-                        style={{
-                            flex: 1,
-                        }}
-                        ref={cameraRef}
-                        type={type}
-                        flashMode={flashMode}
-                        zoom={zooming}
-                    >
-                        <View
-                            style={[
-                                styles.contentContainer,
-                                {
-                                    paddingTop: insets.top,
-                                    paddingBottom: insets.bottom,
-                                    top: insets.top,
-                                    bottom: insets.bottom,
-                                },
-                            ]}
+                    {activateCamera && (
+                        <Camera
+                            style={{
+                                // marginTop: imagePadding,
+                                // marginBottom: imagePadding,
+                                flex: 1,
+                            }}
+                            ref={cameraRef}
+                            type={type}
+                            flashMode={flashMode}
+                            zoom={zooming}
+                            onCameraReady={setCameraReady}
+                            ratio={ratio}
+                            maxDuration={10000}
                         >
-                            <View style={styles.topLeftCont}>
-                                <TouchableOpacity onPress={flipCameraHandler}>
-                                    <Entypo
-                                        name="loop"
-                                        size={27}
-                                        color="white"
-                                        style={styles.flipIcon}
-                                    />
-                                </TouchableOpacity>
-
-                                <TouchableOpacity onPress={flashSwitchHandler}>
-                                    <Ionicons
-                                        name={
-                                            flashMode !== 'off'
-                                                ? 'flash'
-                                                : 'flash-off'
-                                        }
-                                        size={27}
-                                        color="white"
-                                        style={styles.cameraSettingsButton}
-                                    />
-                                </TouchableOpacity>
-                            </View>
                             <View
-                                style={{
-                                    ...styles.floatingPlusCont,
-                                    left: width / 2 - 40,
-                                }}
+                                style={[
+                                    styles.contentContainer,
+                                    {
+                                        paddingTop: insets.top,
+                                        paddingBottom: insets.bottom,
+                                        top: insets.top,
+                                        bottom: insets.bottom,
+                                    },
+                                ]}
                             >
-                                <TouchableOpacity
-                                    activeOpacity={0.9}
-                                    onPress={takePictureHandler}
+                                <View style={styles.topLeftCont}>
+                                    <TouchableOpacity
+                                        onPress={flipCameraHandler}
+                                    >
+                                        <Entypo
+                                            name="loop"
+                                            size={27}
+                                            color="white"
+                                            style={styles.flipIcon}
+                                        />
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        onPress={flashSwitchHandler}
+                                    >
+                                        <Ionicons
+                                            name={
+                                                flashMode !== 'off'
+                                                    ? 'flash'
+                                                    : 'flash-off'
+                                            }
+                                            size={27}
+                                            color="white"
+                                            style={styles.cameraSettingsButton}
+                                        />
+                                    </TouchableOpacity>
+                                </View>
+                                <View
+                                    style={{
+                                        ...styles.floatingPlusCont,
+                                        left: width / 2 - 40,
+                                    }}
                                 >
-                                    <View style={styles.bigPlusButton}></View>
-                                </TouchableOpacity>
+                                    <TouchableOpacity
+                                        activeOpacity={0.9}
+                                        onPress={takePictureHandler}
+                                        onLongPress={beginRecording}
+                                        delayPressOut={1000}
+                                        delayLongPress={900}
+                                        onPressOut={endRecording}
+                                    >
+                                        <View
+                                            style={styles.bigPlusButton}
+                                        ></View>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
-                        </View>
-                    </Camera>
+                        </Camera>
+                    )}
                 </Reanimated.View>
             </PinchGestureHandler>
 
-            <Modal visible={showModal} transparent animationType="none">
+            <Modal
+                visible={showModal}
+                transparent
+                animationType="none"
+                statusBarTranslucent
+            >
                 <View style={styles.modal}>
                     <ImageBackground
                         source={{ uri: pic }}
@@ -298,6 +402,36 @@ const CameraScreen = (props) => {
                             </View>
                         </View>
                     </ImageBackground>
+                </View>
+            </Modal>
+
+            <Modal visible={showVideoModal}>
+                <View style={styles.modal}>
+                    <Video
+                        // ref={video}
+                        style={[
+                            StyleSheet.absoluteFill,
+                            {
+                                backgroundColor: 'black',
+                            },
+                        ]}
+                        source={{
+                            uri: video.uri,
+                        }}
+                        resizeMode="contain"
+                        isLooping
+                        shouldPlay={true}
+                        // onPlaybackStatusUpdate={(status) =>
+                        //     setStatus(() => status)
+                        // }
+                    />
+                    <View style={{ height: 80 }}></View>
+                    <HeaderX
+                        color="white"
+                        goBack={() => {
+                            setShowVideoModal(false)
+                        }}
+                    />
                 </View>
             </Modal>
         </View>
@@ -344,6 +478,11 @@ const styles = StyleSheet.create({
     cameraSettingsButton: { marginVertical: 7 },
     modal: {
         flex: 1,
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        left: 0,
+        bottom: 0,
     },
     takenImage: { flex: 1 },
     bottomCont: {
@@ -366,15 +505,14 @@ const styles = StyleSheet.create({
         borderRadius: 40,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: 'black',
-        shadowRadius: 6,
-        shadowOpacity: 0.1,
-        // backgroundColor: 'white',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        elevation: 5,
+        // shadowColor: 'black',
+        // shadowRadius: 6,
+        // shadowOpacity: 0.1,
+        // shadowOffset: {
+        //     width: 0,
+        //     height: 2,
+        // },
+        // elevation: 5,
     },
     floatingPlusCont: {
         bottom: 23,

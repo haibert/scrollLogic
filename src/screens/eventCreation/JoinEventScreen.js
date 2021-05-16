@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react'
+import React, { useState } from 'react'
 import {
     View,
     Text,
@@ -7,7 +7,7 @@ import {
     Dimensions,
     Alert,
     Linking,
-    AppState,
+    Platform,
 } from 'react-native'
 import {
     TouchableOpacity,
@@ -22,6 +22,7 @@ import Button from '../../components/Button'
 import CustomInput from '../../components/CustomInput'
 import Card from '../../components/Card'
 import SafeAreaComp from '../../components/SafeAreaComp'
+import GridComponent from '../../components/GridComponent'
 
 //customHooks
 import useAppState from '../../hooks/useAppState'
@@ -32,6 +33,7 @@ import { BarCodeScanner } from 'expo-barcode-scanner'
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+//blurview
 import { BlurView } from 'expo-blur'
 
 //constants
@@ -46,12 +48,28 @@ const { width, height } = Dimensions.get('window')
 import { Ionicons } from '@expo/vector-icons'
 import { Icon } from 'react-native-elements'
 
+//nav 5
+import { useFocusEffect } from '@react-navigation/native'
+
 const JoinEventScreen = ({ route, navigation }) => {
     const insets = useSafeAreaInsets()
+    const [activateCamera, setActivateCamera] = useState()
+    // const [isAndroid, setIsAndroid] = useState()
+    let isAndroid = false
+
+    if (Platform.OS === 'android') {
+        isAndroid = true
+    }
 
     const [hasPermission, setHasPermission] = useState(
         route.params.permission === 'granted' ? true : false
     )
+
+    useFocusEffect(() => {
+        if (navigation.isFocused()) {
+            setActivateCamera(true)
+        }
+    })
 
     const [scanned, setScanned] = useState(false)
 
@@ -63,45 +81,50 @@ const JoinEventScreen = ({ route, navigation }) => {
         alert(`Bar code with type ${type} and data ${data} has been scanned!`)
     }
 
-    // handle checking permissions after app state change
-    const checkPermissionsAppState = useCallback(async () => {
-        const { status } = await Camera.getPermissionsAsync()
-        switch (status) {
-            case 'granted':
-                setHasPermission(true)
-                break
-            case 'denied':
-                setHasPermission(false)
-                console.log(
-                    'The permission has not been requested / is denied but requestable'
-                )
-                break
-            case 'undetermined':
-                setHasPermission(false)
-                console.log('The permission is undetermined')
-                break
-        }
-    }, [])
+    // // handle checking permissions after app state change
+    // const checkPermissionsAppState = useCallback(async () => {
+    //     const { status } = await Camera.getPermissionsAsync()
+    //     switch (status) {
+    //         case 'granted':
+    //             setHasPermission(true)
+    //             break
+    //         case 'denied':
+    //             setHasPermission(false)
+    //             console.log(
+    //                 'The permission has not been requested / is denied but requestable'
+    //             )
+    //             break
+    //         case 'undetermined':
+    //             setHasPermission(false)
+    //             console.log('The permission is undetermined')
+    //             break
+    //     }
+    // }, [])
 
-    const { appStateVisible } = useAppState(checkPermissionsAppState)
+    // const { appStateVisible } = useAppState(checkPermissionsAppState)
 
     // opening app settings
     function openSettings() {
-        Linking.canOpenURL('app-settings:')
-            .then((supported) => {
-                if (!supported) {
-                    console.log("Can't handle settings url")
-                } else {
-                    return Linking.openURL('app-settings:')
-                }
-            })
-            .catch((err) => console.error('An error occurred', err))
+        Platform.OS === 'android'
+            ? Linking.openSettings()
+            : Linking.canOpenURL('app-settings:')
+                  .then((supported) => {
+                      if (!supported) {
+                          console.log("Can't handle settings url")
+                      } else {
+                          return Linking.openURL('app-settings:')
+                      }
+                  })
+                  .catch((err) => console.error('An error occurred', err))
     }
+
     function sendUserToSettingsHandler() {
-        Alert.alert(
-            'Turn On Camera Permissions to Allow Event Share to Scan QR Codes',
-            '',
-            [
+        const alertMessage =
+            'Turn On Camera Permissions to Allow Event Share to Scan QR Codes'
+        Platform.OS === 'android' ? androidAlert() : IOSAlert()
+
+        function IOSAlert() {
+            Alert.alert(alertMessage, '', [
                 {
                     text: 'Cancel',
                     style: 'cancel',
@@ -112,8 +135,22 @@ const JoinEventScreen = ({ route, navigation }) => {
                         openSettings()
                     },
                 },
-            ]
-        )
+            ])
+        }
+        function androidAlert() {
+            Alert.alert('', alertMessage, [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Settings',
+                    onPress: () => {
+                        openSettings()
+                    },
+                },
+            ])
+        }
     }
 
     const ModalComponent = (props) => {
@@ -135,6 +172,8 @@ const JoinEventScreen = ({ route, navigation }) => {
                                     <CustomInput
                                         placeholder="Enter Code"
                                         autoFocus={true}
+                                        keyboardAppearance="dark"
+                                        keyboardType="numeric"
                                     />
                                     <Button
                                         text="Join Event"
@@ -158,6 +197,8 @@ const JoinEventScreen = ({ route, navigation }) => {
                     goBack={() => {
                         props.navigation.goBack()
                     }}
+                    header="Join Gallery"
+                    iconName="chevron-back-outline"
                 />
                 <View
                     style={{ alignSelf: 'center', flex: 1, paddingTop: '10%' }}
@@ -188,53 +229,9 @@ const JoinEventScreen = ({ route, navigation }) => {
                     </TouchableOpacity>
                 </View>
                 <ModalComponent showModal={showModal} />
-                {/* <Modal visible={showSettingsModal} transparent>
-                    <View
-                        style={{
-                            flex: 1,
-                            backgroundColor: 'transparent',
-                        }}
-                        animationType="fade"
-                    >
-                        <SafeAreaComp style={styles.safeComp}>
-                            <Card style={{ padding: 10, width: '80%' }}>
-                                <Text style={styles.permissionsText}>
-                                    Turn On Camera Permissions to Allow "Event
-                                    Share" to Scan QR Codes.
-                                </Text>
-                                <View style={styles.permissionsActions}>
-                                    <TouchableOpacity
-                                        style={styles.permissionsTouchable}
-                                    >
-                                        <Text>Settings</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={styles.permissionsTouchable}
-                                    >
-                                        <Text>Cancel</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </Card>
-                        </SafeAreaComp>
-                    </View>
-                </Modal> */}
             </ScreenWrapper>
         )
     }
-
-    // const NoPermissionContent = () => {
-    //     return (
-    //         <ScreenWrapper style={styles.screen}>
-    //             <View style={styles.noPermissionContent}>
-    //                 <TouchableOpacity onPress={manuallyAskForPermissions}>
-    //                     <Text style={styles.noPermissionText}>
-    //                         Need Camera Permission
-    //                     </Text>
-    //                 </TouchableOpacity>
-    //             </View>
-    //         </ScreenWrapper>
-    //     )
-    // }
 
     const ScannerComponent = (props) => {
         return (
@@ -248,47 +245,40 @@ const JoinEventScreen = ({ route, navigation }) => {
                         }
                         style={styles.scanner}
                     >
-                        {
-                            <View
-                                style={{
-                                    paddingTop: insets.top,
-                                    paddingBottom: insets.bottom,
-                                    flex: 1,
+                        <View
+                            style={{
+                                paddingTop: insets.top,
+                                paddingBottom: insets.bottom,
+                                flex: 1,
+                            }}
+                        >
+                            {isAndroid && <View style={{ height: 30 }}></View>}
+                            <HeaderBasic
+                                goBack={() => {
+                                    navigation.goBack()
                                 }}
-                            >
-                                <HeaderBasic
-                                    goBack={() => {
-                                        navigation.goBack()
-                                    }}
-                                />
+                                header=" Scan to Join"
+                                iconName="chevron-back-outline"
+                            />
+                            <View style={styles.outerScreenCont}>
+                                <GridComponent>
+                                    <Ionicons
+                                        name="qr-code-outline"
+                                        size={60}
+                                        color="rgba(255, 255, 255,0.7)"
+                                    />
+                                </GridComponent>
 
-                                <View
-                                    style={{
-                                        marginTop: 30,
-                                        borderWidth: 1,
-                                        borderColor: 'white',
-                                        marginHorizontal: 10,
-                                        marginBottom: 10,
-                                    }}
-                                >
-                                    <View
-                                        style={{
-                                            minWidth: width - 50,
-                                            minHeight: width - 50,
-                                        }}
-                                    ></View>
-                                </View>
                                 <View style={styles.bottomCont}>
-                                    {/* <CustomInput
-                                        viewStyle={styles.inputView}
-                                        textStyle={styles.inputText}
-                                        placeholder="Event Event Code"
-                                    /> */}
                                     <Button
                                         text="Enter Manually"
                                         style={styles.button}
                                         onPress={() => setShowModal(true)}
+                                        iconName="keypad-outline"
                                     />
+                                    {isAndroid && (
+                                        <View style={{ height: 30 }}></View>
+                                    )}
                                 </View>
                                 {scanned && (
                                     <Button
@@ -297,7 +287,7 @@ const JoinEventScreen = ({ route, navigation }) => {
                                     />
                                 )}
                             </View>
-                        }
+                        </View>
                     </BarCodeScanner>
                 )}
                 <ModalComponent showModal={showModal} />
@@ -309,7 +299,6 @@ const JoinEventScreen = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
     screen: {
-        // alignItems: 'center',
         flex: 1,
     },
     forkButton: {
@@ -330,6 +319,7 @@ const styles = StyleSheet.create({
     },
     scanner: {
         flex: 1,
+        backgroundColor: 'black',
     },
     blurView: {
         flex: 1,
@@ -337,6 +327,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 20,
         paddingTop: 50,
+    },
+    outerScreenCont: {
+        flex: 1,
+        alignItems: 'center',
     },
     noPermissionContent: {
         flex: 1,
@@ -373,15 +367,15 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'flex-end',
-        paddingBottom: 50,
+        paddingBottom: 30,
     },
     inputView: {
         height: 50,
         width: '80%',
     },
     button: {
-        width: '80%',
-        marginTop: 10,
+        width: '90%',
+        // marginTop: 10,
     },
     modal: {
         flex: 1,

@@ -19,6 +19,7 @@ const CustomInput = (props) => {
                     onChangeText={props.onChangeText}
                     value={props.value}
                     autoFocus={props.autoFocus}
+                    keyboardAppearance={props.keyboardAppearance}
                 ></TextInput>
             </View>
         </View>

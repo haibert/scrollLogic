@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useCallback, useState } from 'react'
 import {
     View,
     Text,
@@ -6,7 +6,8 @@ import {
     Dimensions,
     Platform,
     Keyboard,
-    Modal,
+    Image,
+    SafeAreaView,
 } from 'react-native'
 
 import {
@@ -27,7 +28,14 @@ import Button from '../components/Button'
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-const { height } = Dimensions.get('screen')
+//ionicons
+import { Ionicons } from '@expo/vector-icons'
+import { Icon } from 'react-native-elements'
+
+//blurview
+import { BlurView } from 'expo-blur'
+
+const { height, width } = Dimensions.get('screen')
 
 function hideKeyboard() {
     Keyboard.dismiss()
@@ -44,11 +52,91 @@ const LoginScreen = (props) => {
     return (
         <View style={styles.screen}>
             <LinearGradient
-                colors={['rgba(255, 237, 187, 1)', 'rgba(150, 227, 255, 1)']}
+                // colors={[
+                //     'rgba(255, 237, 187, 1)',
+                //     'rgba(255, 237, 187, 1)',
+                //     'rgba(255, 237, 187, 1)',
+                //     'rgba(150, 227, 255, 1)',
+                //     'rgba(150, 227, 255, 1)',
+                // ]}
+                // colors={[
+                //     'rgba(255, 237, 187, 1)',
+                //     'rgba(255, 237, 187, 1)',
+                //     'rgba(255, 237, 187, 1)',
+                //     colors.buttonPurple,
+                // ]}
+                // colors={[
+                //     'rgba(150, 227, 255, 1)',
+                //     'rgba(150, 227, 255, 1)',
+                //     // colors.buttonPurple,
+                // ]}
+                // colors={[
+                //     'rgba(150, 227, 255, 1)',
+                //     'rgba(150, 227, 255, 1)',
+                //     'rgba(150, 227, 255, 1)',
+                //     colors.blue2,
+                //     colors.blue3,
+                // ]}
+                // colors={[
+                //     'rgba(252,140,250,1)',
+                //     'rgba(252,140,250,1)',
+                //     'rgba(255, 237, 187, 1)',
+                // ]}
+                colors={[
+                    'rgba(252,140,250,1)',
+                    'rgba(252,140,250,1)',
+                    colors.lightTint,
+                ]}
                 style={{ flex: 1 }}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
+                // start={{ x: 0.1, y: 0.3 }}
+                // end={{ x: 0.1, y: 0.2 }}
             >
+                <Image
+                    source={require('../../assets/A.png')}
+                    // source={require('../../assets/B.png')}
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: 300,
+                        width: width,
+                    }}
+                    resizeMode="stretch"
+                />
+                <BlurView
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: 300,
+                        width: width,
+                    }}
+                    intensity={30}
+                ></BlurView>
+                <LinearGradient
+                    colors={['rgba(255,255,255,0)', 'rgba(252,140,250,1)']}
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: 300,
+                        width: width,
+                        alignItems: 'center',
+                    }}
+                    // start={{ x: 0, y: 0 }}
+                    // end={{ x: 1, y: 0 }}
+                >
+                    <Ionicons
+                        name="images-outline"
+                        size={65}
+                        color="white"
+                        // color={colors.mediumTint}
+                        style={{ marginTop: '20%' }}
+                    />
+                </LinearGradient>
                 <TouchableWithoutFeedback
                     style={styles.screen}
                     onPress={hideKeyboard}
@@ -63,7 +151,9 @@ const LoginScreen = (props) => {
                             <TextInput
                                 style={styles.input}
                                 placeholder="Username"
-                                placeholderTextColor={colors.placeHolder}
+                                placeholderTextColor={colors.yellow}
+                                placeholderTextColor="white"
+                                // placeholderTextColor={colors.evenLighterTint}
                                 selectionColor={colors.lightTint}
                                 underlineColorAndroid="rgba(255,255,255,0)"
                                 maxFontSizeMultiplier={
@@ -73,7 +163,9 @@ const LoginScreen = (props) => {
                             <TextInput
                                 style={styles.input}
                                 placeholder="Password"
-                                placeholderTextColor={colors.placeHolder}
+                                placeholderTextColor={colors.yellow}
+                                placeholderTextColor="white"
+                                // placeholderTextColor={colors.evenLighterTint}
                                 selectionColor={colors.lightTint}
                                 underlineColorAndroid="rgba(255,255,255,0)"
                                 maxFontSizeMultiplier={
@@ -157,13 +249,15 @@ const styles = StyleSheet.create({
         maxHeight: '60%',
         alignItems: 'center',
         justifyContent: 'center',
+        paddingTop: '30%',
     },
     input: {
         height: 50,
         width: '80%',
-        borderBottomColor: '#e896be',
+        // borderBottomColor: colors.evenLighterTint,
+        borderBottomColor: 'white',
         borderBottomWidth: 1,
-        color: colors.textColor,
+        color: colors.mediumTint,
         fontSize: 17,
     },
     button: {
