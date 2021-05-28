@@ -22,21 +22,19 @@ const ThumbnailSmall = ({ images, picturePressedHandler }) => {
         TouchableCmp = TouchableNativeFeedback
     }
     return (
-        <View>
-            <TouchableCmp onPress={picturePressedHandler}>
-                {/* <SharedElement id={item.id} style={{ opacity }}> */}
-                <Image
-                    style={{
-                        width: width / 3,
-                        height: width / 3,
-                    }}
-                    resizeMode="cover"
-                    source={images.picture}
-                    // onLayout={() => {}}
-                />
-                {/* </SharedElement> */}
-            </TouchableCmp>
-        </View>
+        <TouchableCmp onPress={picturePressedHandler}>
+            {/* <SharedElement id={item.id} style={{ opacity }}> */}
+            <Image
+                style={{
+                    width: width / 3,
+                    height: width / 3,
+                }}
+                resizeMode="cover"
+                source={images.picture}
+                // onLayout={() => {}}
+            />
+            {/* </SharedElement> */}
+        </TouchableCmp>
     )
 }
 

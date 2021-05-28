@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback, useEffect, useState, useMemo } from 'react'
 import {
     View,
     Text,
@@ -8,6 +8,7 @@ import {
     TextInput,
     TouchableWithoutFeedback,
     Keyboard,
+    Share,
 } from 'react-native'
 
 //safe area
@@ -22,100 +23,112 @@ import { LinearGradient } from 'expo-linear-gradient'
 //colors
 import colors from '../../constants/colors'
 import Button from '../../components/Button'
+import ScreenWrapper from '../../components/ScreenWrapper'
+import CustomHeaderBasic from '../../components/HeaderBasic'
 
 //qr code
 import QRCode from 'react-native-qrcode-svg'
-import { color } from 'react-native-reanimated'
+
+// async storage
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const { height, width } = Dimensions.get('screen')
 
-const QrCodeScreen = (props) => {
-    const insets = useSafeAreaInsets()
+const QrCodeScreen = ({ navigation, route }) => {
+    const qrWidth = useMemo(() => width * 0.75)
+    const [qrCode, setQrCode] = useState()
+    const getData = useCallback(async () => {
+        try {
+            const value = await AsyncStorage.getItem('userID')
+            if (value !== null) {
+                return value
+            }
+        } catch (e) {
+            return Math.random().toFixed(3) * 1000
+        }
+    }, [])
 
-    function hideKeyboard() {
-        Keyboard.dismiss()
-    }
+    const { qrCodePortion } = route.params
 
-    const randomNumber = (
-        Math.random().toFixed(5) * 100000 +
-        Math.random().toFixed(3) * 1000 +
-        Math.random().toFixed(3) * 1000
-    ).toString()
+    const getQrCode = useCallback(async () => {
+        const qrCode = (await getData()) + qrCodePortion
+        setQrCode(qrCode)
+    }, [])
+
+    useEffect(() => {
+        getQrCode()
+    }, [])
+
+    console.log('rendered Qr code screen')
+    // const randomNumber = (
+    //     Math.random().toFixed(5) * 100000 +
+    //     Math.random().toFixed(3) * 1000 +
+    //     Math.random().toFixed(3) * 1000
+    // ).toString()
 
     // let base64Logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAA..';
     return (
-        <View style={styles.screen}>
-            <LinearGradient
-                colors={['rgba(255, 237, 187, 1)', 'rgba(150, 227, 255, 1)']}
-                colors={['rgba(252,140,250,1)', colors.evenLighterTint]}
-                style={{ flex: 1 }}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-            >
-                <View
-                    style={{
-                        paddingTop: insets.top,
-                        paddingBottom: insets.bottom,
-                        flex: 1,
-                    }}
+        <ScreenWrapper>
+            <CustomHeaderBasic
+                // iconName="chevron-back-outline"
+                goBack={() => {
+                    navigation.goBack()
+                }}
+            />
+            <View style={styles.outerCont}>
+                <Text
+                    style={styles.title}
+                    maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
                 >
-                    <View style={styles.xCont}>
-                        <TouchableOpacity
-                            onPress={() => {
-                                props.navigation.goBack()
-                            }}
-                        >
-                            <Ionicons
-                                name="chevron-back-outline"
-                                size={40}
-                                color={colors.mediumTint}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <View style={styles.titleCont}>
-                        <Text
-                            style={styles.title}
-                            maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
-                        >
-                            Share Event With QR Code
-                        </Text>
-                        <Text
-                            style={styles.underTitle}
-                            maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
-                        >
-                            You can share the code bellow with others. You may
-                            also have the code printed on a large poster and
-                            displayed at your event so others can easily join
-                            and upload their pictures.
-                        </Text>
-                        <Text
-                            style={styles.underTitle}
-                            maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
-                        >
-                            To have this done for you and shipped click here.
-                        </Text>
-                    </View>
-                    <View style={styles.bottomCont}>
-                        <View style={{ marginTop: '-20%' }}>
-                            <QRCode
-                                value={randomNumber}
-                                size={280}
-                                color={colors.textColor}
-                                backgroundColor="transparent"
-                                enableLinearGradient
-                                linearGradient={[
-                                    colors.yellow,
-                                    'rgba(150, 227, 255, 1)',
-                                ]}
-                                // logo={{ uri: base64Logo }}
-                                // logoSize={30}
-                                // logoBackgroundColor='transparent'
-                            />
-                        </View>
-                    </View>
-                </View>
-            </LinearGradient>
-        </View>
+                    Share Event With QR Code
+                </Text>
+                <Text
+                    style={styles.underTitle}
+                    maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                >
+                    You can share the code bellow with others. You may also have
+                    the code printed on a large poster and displayed at your
+                    event so others can easily join and upload their pictures.
+                </Text>
+                <Text
+                    style={styles.underTitle}
+                    maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                >
+                    To have this done for you and shipped click here.
+                </Text>
+            </View>
+            <View style={styles.midCont}>
+                <QRCode
+                    value={qrCode}
+                    size={qrWidth}
+                    color={colors.textColor}
+                    backgroundColor="transparent"
+                    enableLinearGradient
+                    linearGradient={[colors.blue3, colors.textColor]}
+                    // logo={{ uri: base64Logo }}
+                    // logoSize={30}
+                    // logoBackgroundColor='transparent'
+                />
+            </View>
+            <View style={styles.bottomCont}>
+                <Button
+                    text="Share"
+                    style={styles.button}
+                    onPress={() => {
+                        // navigation.navigate('DashModalStack')
+                    }}
+                />
+                <Button
+                    text="Add Photos to Gallery"
+                    style={styles.button}
+                    onPress={() => {
+                        navigation.navigate('CameraScreen', {
+                            checkMark: 'checkMark',
+                        })
+                    }}
+                />
+            </View>
+        </ScreenWrapper>
     )
 }
 
@@ -129,7 +142,7 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
         alignItems: 'center',
     },
-    titleCont: {
+    outerCont: {
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -144,13 +157,20 @@ const styles = StyleSheet.create({
         marginTop: 15,
         paddingHorizontal: 20,
     },
-    bottomCont: {
+    midCont: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
     },
+    bottomCont: {
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        paddingBottom: 20,
+    },
+
     button: {
-        width: '80%',
+        width: '90%',
+        marginBottom: 10,
     },
 })
 

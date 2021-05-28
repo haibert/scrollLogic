@@ -3,10 +3,10 @@ import {
     View,
     Text,
     StyleSheet,
-    TouchableNativeFeedback,
+    TouchableOpacity,
     Platform,
 } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import * as IosTouchable from 'react-native-gesture-handler'
 
 // colors
 import colors from '../constants/colors'
@@ -19,10 +19,10 @@ import { Ionicons } from '@expo/vector-icons'
 import { Icon } from 'react-native-elements'
 
 const Button = (props) => {
-    let TouchableCmp = TouchableOpacity
+    let TouchableCmp = IosTouchable.TouchableOpacity
 
-    if (Platform.OS === 'android' && Platform.Version >= 21) {
-        TouchableCmp = TouchableNativeFeedback
+    if (Platform.OS === 'android') {
+        TouchableCmp = TouchableOpacity
     }
 
     return (
@@ -40,12 +40,14 @@ const Button = (props) => {
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                 >
-                    <Ionicons
-                        name={props.iconName ? props.iconName : null}
-                        size={20}
-                        color="white"
-                        style={{ marginRight: 7 }}
-                    />
+                    {props.iconName ? (
+                        <Ionicons
+                            name={props.iconName ? props.iconName : null}
+                            size={20}
+                            color="white"
+                            style={{ marginRight: 7 }}
+                        />
+                    ) : null}
                     <Text
                         maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
                         style={{ ...styles.text, ...props.textStyle }}
@@ -82,7 +84,7 @@ const styles = StyleSheet.create({
         width: '100%',
         minWidth: '100%',
         borderRadius: 5,
-        height: 50,
+        height: 51,
         flexDirection: 'row',
     },
     text: {

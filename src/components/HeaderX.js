@@ -22,12 +22,14 @@ const HeaderX = (props) => {
     return (
         <View style={styles.xCont}>
             <TouchableCmp onPress={props.goBack}>
-                <Ionicons
-                    name="close-outline"
-                    size={50}
-                    color={!props.color ? colors.mediumTint : props.color}
-                    style={styles.xShadow}
-                />
+                <View style={styles.circle}>
+                    <Ionicons
+                        name="close-outline"
+                        size={30}
+                        color={!props.color ? colors.mediumTint : props.color}
+                        style={styles.xShadow}
+                    />
+                </View>
             </TouchableCmp>
         </View>
     )
@@ -40,16 +42,33 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         width: '100%',
     },
-    xShadow: {
+    // xShadow: {
+    // marginLeft: 10,
+
+    //     shadowColor: 'black',
+    //     shadowRadius: 0.7,
+    //     shadowOpacity: 0.8,
+    //     shadowOffset: {
+    //         width: 0,
+    //         height: 0,
+    //     },
+    //     elevation: 1,
+    // },
+    circle: {
         marginLeft: 10,
+        height: 40,
+        width: 40,
+        borderRadius: 20,
+        backgroundColor: colors.lightTint,
+        alignItems: 'center',
+        justifyContent: 'center',
         shadowColor: 'black',
-        shadowRadius: 0.7,
-        shadowOpacity: 0.8,
+        shadowRadius: 10,
+        shadowOpacity: 0.3,
         shadowOffset: {
             width: 0,
-            height: 0,
+            height: 10,
         },
-        elevation: 1,
     },
 })
 

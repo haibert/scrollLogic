@@ -4,19 +4,19 @@ import {
     Text,
     StyleSheet,
     Dimensions,
-    TouchableWithoutFeedback,
     Modal,
     FlatList,
-    AppState,
     Alert,
     Linking,
-    Image,
     Platform,
+    BackHandler,
 } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
-//Linear Gradient
-import { LinearGradient } from 'expo-linear-gradient'
+import { StatusBar } from 'expo-status-bar'
+
+// //Linear Gradient
+// import { LinearGradient } from 'expo-linear-gradient'
 
 //colors
 import colors from '../constants/colors'
@@ -25,9 +25,14 @@ import colors from '../constants/colors'
 import Button from '../components/Button'
 import Thumbnail from '../components/Thumbnail'
 import CustomHeaderBasic from '../components/HeaderBasic'
+import ScreenWrapper from '../components/ScreenWrapper'
+import BottomNavBar from '../components/BottomNavBar'
 
 //customHooks
 import useAppState from '../hooks/useAppState'
+
+//useFocusEffect
+import { useFocusEffect } from '@react-navigation/native'
 
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -53,9 +58,6 @@ import {
 } from '../store/permissions/actions'
 import { useDispatch, useSelector } from 'react-redux'
 
-//blurview
-import { BlurView } from 'expo-blur'
-
 const { height, width } = Dimensions.get('screen')
 
 const DashboardScreen = (props) => {
@@ -63,9 +65,6 @@ const DashboardScreen = (props) => {
 
     let tabBarBottomPosition = insets.bottom > 0 ? insets.bottom / 2 + 2 : 10
 
-    if (tabBarBottomPosition === 10 && Platform.OS === 'android') {
-        tabBarBottomPosition = 55
-    }
     const dispatch = useDispatch()
 
     const [hasCameraPermission, setHasCameraPermission] = useState(null)
@@ -76,6 +75,27 @@ const DashboardScreen = (props) => {
     const greenLightOnPermissions = useSelector(
         (state) => state.permissionsReducer.permissions.camera
     )
+
+    // useFocusEffect(() => {
+    //     const prevent = BackHandler
+    //     if (props.navigation.isFocused()) {
+    //         prevent.addEventListener('hardwareBackPress', () => true)
+    //     }
+    //     return () => {
+    //         console.log('ran')
+    //         prevent.removeEventListener()
+    //     }
+    // })
+
+    // useEffect(() => {
+    //     const prevent = BackHandler.addEventListener(
+    //         'hardwareBackPress',
+    //         () => true
+    //     )
+    //     return () => {
+    //         prevent.removeEventListener()
+    //     }
+    // }, [])
 
     const cameraPressedHandler = async () => {
         if (greenLightOnPermissions === 'granted') {
@@ -210,155 +230,47 @@ const DashboardScreen = (props) => {
     }
 
     return (
-        <View style={styles.screen}>
-            <LinearGradient
-                // colors={['rgba(255, 237, 187, 1)', 'rgba(150, 227, 255, 1)']}
-                // colors={['rgba(252,140,250,1)', 'rgba(255, 237, 187, 1)']}
-                // colors={['rgba(252,140,250,1)', colors.lightTint]}
-                colors={['rgba(252,140,250,1)', colors.blue]}
-                style={{ flex: 1 }}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-            >
-                <View
-                    style={{
-                        paddingTop: insets.top,
-                        // paddingBottom: insets.bottom,
-                        flex: 1,
-                    }}
-                >
-                    <CustomHeaderBasic
-                        iconName="menu-outline"
-                        goBack={() => {
-                            props.navigation.toggleDrawer()
-                        }}
-                        header="Gallery"
-                        headerColor={{ color: colors.textColor }}
-                    />
+        <ScreenWrapper>
+            <CustomHeaderBasic
+                iconName="menu-outline"
+                goBack={() => {
+                    props.navigation.toggleDrawer()
+                }}
+                header="Gallery"
+                headerColor={{ color: colors.textColor }}
+            />
 
-                    <FlatList
-                        style={styles.flatList}
-                        data={images}
-                        keyExtractor={(item) => `${item.id}`}
-                        renderItem={(item) => {
-                            return (
-                                <View>
-                                    <View style={{ height: 10 }}></View>
-                                    <Thumbnail
-                                        images={item.item}
-                                        galleryPressedHandler={() => {
-                                            galleryPressedHandler(item.item)
-                                        }}
-                                    />
-                                </View>
-                            )
-                        }}
-                        showsVerticalScrollIndicator={false}
-                        numColumns={2}
-                        columnWrapperStyle={{
-                            marginLeft: 10,
-                        }}
-                        contentContainerStyle={{
-                            paddingBottom: tabBarBottomPosition + 60,
-                        }}
-                    />
-                    <View
-                        style={{
-                            ...styles.tabBarShadow,
-                            width: width - 20,
-                            bottom: tabBarBottomPosition,
-                        }}
-                    >
-                        <LinearGradient
-                            colors={[
-                                'rgba(247, 37, 133, 1)',
-                                'rgba(171,67,239,1)',
-                                'rgba(76, 201, 240, 1)',
-                            ]}
-                            style={{ flex: 1, borderRadius: 15 }}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 0 }}
-                        >
-                            <TouchableWithoutFeedback
-                                onPress={() => {
-                                    // props.navigation.navigate('CameraScreen')
-                                }}
-                            >
-                                <View style={styles.tabButton}></View>
-                            </TouchableWithoutFeedback>
-
-                            <View style={{ width: 50 }}></View>
-                            <TouchableWithoutFeedback
-                                onPress={cameraPressedHandler}
-                            >
-                                <View style={styles.tabButton}></View>
-                            </TouchableWithoutFeedback>
-
-                            <Ionicons
-                                name="camera-outline"
-                                // color={colors.mediumTint}
-                                color={colors.textColor}
-                                size={29}
-                                style={{
-                                    position: 'absolute',
-                                    top: 10,
-                                    right: (width - 26) / 6,
-                                }}
-                                onPress={cameraPressedHandler}
-                            />
-
-                            <Ionicons
-                                name="search-outline"
-                                size={28}
-                                // color={colors.mediumTint}
-                                color={colors.textColor}
-                                style={{
-                                    position: 'absolute',
-                                    top: 11,
-                                    left: (width - 26) / 6,
-                                }}
-                            />
-                        </LinearGradient>
-                    </View>
-                    <View
-                        style={{
-                            ...styles.floatingPlusCont,
-                            left: width / 2 - 40,
-                            bottom: tabBarBottomPosition,
-                        }}
-                    >
-                        <TouchableOpacity
-                            activeOpacity={0.9}
-                            onPress={() => {
-                                setShowModal(true)
+            <FlatList
+                style={styles.flatList}
+                data={images}
+                keyExtractor={(item) => `${item.id}`}
+                renderItem={({ item, index }) => {
+                    return (
+                        <Thumbnail
+                            images={item}
+                            galleryPressedHandler={() => {
+                                galleryPressedHandler(item)
                             }}
-                        >
-                            <View style={styles.bigPlusButton}>
-                                <LinearGradient
-                                    colors={[
-                                        // 'rgba(255, 237, 187, 1)',
-                                        // 'rgba(150, 227, 255, 1)',
-                                        colors.lightTint,
-                                        colors.lightTint,
-                                        // colors.buttonPink,
-                                    ]}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 0 }}
-                                    style={styles.bigPlusButton}
-                                >
-                                    <Icon
-                                        name="plus"
-                                        type="material-community"
-                                        size={38}
-                                        color={colors.textColor}
-                                    />
-                                </LinearGradient>
-                            </View>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </LinearGradient>
+                            navigation={props.navigation}
+                        />
+                    )
+                }}
+                showsVerticalScrollIndicator={false}
+                numColumns={2}
+                columnWrapperStyle={{
+                    marginLeft: 10,
+                }}
+                contentContainerStyle={{
+                    paddingBottom: tabBarBottomPosition + 60,
+                }}
+            />
 
+            <BottomNavBar
+                onPlusPressed={() => {
+                    setShowModal(true)
+                }}
+                onRightPressed={cameraPressedHandler}
+            />
             <Modal visible={showModal} transparent animationType="slide">
                 <View style={styles.modal}>
                     <View>
@@ -388,7 +300,7 @@ const DashboardScreen = (props) => {
                     </View>
                 </View>
             </Modal>
-        </View>
+        </ScreenWrapper>
     )
 }
 
@@ -411,6 +323,7 @@ const styles = StyleSheet.create({
     },
     flatList: {
         flex: 1,
+        marginTop: 10,
     },
     modalActions: {
         width: '80%',
@@ -462,7 +375,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         flex: 1,
-        height: '100%',
+        minHeight: '100%',
     },
 
     tabLabel: {

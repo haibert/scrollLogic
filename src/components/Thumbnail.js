@@ -10,9 +10,16 @@ import {
     Platform,
 } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
-
+import Animated, {
+    useSharedValue,
+    withTiming,
+    useAnimatedStyle,
+    withDelay,
+} from 'react-native-reanimated'
 //shared elements
 import { SharedElement } from 'react-navigation-shared-element'
+
+import ScaleButton from './TouchableScale'
 
 import colors from '../constants/colors'
 
@@ -25,89 +32,97 @@ const CELL_WIDTH = width / 2
 //ionicons
 import { Ionicons } from '@expo/vector-icons'
 
-const ThumbNail = ({ images, galleryPressedHandler }) => {
-    const [pressedState, setPressedState] = useState(false)
+const ThumbNail = ({ images, galleryPressedHandler, navigation }) => {
     let TouchableCmp = TouchableOpacity
 
     if (Platform.OS === 'android' && Platform.Version >= 21) {
         TouchableCmp = TouchableNativeFeedback
     }
-    // const [opacity, setOpacity] = useState(1)
+    const animatedOpacity = useSharedValue(1)
 
-    // useFocusEffect(() => {
-    //     if (navigation.isFocused()) {
-    //         setOpacity(1)
-    //     }
-    // })
+    const opacityStyle = useAnimatedStyle(() => {
+        return {
+            opacity: animatedOpacity.value,
+        }
+    })
+    useFocusEffect(() => {
+        if (navigation.isFocused()) {
+            animatedOpacity.value = withDelay(200, withTiming(1))
+        }
+    })
 
     return (
-        <View>
-            <TouchableCmp
-                activeOpacity={0.9}
+        <Animated.View style={[styles.container, opacityStyle]}>
+            <ScaleButton
+                // activeOpacity={0.9}
+                activeScale={0.93}
                 onPress={() => {
-                    setPressedState(true)
+                    // setOpacity(0)
+                    animatedOpacity.value = withDelay(300, withTiming(0))
                     galleryPressedHandler()
                 }}
+                contentContainerStyle={styles.contentContainerStyle}
             >
-                {/* <SharedElement
-                    id={images.id}
-                    // style={{ opacity }}
-                > */}
-                <ImageBackground
-                    style={styles.image}
-                    imageStyle={{ borderRadius: 9 }}
-                    resizeMode="cover"
-                    source={images.picture}
-                >
-                    {!pressedState && (
-                        <View style={styles.insideCont}>
-                            <View style={styles.insideTopCont}>
-                                <Text style={styles.eventTitle}>
-                                    {images.title}
-                                </Text>
-                            </View>
-                            <View style={styles.bottomActions}>
-                                <View></View>
-
-                                <Ionicons
-                                    name="ellipsis-horizontal-circle-outline"
-                                    size={25}
-                                    color="white"
-                                    style={styles.actionsStyle}
-                                />
-                            </View>
-                        </View>
-                    )}
-                </ImageBackground>
-                {/* </SharedElement> */}
-            </TouchableCmp>
-        </View>
+                <SharedElement id={images.id}>
+                    <ImageBackground
+                        style={styles.image}
+                        imageStyle={{ borderRadius: 9 }}
+                        resizeMode="cover"
+                        source={images.picture}
+                    />
+                </SharedElement>
+                <View style={styles.insideTopCont}>
+                    <Text style={styles.eventTitle}>{images.title}</Text>
+                </View>
+                <View style={styles.bottomActions}>
+                    <Ionicons
+                        name="ellipsis-horizontal-circle-outline"
+                        size={25}
+                        color="white"
+                        style={styles.actionsStyle}
+                    />
+                </View>
+            </ScaleButton>
+        </Animated.View>
     )
 }
 
 const styles = StyleSheet.create({
-    insideCont: {
-        flex: 1,
-        justifyContent: 'flex-end',
-        padding: 10,
-    },
-    image: {
-        borderRadius: 12,
+    container: {
+        marginTop: 10,
         width: width / 2 - 15,
         height: 260,
         marginRight: 10,
+        borderRadius: 9,
+        justifyContent: 'flex-end',
+    },
+    contentContainerStyle: {
+        width: width / 2 - 15,
+        height: 260,
+        borderRadius: 9,
+    },
+    image: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
         flex: 1,
+        width: width / 2 - 15,
+        height: 260,
+        borderRadius: 9,
         shadowColor: 'black',
-        shadowRadius: 5,
-        shadowOpacity: 0.9,
+        shadowRadius: 4,
+        shadowOpacity: 1,
+        backgroundColor: 'white',
         shadowOffset: {
             width: 0,
             height: 2,
         },
-        elevation: 5,
     },
     insideTopCont: {
         flex: 1,
+        padding: 10,
     },
     eventTitle: {
         color: 'white',
@@ -119,8 +134,9 @@ const styles = StyleSheet.create({
         padding: 2,
     },
     bottomActions: {
-        justifyContent: 'space-between',
+        justifyContent: 'flex-end',
         flexDirection: 'row',
+        padding: 10,
     },
     actionsStyle: {
         shadowColor: 'black',
@@ -130,8 +146,6 @@ const styles = StyleSheet.create({
             width: 0,
             height: 0,
         },
-        borderRadius: 5,
-        elevation: 1,
     },
 })
 

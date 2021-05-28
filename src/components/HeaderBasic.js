@@ -4,9 +4,10 @@ import {
     StyleSheet,
     Dimensions,
     Text,
-    TouchableWithoutFeedback,
+    Platform,
+    TouchableOpacity,
 } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import * as IosTouchable from 'react-native-gesture-handler'
 
 //ionicons
 import { Ionicons } from '@expo/vector-icons'
@@ -18,10 +19,21 @@ import colors from '../constants/colors'
 const { width, height } = Dimensions.get('window')
 
 const CustomHeaderBasic = (props) => {
+    let TouchableCmp = IosTouchable.TouchableOpacity
+
+    if (Platform.OS === 'android') {
+        TouchableCmp = TouchableOpacity
+    }
+
     const iconStyle =
-        props.iconName === 'menu-outline'
+        props.iconName === 'menu-outline' || props.rightIcon === 'add'
             ? { textAlign: 'center', marginLeft: 2 }
-            : {}
+            : null
+
+    let defaultIcon = 'chevron-back-outline'
+    if (Platform.OS === 'android') {
+        defaultIcon = 'chevron-down-outline'
+    }
     return (
         <View style={styles.outerCont}>
             <View style={styles.middleCont}>
@@ -30,17 +42,30 @@ const CustomHeaderBasic = (props) => {
                 </Text>
             </View>
             <View style={styles.xCont}>
-                <TouchableOpacity onPress={props.goBack}>
+                <TouchableCmp onPress={props.goBack}>
                     <View style={styles.circle}>
                         <Ionicons
-                            name={props.iconName}
+                            name={props.iconName ? props.iconName : defaultIcon}
                             size={30}
                             color={colors.textColor}
                             style={iconStyle}
                         />
                     </View>
-                </TouchableOpacity>
+                </TouchableCmp>
+                {props.rightButton ? (
+                    <TouchableCmp onPress={props.onPressRight}>
+                        <View style={styles.circle}>
+                            <Ionicons
+                                name={props.rightIcon ? props.rightIcon : null}
+                                size={30}
+                                color={colors.textColor}
+                                style={iconStyle}
+                            />
+                        </View>
+                    </TouchableCmp>
+                ) : null}
             </View>
+            <View style={styles.children}>{props.children}</View>
         </View>
     )
 }
@@ -48,15 +73,14 @@ const CustomHeaderBasic = (props) => {
 const styles = StyleSheet.create({
     outerCont: {
         width: '100%',
-        height: 50,
     },
     xCont: {
         flexDirection: 'row',
-        justifyContent: 'flex-start',
+        justifyContent: 'space-between',
         alignItems: 'center',
         width: '100%',
         paddingHorizontal: 10,
-        paddingTop: 5,
+        // paddingTop: 5,
     },
     middleCont: {
         position: 'absolute',
@@ -67,7 +91,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         minWidth: '100%',
-        height: 46,
+        height: 40,
     },
     headerText: {
         color: 'white',
@@ -89,6 +113,16 @@ const styles = StyleSheet.create({
             width: 0,
             height: 10,
         },
+    },
+    children: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minWidth: '100%',
     },
 })
 

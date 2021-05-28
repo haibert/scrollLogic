@@ -1,10 +1,10 @@
-import { TAKE_PICTURE } from './actions'
+import { TAKE_PICTURE, ADD_TO_GALLERY } from './actions'
 
 const initialState = {
     pictureUri: '',
 }
 
-const signupReducer = (state = initialState, action) => {
+const cameraReducer = (state = initialState, action) => {
     switch (action.type) {
         case TAKE_PICTURE: {
             return {
@@ -17,4 +17,4 @@ const signupReducer = (state = initialState, action) => {
     }
 }
 
-export default signupReducer
+export default cameraReducer

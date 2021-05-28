@@ -5,6 +5,7 @@ import {
     ADD_LASTNAME,
     ADD_PASSWORD,
     ADD_USERNAME,
+    LOGIN,
 } from './actions'
 
 const initialState = {
@@ -18,6 +19,9 @@ const initialState = {
         username: '',
     },
     confirmationCode: '',
+    userInfo: {
+        userID: '',
+    },
 }
 
 const signupReducer = (state = initialState, action) => {
@@ -70,6 +74,15 @@ const signupReducer = (state = initialState, action) => {
                 signupInfo: {
                     ...state.signupInfo,
                     username: action.usernameAdded,
+                },
+            }
+        }
+        case LOGIN: {
+            return {
+                ...state,
+                userInfo: {
+                    ...state.userInfo,
+                    userID: action.userInfo,
                 },
             }
         }

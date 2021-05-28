@@ -22,12 +22,14 @@ import colors from '../../constants/colors'
 
 //custom button
 import Button from '../../components/Button'
+import ScreenWrapper from '../../components/ScreenWrapper'
+import HeaderBasic from '../../components/HeaderBasic'
 
 //picker
 import DateTimePicker from '@react-native-community/datetimepicker'
 
 //redux
-import { addBirthday } from '../../store/signup/actions'
+import { addBirthday } from '../../store/signup-auth/actions'
 import { useDispatch, useSelector } from 'react-redux'
 
 function hideKeyboard() {
@@ -89,131 +91,108 @@ const DAddYourBirthday = (props) => {
     }
 
     return (
-        <LinearGradient
-            // colors={['rgba(255, 237, 187, 1)', 'rgba(255, 227, 255, 1)']}
-            colors={['rgba(255, 237, 187, 1)', 'rgba(150, 227, 255, 1)']}
-            style={{ flex: 1 }}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-        >
+        <ScreenWrapper>
+            <HeaderBasic
+                goBack={() => {
+                    props.navigation.goBack()
+                }}
+                iconName="chevron-back-outline"
+            />
             <View
                 style={{
-                    paddingTop: insets.top,
-                    paddingBottom: insets.bottom,
                     flex: 1,
+                    paddingHorizontal: 20,
+                }}
+                onLayout={(event) => {
+                    setUseableScreenDimensions({
+                        width: event.nativeEvent.layout.width,
+                        height: event.nativeEvent.layout.height,
+                    })
                 }}
             >
-                <View style={styles.xCont}>
-                    <TouchableOpacity
-                        onPress={() => {
-                            props.navigation.goBack()
+                <TouchableWithoutFeedback onPress={hideKeyboard}>
+                    <View
+                        onLayout={(event) => {
+                            setTopDimensions({
+                                width: event.nativeEvent.layout.width,
+                                height: event.nativeEvent.layout.height,
+                            })
                         }}
                     >
-                        <Ionicons
-                            name="chevron-back-outline"
-                            size={40}
-                            color={colors.mediumTint}
-                        />
-                    </TouchableOpacity>
-                </View>
-                <View
-                    style={{
-                        flex: 1,
-                        paddingHorizontal: 20,
-                    }}
-                    onLayout={(event) => {
-                        setUseableScreenDimensions({
-                            width: event.nativeEvent.layout.width,
-                            height: event.nativeEvent.layout.height,
-                        })
-                    }}
-                >
-                    <TouchableWithoutFeedback onPress={hideKeyboard}>
-                        <View
-                            onLayout={(event) => {
-                                setTopDimensions({
-                                    width: event.nativeEvent.layout.width,
-                                    height: event.nativeEvent.layout.height,
-                                })
-                            }}
-                        >
-                            <View style={styles.titleCont}>
-                                <Text
-                                    style={styles.title}
-                                    maxFontSizeMultiplier={
-                                        colors.maxFontSizeMultiplier
-                                    }
-                                >
-                                    Add Your Birthday
-                                </Text>
-                                <Text
-                                    style={styles.underTitle}
-                                    maxFontSizeMultiplier={
-                                        colors.maxFontSizeMultiplier
-                                    }
-                                >
-                                    This won't be part of your public profile.
-                                </Text>
-                            </View>
+                        <View style={styles.titleCont}>
+                            <Text
+                                style={styles.title}
+                                maxFontSizeMultiplier={
+                                    colors.maxFontSizeMultiplier
+                                }
+                            >
+                                Add Your Birthday
+                            </Text>
+                            <Text
+                                style={styles.underTitle}
+                                maxFontSizeMultiplier={
+                                    colors.maxFontSizeMultiplier
+                                }
+                            >
+                                This won't be part of your public profile.
+                            </Text>
                         </View>
-                        <View
-                            style={[
-                                styles.midCont,
-                                {
-                                    height:
-                                        useableScreenDimensions.height -
-                                        topDimensions.height,
-                                },
-                            ]}
-                        >
-                            <View>
-                                <View style={styles.textInputCont}>
-                                    <Text
-                                        style={styles.input}
-                                        selectionColor={colors.lightTint}
-                                        underlineColorAndroid="rgba(255,255,255,0)"
-                                        maxFontSizeMultiplier={
-                                            colors.maxFontSizeMultiplier
-                                        }
-                                    >
-                                        {`${date.toLocaleDateString('en-EN', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric',
-                                        })}`}
-                                    </Text>
-                                </View>
-                                <Text style={styles.errorText}>
-                                    {dateError}
+                    </View>
+                    <View
+                        style={[
+                            styles.midCont,
+                            {
+                                height:
+                                    useableScreenDimensions.height -
+                                    topDimensions.height,
+                            },
+                        ]}
+                    >
+                        <View>
+                            <View style={styles.textInputCont}>
+                                <Text
+                                    style={styles.input}
+                                    selectionColor={colors.lightTint}
+                                    underlineColorAndroid="rgba(255,255,255,0)"
+                                    maxFontSizeMultiplier={
+                                        colors.maxFontSizeMultiplier
+                                    }
+                                >
+                                    {`${date.toLocaleDateString('en-EN', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                    })}`}
                                 </Text>
                             </View>
+                            <Text style={styles.errorText}>{dateError}</Text>
+                        </View>
 
+                        <View>
+                            <Button
+                                style={styles.button}
+                                onPress={nextPressedHandler}
+                                text="Next"
+                            />
                             <View>
-                                <Button
-                                    style={styles.button}
-                                    onPress={nextPressedHandler}
-                                    text="Next"
+                                <DateTimePicker
+                                    style={{
+                                        width: '100%',
+                                        height: 200,
+                                    }}
+                                    testID="dateTimePicker"
+                                    value={date}
+                                    mode={mode}
+                                    // is24Hour={true}
+                                    display="spinner"
+                                    onChange={onDateChange}
                                 />
-                                <View>
-                                    <DateTimePicker
-                                        style={{
-                                            width: '100%',
-                                            height: 200,
-                                        }}
-                                        testID="dateTimePicker"
-                                        value={date}
-                                        mode={mode}
-                                        // is24Hour={true}
-                                        display="spinner"
-                                        onChange={onDateChange}
-                                    />
-                                </View>
                             </View>
                         </View>
-                    </TouchableWithoutFeedback>
-                </View>
+                    </View>
+                </TouchableWithoutFeedback>
             </View>
-        </LinearGradient>
+        </ScreenWrapper>
     )
 }
 

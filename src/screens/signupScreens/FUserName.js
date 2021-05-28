@@ -19,9 +19,11 @@ import colors from '../../constants/colors'
 
 //custom button
 import Button from '../../components/Button'
+import ScreenWrapper from '../../components/ScreenWrapper'
+import HeaderBasic from '../../components/HeaderBasic'
 
 //redux
-import { addUsername, signupUser } from '../../store/signup/actions'
+import { addUsername, signupUser } from '../../store/signup-auth/actions'
 import { useDispatch, useSelector } from 'react-redux'
 
 function hideKeyboard() {
@@ -63,129 +65,107 @@ const FUserNameFork = (props) => {
     }, [userTxtChange])
 
     return (
-        <LinearGradient
-            // colors={['rgba(255, 237, 187, 1)', 'rgba(255, 227, 255, 1)']}
-            colors={['rgba(255, 237, 187, 1)', 'rgba(150, 227, 255, 1)']}
-            style={{ flex: 1 }}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-        >
+        <ScreenWrapper>
+            <HeaderBasic
+                goBack={() => {
+                    props.navigation.goBack()
+                }}
+                iconName="chevron-back-outline"
+            />
             <View
                 style={{
-                    paddingTop: insets.top,
-                    paddingBottom: insets.bottom,
                     flex: 1,
+                    paddingHorizontal: 20,
+                }}
+                onLayout={(event) => {
+                    setUseableScreenDimensions({
+                        width: event.nativeEvent.layout.width,
+                        height: event.nativeEvent.layout.height,
+                    })
                 }}
             >
-                <View style={styles.xCont}>
-                    <TouchableOpacity
-                        onPress={() => {
-                            props.navigation.goBack()
+                <TouchableWithoutFeedback onPress={hideKeyboard}>
+                    <View
+                        onLayout={(event) => {
+                            setTopDimensions({
+                                width: event.nativeEvent.layout.width,
+                                height: event.nativeEvent.layout.height,
+                            })
                         }}
                     >
-                        <Ionicons
-                            name="chevron-back-outline"
-                            size={40}
-                            color={colors.mediumTint}
-                        />
-                    </TouchableOpacity>
-                </View>
-                <View
-                    style={{
-                        flex: 1,
-                        paddingHorizontal: 20,
-                    }}
-                    onLayout={(event) => {
-                        setUseableScreenDimensions({
-                            width: event.nativeEvent.layout.width,
-                            height: event.nativeEvent.layout.height,
-                        })
-                    }}
-                >
-                    <TouchableWithoutFeedback onPress={hideKeyboard}>
-                        <View
-                            onLayout={(event) => {
-                                setTopDimensions({
-                                    width: event.nativeEvent.layout.width,
-                                    height: event.nativeEvent.layout.height,
-                                })
-                            }}
-                        >
-                            <View style={styles.titleCont}>
-                                <Text
-                                    style={styles.title}
-                                    maxFontSizeMultiplier={
-                                        colors.maxFontSizeMultiplier
-                                    }
-                                >
-                                    Choose Your Username
-                                </Text>
-                                <Text
-                                    style={styles.underTitle}
-                                    maxFontSizeMultiplier={
-                                        colors.maxFontSizeMultiplier
-                                    }
-                                >
-                                    You may change your username later.
-                                </Text>
-                            </View>
+                        <View style={styles.titleCont}>
+                            <Text
+                                style={styles.title}
+                                maxFontSizeMultiplier={
+                                    colors.maxFontSizeMultiplier
+                                }
+                            >
+                                Choose Your Username
+                            </Text>
+                            <Text
+                                style={styles.underTitle}
+                                maxFontSizeMultiplier={
+                                    colors.maxFontSizeMultiplier
+                                }
+                            >
+                                You may change your username later.
+                            </Text>
                         </View>
-                        <View
-                            style={[
-                                styles.midCont,
-                                {
-                                    height:
-                                        useableScreenDimensions.height -
-                                        topDimensions.height,
-                                },
-                            ]}
-                        >
-                            <View>
-                                <View style={styles.textInputCont}>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Username"
-                                        placeholderTextColor={
-                                            colors.placeHolder
-                                        }
-                                        selectionColor={colors.lightTint}
-                                        underlineColorAndroid="rgba(255,255,255,0)"
-                                        maxFontSizeMultiplier={
-                                            colors.maxFontSizeMultiplier
-                                        }
-                                        onChangeText={(text) =>
-                                            userNameChangeHandler(text)
-                                        }
-                                        value={userTxtChange}
-                                        autoFocus
+                    </View>
+                    <View
+                        style={[
+                            styles.midCont,
+                            {
+                                height:
+                                    useableScreenDimensions.height -
+                                    topDimensions.height,
+                            },
+                        ]}
+                    >
+                        <View>
+                            <View style={styles.textInputCont}>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Username"
+                                    placeholderTextColor={colors.placeHolder}
+                                    selectionColor={colors.lightTint}
+                                    underlineColorAndroid="rgba(255,255,255,0)"
+                                    maxFontSizeMultiplier={
+                                        colors.maxFontSizeMultiplier
+                                    }
+                                    onChangeText={(text) =>
+                                        userNameChangeHandler(text)
+                                    }
+                                    value={userTxtChange}
+                                    autoFocus
+                                    autoCapitalize="none"
+                                />
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        setUserTextChange('')
+                                    }}
+                                >
+                                    <Ionicons
+                                        name="close-circle"
+                                        size={20}
+                                        color={colors.mediumTint}
+                                        style={{ marginTop: 30 }}
                                     />
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            setUserTextChange('')
-                                        }}
-                                    >
-                                        <Ionicons
-                                            name="close-circle"
-                                            size={20}
-                                            color={colors.mediumTint}
-                                            style={{ marginTop: 30 }}
-                                        />
-                                    </TouchableOpacity>
-                                </View>
-                                <Text style={styles.errorText}>
-                                    {usernameValidError}
-                                </Text>
+                                </TouchableOpacity>
                             </View>
-                            <Button
-                                style={styles.button}
-                                onPress={nextPressedHandler}
-                                text="Next"
-                            />
+                            <Text style={styles.errorText}>
+                                {usernameValidError}
+                            </Text>
                         </View>
-                    </TouchableWithoutFeedback>
-                </View>
+                        <Button
+                            style={styles.button}
+                            onPress={nextPressedHandler}
+                            text="Next"
+                        />
+                    </View>
+                </TouchableWithoutFeedback>
             </View>
-        </LinearGradient>
+        </ScreenWrapper>
     )
 }
 

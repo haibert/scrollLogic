@@ -2,13 +2,17 @@
     "expo": {
         "name": "EventShare",
         "slug": "EventShare",
-        "version": "1.0.0",
+        "version": "0.1.0",
         "orientation": "portrait",
-        "icon": "./assets/icon.png",
+        "icon": "./assets/1024.png",
         "splash": {
             "image": "./assets/splash.png",
             "resizeMode": "contain",
             "backgroundColor": "#ffffff"
+        },
+        "androidStatusBar": {
+            "backgroundColor": "#ffffff",
+            "translucent": true
         },
         "updates": {
             "fallbackToCacheTimeout": 0
@@ -16,14 +20,20 @@
         "assetBundlePatterns": ["**/*"],
         "ios": {
             "supportsTablet": true,
-            "userInterfaceStyle": "light"
+            "userInterfaceStyle": "dark",
+            "infoPlist": {
+                "NSCameraUsageDescription": "This app uses the camera to take pictures, videos and scan barcodes on from other users."
+            },
+            "bundleIdentifier": "com.simplyrem.GalleryShare",
+            "buildNumber": "1.0.0",
+            "icon": "./assets/1024.png"
         },
-        "userInterfaceStyle": "light",
         "android": {
             "adaptiveIcon": {
                 "foregroundImage": "./assets/adaptive-icon.png",
                 "backgroundColor": "#FFFFFF"
-            }
+            },
+            "userInterfaceStyle": "dark"
         },
         "web": {
             "favicon": "./assets/favicon.png"

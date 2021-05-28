@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, StyleSheet, Dimensions } from 'react-native'
+import { View, StyleSheet, Dimensions, Platform } from 'react-native'
 
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -16,38 +16,38 @@ const ScreenWrapper = (props) => {
     const insets = useSafeAreaInsets()
 
     return (
-        <View
-            style={styles.screen}
-            onStartShouldSetResponderCapture={() =>
+        // <View
+        //     style={{
+        //         flex: 1,
+        //         paddingTop: Platform.OS === 'android' ? insets.top : null,
+        //     }}
+        // >
+        <LinearGradient
+            colors={['rgba(252,140,250,1)', colors.blue]}
+            style={{
+                flex: 1,
+                paddingTop: Platform.OS === 'android' ? insets.top : null,
+            }}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            onStartShouldSetResponderCapture={
                 props.onStartShouldSetResponderCapture
             }
         >
-            <LinearGradient
-                colors={['rgba(252,140,250,1)', colors.blue]}
-                style={{ flex: 1 }}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
+            <View
+                style={{
+                    flex: 1,
+                    ...props.style,
+                    paddingTop: insets.top,
+                }}
             >
-                <View
-                    style={{
-                        paddingTop: insets.top,
-                        paddingBottom: insets.bottom,
-                        flex: 1,
-                        ...props.style,
-                    }}
-                >
-                    {props.children}
-                </View>
-            </LinearGradient>
-        </View>
+                {props.children}
+            </View>
+        </LinearGradient>
+        // </View>
     )
 }
 
-const styles = StyleSheet.create({
-    screen: {
-        height: height,
-        width: '100%',
-    },
-})
+const styles = StyleSheet.create({})
 
 export default ScreenWrapper

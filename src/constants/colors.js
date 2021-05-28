@@ -17,6 +17,7 @@ export default {
     blue: 'rgba(150, 227, 255, 1)',
     blue2: 'rgba(72,150,239,1)',
     blue3: 'rgba(67,97,238,1)',
+    blue4: 'rgba(1,53,139,1)',
     pinkUnderLine: '#e896be',
 
     maxFontSizeMultiplier: 1.2,

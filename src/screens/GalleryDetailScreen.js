@@ -19,7 +19,7 @@ import { Avatar, Title, Caption, Paragraph, Drawer } from 'react-native-paper'
 const GalleryDetailScreen = ({ route, navigation }) => {
     const { image } = route.params
     return (
-        <ScreenWrapper>
+        <ScreenWrapper style={{ paddingBottom: 0 }}>
             <HeaderBasic
                 goBack={() => {
                     navigation.goBack()

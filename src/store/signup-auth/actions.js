@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage'
 export const ADD_EMAIL = 'ADD_EMAIL'
 export const ADD_PHONENUMBER = 'ADD_PHONENUMBER'
 export const ADD_FIRSTNAME = 'ADD_ADD_FIRSTNAME'
@@ -5,6 +6,7 @@ export const ADD_LASTNAME = 'ADD_LASTNAME'
 export const ADD_PASSWORD = 'ADD_ADD_PASSWORD'
 export const ADD_BIRTHDAY = 'ADD_BIRTHDAY'
 export const ADD_USERNAME = 'ADD_USERNAME'
+export const LOGIN = 'LOGIN'
 
 export const addEmail = (email) => {
     return {
@@ -80,7 +82,6 @@ export const signupUser = () => {
                     'Content-Type': 'application/json',
                     key: 'ThisIsASecretKey',
                 },
-
                 body: JSON.stringify({
                     userName,
                     password,
@@ -97,5 +98,62 @@ export const signupUser = () => {
             '🚀 ~ file: actions.js ~ line 74 ~ return ~ responseData',
             responseData
         )
+    }
+}
+
+export const login = (username, password) => {
+    return async (dispatch, getState) => {
+        let userID
+        const body = JSON.stringify({
+            userName: username,
+            password,
+        })
+        try {
+            const response = await fetch(
+                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&auth=1',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        key: 'ThisIsASecretKey',
+                    },
+                    body: body,
+                }
+            )
+
+            if (!response.ok) {
+                throw new Error('Something went wrong!')
+                // OR below you can pass the error status.
+                throw new Error(response.status.toString())
+            }
+
+            const storeData = async (value) => {
+                try {
+                    await AsyncStorage.setItem('userID', value)
+                } catch (e) {
+                    // throw error
+                }
+            }
+
+            try {
+                const data = await response.json()
+                userID = data.message.userData.basic.uniqueID
+                storeData(userID)
+
+                const error = data.message.user.authCheck
+                if (error === 'ERROR') {
+                    throw new Error('Incorrect Credentials')
+                }
+            } catch (error) {
+                throw error
+            }
+
+            dispatch({
+                type: LOGIN,
+                userInfo: userID,
+            })
+        } catch (error) {
+            throw error
+        }
     }
 }

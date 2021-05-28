@@ -1,13 +1,10 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import {
     View,
-    Text,
     StyleSheet,
     Dimensions,
-    Modal,
     ImageBackground,
-    Animated,
-    StatusBar,
+    BackHandler,
 } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
@@ -19,11 +16,12 @@ import { Video, AVPlaybackStatus } from 'expo-av'
 
 //custom components
 import HeaderX from '../components/HeaderX'
+import CameraButton from '../components/CameraButton'
+import EditorBottomActions from '../components/CameraComponents/EditorBottomActions'
 
 //ionicons
 import { Entypo, Ionicons } from '@expo/vector-icons'
 import { Icon } from 'react-native-elements'
-//ionicons
 
 //colors
 import colors from '../constants/colors'
@@ -32,7 +30,7 @@ import colors from '../constants/colors'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 //redux
-import { takePicture } from '../store/camera/actions'
+import { takePicture, addToGallery } from '../store/camera/actions'
 import { useDispatch, useSelector } from 'react-redux'
 
 // MediaLibrary
@@ -60,25 +58,47 @@ import Reanimated, {
 //nav 5
 import { useFocusEffect } from '@react-navigation/native'
 
+//status bar
+import { StatusBar } from 'expo-status-bar'
+
 const { height, width } = Dimensions.get('window')
 
-const CameraScreen = (props) => {
+const CameraScreen = ({ navigation, route }) => {
+    let checkMarkSet = null
+    if (route.params) {
+        checkMarkSet = true
+    }
+
     // RATIO SETTER
     const [imagePadding, setImagePadding] = useState(0)
     const [ratio, setRatio] = useState('4:3') // default is 4:3
+    const [previewRatio, setPreviewRatio] = useState(1) // default is 4:3
+    const [picture64, setPicture64] = useState()
+    // console.log(
+    //     '🚀 ~ file: CameraScreen.js ~ line 79 ~ CameraScreen ~ previewRatio',
+    //     previewRatio
+    // )
     const screenRatio = height / width
     const [isRatioSet, setIsRatioSet] = useState(false)
-    async function prepareRatio() {
+    const prepareRatio = useCallback(async () => {
         let desiredRatio = '4:3' // Start with the system default
         // This issue only affects Android
         if (Platform.OS === 'android') {
             const ratios = await cameraRef.current.getSupportedRatiosAsync()
+            // console.log(
+            //     '🚀 ~ file: CameraScreen.js ~ line 88 ~ prepareRatio ~ ratios',
+            //     ratios
+            // )
             let distances = {}
             let realRatios = {}
             let minDistance = null
+            let previewRatio = 1
             for (const ratio of ratios) {
                 const parts = ratio.split(':')
-                const realRatio = parseInt(parts[0]) / parseInt(parts[1])
+                const ratioHeight = parseInt(parts[0])
+                const ratioWidth = parseInt(parts[1])
+                const realRatio = ratioHeight / ratioWidth
+
                 realRatios[ratio] = realRatio
                 // ratio can't be taller than screen, so we don't want an abs()
                 const distance = screenRatio - realRatio
@@ -93,19 +113,32 @@ const CameraScreen = (props) => {
             }
             // set the best match
             desiredRatio = minDistance
-
+            const parts = desiredRatio.split(':')
+            const ratioHeight = parseInt(parts[0])
+            const ratioWidth = parseInt(parts[1])
+            previewRatio = ratioWidth / ratioHeight
+            const picSize =
+                await cameraRef.current.getAvailablePictureSizesAsync(
+                    desiredRatio
+                )
+            console.log(
+                '🚀 ~ file: CameraScreen.js ~ line 123 ~ prepareRatio ~ picSize',
+                picSize
+            )
             //  calculate the difference between the camera width and the screen height
             const remainder = Math.floor(
-                (height - realRatios[desiredRatio] * width) / 2
+                height - realRatios[desiredRatio] * width
             )
+
             // set the preview padding and preview ratio
-            setImagePadding(remainder / 2)
+            setImagePadding(remainder)
             setRatio(desiredRatio)
+            setPreviewRatio(+previewRatio.toFixed(2))
             // Set a flag so we don't do this
             // calculation each time the screen refreshes
             setIsRatioSet(true)
         }
-    }
+    }, [])
 
     const setCameraReady = async () => {
         if (!isRatioSet) {
@@ -121,7 +154,7 @@ const CameraScreen = (props) => {
     const insets = useSafeAreaInsets()
 
     useFocusEffect(() => {
-        if (props.navigation.isFocused()) {
+        if (navigation.isFocused()) {
             setActivateCamera(true)
         }
     })
@@ -146,7 +179,7 @@ const CameraScreen = (props) => {
     // )
 
     // camera Functions
-    async function takePictureHandler() {
+    const takePictureHandler = async () => {
         try {
             if (cameraRef.current) {
                 const options = {
@@ -156,6 +189,7 @@ const CameraScreen = (props) => {
                 }
                 let photo = await cameraRef.current.takePictureAsync(options)
                 setPic(photo.uri)
+                setPicture64(photo.base64)
                 dispatch(takePicture(photo.uri))
                 setShowModal(true)
             }
@@ -167,13 +201,13 @@ const CameraScreen = (props) => {
         // props.onImageTaken(image.uri)
     }
 
-    function flipCameraHandler() {
+    const flipCameraHandler = useCallback(() => {
         setType(
             type === Camera.Constants.Type.back
                 ? Camera.Constants.Type.front
                 : Camera.Constants.Type.back
         )
-    }
+    }, [])
 
     function flashSwitchHandler() {
         if (flashMode === 'off') {
@@ -230,7 +264,6 @@ const CameraScreen = (props) => {
     function updateValue() {
         setZooming(zoom.value)
     }
-
     function willThisWork() {
         'worklet'
         runOnJS(updateValue)()
@@ -264,25 +297,52 @@ const CameraScreen = (props) => {
         console.log('started')
         let video = await cameraRef.current.recordAsync()
         setVideo(video)
-        // setPic(photo.uri)
         // dispatch(takePicture(photo.uri))
     }
-
     async function endRecording() {
         console.log('ended')
         cameraRef.current.stopRecording()
         setShowVideoModal(true)
     }
 
+    //UPLOADING PICTURE
+    const uploadPhotoHandler = () => {
+        console.log(picture64)
+        dispatch(addToGallery(`data:image/jpeg;base64,${picture64}`, '1'))
+    }
+
     return (
-        <View style={styles.container}>
+        <View
+            style={{
+                ...styles.container,
+                // paddingTop: Platform.OS === 'android' ? insets.top : null,
+            }}
+        >
+            <StatusBar
+                style=""
+                translucent
+                backgroundColor="rgba(255,255,255,0)"
+            />
             <PinchGestureHandler onGestureEvent={onPinchGesture}>
-                <Reanimated.View style={StyleSheet.absoluteFill}>
+                <Reanimated.View
+                    style={{
+                        flex: 1,
+                        backgroundColor: 'black',
+                        justifyContent: 'flex-start',
+                        paddingBottom: -imagePadding,
+                    }}
+                >
                     {activateCamera && (
                         <Camera
                             style={{
                                 // marginTop: imagePadding,
                                 // marginBottom: imagePadding,
+                                // height: height - imagePadding * 4,
+                                // width: '100%',
+                                aspectRatio:
+                                    Platform.OS === 'android'
+                                        ? previewRatio
+                                        : null,
                                 flex: 1,
                             }}
                             ref={cameraRef}
@@ -292,127 +352,91 @@ const CameraScreen = (props) => {
                             onCameraReady={setCameraReady}
                             ratio={ratio}
                             maxDuration={10000}
-                        >
-                            <View
-                                style={[
-                                    styles.contentContainer,
-                                    {
-                                        paddingTop: insets.top,
-                                        paddingBottom: insets.bottom,
-                                        top: insets.top,
-                                        bottom: insets.bottom,
-                                    },
-                                ]}
-                            >
-                                <View style={styles.topLeftCont}>
-                                    <TouchableOpacity
-                                        onPress={flipCameraHandler}
-                                    >
-                                        <Entypo
-                                            name="loop"
-                                            size={27}
-                                            color="white"
-                                            style={styles.flipIcon}
-                                        />
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity
-                                        onPress={flashSwitchHandler}
-                                    >
-                                        <Ionicons
-                                            name={
-                                                flashMode !== 'off'
-                                                    ? 'flash'
-                                                    : 'flash-off'
-                                            }
-                                            size={27}
-                                            color="white"
-                                            style={styles.cameraSettingsButton}
-                                        />
-                                    </TouchableOpacity>
-                                </View>
-                                <View
-                                    style={{
-                                        ...styles.floatingPlusCont,
-                                        left: width / 2 - 40,
-                                    }}
-                                >
-                                    <TouchableOpacity
-                                        activeOpacity={0.9}
-                                        onPress={takePictureHandler}
-                                        onLongPress={beginRecording}
-                                        delayPressOut={1000}
-                                        delayLongPress={900}
-                                        onPressOut={endRecording}
-                                    >
-                                        <View
-                                            style={styles.bigPlusButton}
-                                        ></View>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        </Camera>
+                            autoFocus="on"
+                        ></Camera>
                     )}
+                    <View
+                        style={[
+                            styles.contentContainer,
+                            {
+                                paddingTop: insets.top,
+                                paddingBottom: insets.bottom,
+                                top: insets.top,
+                                bottom: insets.bottom,
+                            },
+                        ]}
+                    >
+                        <View style={styles.topLeftCont}>
+                            <TouchableOpacity onPress={flipCameraHandler}>
+                                <Entypo
+                                    name="loop"
+                                    size={27}
+                                    color="white"
+                                    style={styles.flipIcon}
+                                />
+                            </TouchableOpacity>
+
+                            <TouchableOpacity onPress={flashSwitchHandler}>
+                                <Ionicons
+                                    name={
+                                        flashMode !== 'off'
+                                            ? 'flash'
+                                            : 'flash-off'
+                                    }
+                                    size={27}
+                                    color="white"
+                                    style={styles.cameraSettingsButton}
+                                />
+                            </TouchableOpacity>
+                        </View>
+
+                        <CameraButton
+                            style={{
+                                ...styles.floatingPlusCont,
+                                left: width / 2 - 45,
+                            }}
+                            onLongPress={beginRecording}
+                            onEndPress={endRecording}
+                            onTap={takePictureHandler}
+                        />
+                    </View>
                 </Reanimated.View>
             </PinchGestureHandler>
 
-            <Modal
-                visible={showModal}
-                transparent
-                animationType="none"
-                statusBarTranslucent
-            >
-                <View style={styles.modal}>
+            {showModal && (
+                <View style={{ ...styles.modal, height: height }}>
                     <ImageBackground
                         source={{ uri: pic }}
-                        resizeMode="cover"
-                        style={styles.takenImage}
+                        style={{
+                            ...styles.takenImage,
+                            paddingTop: insets.top,
+                            paddingBottom: insets.bottom,
+                        }}
                     >
-                        <View
-                            style={{
-                                paddingTop: insets.top,
-                                paddingBottom: insets.bottom,
-                                flex: 1,
-                                borderWidth: 1,
+                        <HeaderX
+                            color="white"
+                            goBack={() => {
+                                setShowModal(false)
+                                setPic('')
                             }}
-                        >
-                            <HeaderX
-                                color="white"
-                                goBack={() => {
-                                    setShowModal(false)
-                                }}
-                            />
-                            <View style={styles.bottomCont}>
-                                <View style={styles.bottomButtonsCont}>
-                                    <Ionicons
-                                        name="download-outline"
-                                        size={30}
-                                        color="white"
-                                        onPress={() => {
-                                            savePictureLocallyHandler(pic)
-                                        }}
-                                    />
-                                    <Icon
-                                        name="upload"
-                                        type="feather"
-                                        size={30}
-                                        color="white"
-                                    />
-                                </View>
-                            </View>
-                        </View>
+                        />
+                        <EditorBottomActions
+                            onSave={savePictureLocallyHandler}
+                            onUpload={uploadPhotoHandler}
+                            checkMarkSet={checkMarkSet}
+                        />
                     </ImageBackground>
                 </View>
-            </Modal>
-
-            <Modal visible={showVideoModal}>
-                <View style={styles.modal}>
+            )}
+            {showVideoModal && (
+                <View style={{ ...styles.modal, height: height }}>
                     <Video
                         // ref={video}
                         style={[
                             StyleSheet.absoluteFill,
                             {
                                 backgroundColor: 'black',
+                                height: height,
                             },
                         ]}
                         source={{
@@ -425,15 +449,20 @@ const CameraScreen = (props) => {
                         //     setStatus(() => status)
                         // }
                     />
-                    <View style={{ height: 80 }}></View>
+                    <View
+                        style={{
+                            paddingTop: insets.top,
+                        }}
+                    ></View>
                     <HeaderX
                         color="white"
                         goBack={() => {
                             setShowVideoModal(false)
+                            setVideo('')
                         }}
                     />
                 </View>
-            </Modal>
+            )}
         </View>
     )
 }
@@ -441,14 +470,13 @@ const CameraScreen = (props) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        justifyContent: 'flex-start',
     },
     contentContainer: {
         flex: 1,
-        borderWidth: 1,
         position: 'absolute',
         right: 0,
         left: 0,
-        borderWidth: 0,
     },
     camera: {
         flex: 1,
@@ -484,7 +512,10 @@ const styles = StyleSheet.create({
         left: 0,
         bottom: 0,
     },
-    takenImage: { flex: 1 },
+    takenImage: {
+        flex: 1,
+        justifyContent: 'space-between',
+    },
     bottomCont: {
         flex: 1,
         justifyContent: 'flex-end',
@@ -496,32 +527,26 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         paddingHorizontal: 5,
     },
-    bigPlusButton: {
-        backgroundColor: 'transparent',
-        borderColor: 'white',
-        borderWidth: 7,
-        width: 80,
-        height: 80,
-        borderRadius: 40,
+    floatingPlusCont: {
+        bottom: 25,
+        position: 'absolute',
+        width: 90,
+        height: 90,
+        borderRadius: 45,
+    },
+    loadingView: {
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    circle: {
+        // marginLeft: 10,
+        height: 40,
+        width: 60,
+        borderRadius: 20,
+        backgroundColor: colors.lightTint,
         alignItems: 'center',
         justifyContent: 'center',
-        // shadowColor: 'black',
-        // shadowRadius: 6,
-        // shadowOpacity: 0.1,
-        // shadowOffset: {
-        //     width: 0,
-        //     height: 2,
-        // },
-        // elevation: 5,
-    },
-    floatingPlusCont: {
-        bottom: 23,
-        position: 'absolute',
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        // overflow: Platform.OS === 'android' ? 'hidden' : 'visible',
-        elevation: 1,
     },
 })
 

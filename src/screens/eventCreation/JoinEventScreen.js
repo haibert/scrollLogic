@@ -258,7 +258,6 @@ const JoinEventScreen = ({ route, navigation }) => {
                                     navigation.goBack()
                                 }}
                                 header=" Scan to Join"
-                                iconName="chevron-back-outline"
                             />
                             <View style={styles.outerScreenCont}>
                                 <GridComponent>
@@ -367,7 +366,7 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'flex-end',
-        paddingBottom: 30,
+        paddingBottom: 20,
     },
     inputView: {
         height: 50,

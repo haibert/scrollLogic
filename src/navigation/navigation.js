@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback } from 'react'
-
+import { Platform } from 'react-native'
 import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import { createDrawerNavigator } from '@react-navigation/drawer'
@@ -25,6 +25,7 @@ import DashboardScreen from '../screens/DashboardScreen'
 import CameraScreen from '../screens/CameraScreen'
 import GalleryView from '../screens/GalleryView'
 import GalleryDetailScreen from '../screens/GalleryDetailScreen'
+import ButtonScreen from '../components/CameraButton'
 
 //event creation
 import CreateEventScreen from '../screens/eventCreation/CreateEventScreen'
@@ -60,6 +61,7 @@ const SignUpNavigation = () => {
             screenOptions={{
                 headerShown: false,
             }}
+            detachInactiveScreens={true}
         >
             <MainStack.Screen name="ASignupScreen" component={ASignupScreen} />
             <MainStack.Screen
@@ -92,6 +94,7 @@ const DashModalStack = () => {
                 },
                 gestureDirection: 'vertical',
             }}
+            detachInactiveScreens={true}
         >
             <DashStackShared.Screen
                 name="DashboardScreen"
@@ -108,13 +111,13 @@ const DashModalStack = () => {
                     headerShown: false,
                     useNativeDriver: true,
                     gestureEnabled: true,
-                    // cardStyleInterpolator: ({ current: { progress } }) => {
-                    //     return {
-                    //         cardStyle: {
-                    //             opacity: progress,
-                    //         },
-                    //     }
-                    // },
+                    cardStyleInterpolator: ({ current: { progress } }) => {
+                        return {
+                            cardStyle: {
+                                opacity: progress,
+                            },
+                        }
+                    },
                     cardStyle: {
                         backgroundColor: 'transparent',
                     },
@@ -124,8 +127,9 @@ const DashModalStack = () => {
                     return [
                         {
                             id: image.id,
-                            // animation: 'move',
-                            // resize: 'clip',
+                            animation:
+                                Platform.OS === 'android' ? 'fade-out' : null,
+                            // resize: 'none',
                             // align: 'left-top',
                         },
                     ]
@@ -253,6 +257,7 @@ const AppNavigator = () => {
                     options={{
                         headerShown: false,
                     }}
+                    detachInactiveScreens={true}
                 />
 
                 <MainStack.Screen
@@ -266,6 +271,16 @@ const AppNavigator = () => {
                 <MainStack.Screen
                     name="DrawerNav"
                     component={DrawerNav}
+                    options={{
+                        headerShown: false,
+                        gestureEnabled: false,
+                        animationEnabled: false,
+                    }}
+                />
+
+                <MainStack.Screen
+                    name="ButtonScreen"
+                    component={ButtonScreen}
                     options={{
                         headerShown: false,
                         gestureEnabled: false,

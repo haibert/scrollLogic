@@ -19,6 +19,8 @@ import colors from '../../constants/colors'
 
 //custom button
 import Button from '../../components/Button'
+import ScreenWrapper from '../../components/ScreenWrapper'
+import HeaderBasic from '../../components/HeaderBasic'
 
 //formik
 import { Formik } from 'formik'
@@ -26,7 +28,7 @@ import * as yup from 'yup'
 import 'yup-phone'
 
 //redux
-import { addFirstName, addLastName } from '../../store/signup/actions'
+import { addFirstName, addLastName } from '../../store/signup-auth/actions'
 import { useDispatch, useSelector } from 'react-redux'
 
 function hideKeyboard() {
@@ -56,188 +58,161 @@ const BAddYourName = (props) => {
             .max(40)
             .required('Your full name is required.'),
     })
-
+    console.log('rerender')
     return (
-        <LinearGradient
-            // colors={['rgba(255, 237, 187, 1)', 'rgba(255, 227, 255, 1)']}
-            colors={['rgba(255, 237, 187, 1)', 'rgba(150, 227, 255, 1)']}
-            style={{ flex: 1 }}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-        >
+        <ScreenWrapper>
+            <HeaderBasic
+                goBack={() => {
+                    props.navigation.goBack()
+                }}
+                iconName="chevron-back-outline"
+            />
             <View
                 style={{
-                    paddingTop: insets.top,
-                    paddingBottom: insets.bottom,
                     flex: 1,
+                    paddingHorizontal: 20,
+                }}
+                onLayout={(event) => {
+                    setUseableScreenDimensions({
+                        width: event.nativeEvent.layout.width,
+                        height: event.nativeEvent.layout.height,
+                    })
                 }}
             >
-                <View style={styles.xCont}>
-                    <TouchableOpacity
-                        onPress={() => {
-                            props.navigation.goBack()
+                <TouchableWithoutFeedback onPress={hideKeyboard}>
+                    <View
+                        onLayout={(event) => {
+                            setTopDimensions({
+                                width: event.nativeEvent.layout.width,
+                                height: event.nativeEvent.layout.height,
+                            })
                         }}
                     >
-                        <Ionicons
-                            name="chevron-back-outline"
-                            size={40}
-                            color={colors.mediumTint}
-                        />
-                    </TouchableOpacity>
-                </View>
-                <View
-                    style={{
-                        flex: 1,
-                        paddingHorizontal: 20,
-                    }}
-                    onLayout={(event) => {
-                        setUseableScreenDimensions({
-                            width: event.nativeEvent.layout.width,
-                            height: event.nativeEvent.layout.height,
-                        })
-                    }}
-                >
-                    <TouchableWithoutFeedback onPress={hideKeyboard}>
-                        <View
-                            onLayout={(event) => {
-                                setTopDimensions({
-                                    width: event.nativeEvent.layout.width,
-                                    height: event.nativeEvent.layout.height,
-                                })
-                            }}
-                        >
-                            <View style={styles.titleCont}>
-                                <Text
-                                    style={styles.title}
-                                    maxFontSizeMultiplier={
-                                        colors.maxFontSizeMultiplier
-                                    }
-                                >
-                                    Add Your Name
-                                </Text>
-                                <Text
-                                    style={styles.underTitle}
-                                    maxFontSizeMultiplier={
-                                        colors.maxFontSizeMultiplier
-                                    }
-                                >
-                                    Add your name so friends can find you.
-                                </Text>
-                            </View>
+                        <View style={styles.titleCont}>
+                            <Text
+                                style={styles.title}
+                                maxFontSizeMultiplier={
+                                    colors.maxFontSizeMultiplier
+                                }
+                            >
+                                Add Your Name
+                            </Text>
+                            <Text
+                                style={styles.underTitle}
+                                maxFontSizeMultiplier={
+                                    colors.maxFontSizeMultiplier
+                                }
+                            >
+                                Add your name so friends can find you.
+                            </Text>
                         </View>
-                        <View
-                            style={[
-                                styles.midCont,
-                                {
-                                    height:
-                                        useableScreenDimensions.height -
-                                        topDimensions.height,
-                                },
-                            ]}
-                        >
-                            <View>
-                                <Formik
-                                    initialValues={{ email: '' }}
-                                    onSubmit={(values) => {
-                                        const enteredName = values.fullName.split(
-                                            ' '
-                                        )
-                                        const firstName = enteredName[0].trim()
-                                        const lastName = enteredName[
+                    </View>
+                    <View
+                        style={[
+                            styles.midCont,
+                            {
+                                height:
+                                    useableScreenDimensions.height -
+                                    topDimensions.height,
+                            },
+                        ]}
+                    >
+                        <View>
+                            <Formik
+                                initialValues={{ email: '' }}
+                                onSubmit={(values) => {
+                                    const enteredName =
+                                        values.fullName.split(' ')
+                                    const firstName = enteredName[0].trim()
+                                    const lastName =
+                                        enteredName[
                                             enteredName.length - 1
                                         ].trim()
 
-                                        dispatch(addFirstName(firstName))
-                                        dispatch(addLastName(lastName))
-                                        props.navigation.navigate(
-                                            'DCreatePassword'
-                                        )
-                                    }}
-                                    validationSchema={validationSchema}
-                                >
-                                    {({
-                                        handleChange,
-                                        handleBlur,
-                                        handleSubmit,
-                                        values,
-                                        errors,
-                                        resetForm,
-                                    }) => (
-                                        <View>
-                                            <View
-                                                style={{
-                                                    paddingHorizontal: 8,
-                                                    alignItems: 'center',
-                                                }}
-                                            >
-                                                <View
-                                                    style={styles.textInputCont}
+                                    dispatch(addFirstName(firstName))
+                                    dispatch(addLastName(lastName))
+                                    props.navigation.navigate('DCreatePassword')
+                                }}
+                                validationSchema={validationSchema}
+                            >
+                                {({
+                                    handleChange,
+                                    handleBlur,
+                                    handleSubmit,
+                                    values,
+                                    errors,
+                                    resetForm,
+                                }) => (
+                                    <View>
+                                        <View
+                                            style={{
+                                                paddingHorizontal: 8,
+                                                alignItems: 'center',
+                                            }}
+                                        >
+                                            <View style={styles.textInputCont}>
+                                                <TextInput
+                                                    onChangeText={handleChange(
+                                                        'fullName'
+                                                    )}
+                                                    onBlur={handleBlur(
+                                                        'fullName'
+                                                    )}
+                                                    value={values.fullName}
+                                                    style={styles.input}
+                                                    placeholder="Full Name"
+                                                    placeholderTextColor={
+                                                        colors.placeHolder
+                                                    }
+                                                    selectionColor={
+                                                        colors.lightTint
+                                                    }
+                                                    underlineColorAndroid="rgba(255,255,255,0)"
+                                                    maxFontSizeMultiplier={
+                                                        colors.maxFontSizeMultiplier
+                                                    }
+                                                    keyboardType="default"
+                                                    autoFocus
+                                                />
+                                                <TouchableOpacity
+                                                    onPress={() => {
+                                                        resetForm()
+                                                    }}
                                                 >
-                                                    <TextInput
-                                                        onChangeText={handleChange(
-                                                            'fullName'
-                                                        )}
-                                                        onBlur={handleBlur(
-                                                            'fullName'
-                                                        )}
-                                                        value={values.fullName}
-                                                        style={styles.input}
-                                                        placeholder="Full Name"
-                                                        placeholderTextColor={
-                                                            colors.placeHolder
+                                                    <Ionicons
+                                                        name="close-circle"
+                                                        size={20}
+                                                        color={
+                                                            colors.mediumTint
                                                         }
-                                                        selectionColor={
-                                                            colors.lightTint
-                                                        }
-                                                        underlineColorAndroid="rgba(255,255,255,0)"
-                                                        maxFontSizeMultiplier={
-                                                            colors.maxFontSizeMultiplier
-                                                        }
-                                                        keyboardType="default"
-                                                        autoFocus
-                                                    />
-                                                    <TouchableOpacity
-                                                        onPress={() => {
-                                                            resetForm()
+                                                        style={{
+                                                            marginTop: 30,
                                                         }}
-                                                    >
-                                                        <Ionicons
-                                                            name="close-circle"
-                                                            size={20}
-                                                            color={
-                                                                colors.mediumTint
-                                                            }
-                                                            style={{
-                                                                marginTop: 30,
-                                                            }}
-                                                        />
-                                                    </TouchableOpacity>
-                                                </View>
+                                                    />
+                                                </TouchableOpacity>
                                             </View>
-
-                                            <Text style={styles.errorText}>
-                                                {showErrors
-                                                    ? errors.fullName
-                                                    : ' '}
-                                            </Text>
-
-                                            <Button
-                                                style={styles.button}
-                                                onPress={() => {
-                                                    setShowErrors(true)
-                                                    handleSubmit()
-                                                }}
-                                                text="Next"
-                                            />
                                         </View>
-                                    )}
-                                </Formik>
-                            </View>
+
+                                        <Text style={styles.errorText}>
+                                            {showErrors ? errors.fullName : ' '}
+                                        </Text>
+
+                                        <Button
+                                            style={styles.button}
+                                            onPress={() => {
+                                                setShowErrors(true)
+                                                handleSubmit()
+                                            }}
+                                            text="Next"
+                                        />
+                                    </View>
+                                )}
+                            </Formik>
                         </View>
-                    </TouchableWithoutFeedback>
-                </View>
+                    </View>
+                </TouchableWithoutFeedback>
             </View>
-        </LinearGradient>
+        </ScreenWrapper>
     )
 }
 
