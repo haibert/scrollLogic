@@ -31,12 +31,10 @@ const ScaleButton = ({
     })
     function runOnJSPlease() {
         'worklet'
+
         runOnJS(onPress)()
     }
     const animateIn = () => {
-        if (haptics) {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
-        }
         scale.value = activeScale
     }
     const animateOut = () => {
@@ -44,7 +42,12 @@ const ScaleButton = ({
     }
     return (
         <TouchableWithoutFeedback
-            onPress={runOnJSPlease}
+            onPress={() => {
+                runOnJSPlease()
+                if (haptics) {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+                }
+            }}
             onPressIn={animateIn}
             onPressOut={animateOut}
         >

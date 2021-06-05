@@ -31,7 +31,7 @@ import ScreenWrapper from '../../components/ScreenWrapper'
 const { height, width } = Dimensions.get('screen')
 
 //redux
-import { addEvent } from '../../store/event/action'
+import { addGallery } from '../../store/event/action'
 import { useDispatch, useSelector } from 'react-redux'
 
 //formik
@@ -124,7 +124,7 @@ const CreateEventScreen = (props) => {
                                     async function createEvent() {
                                         try {
                                             await dispatch(
-                                                addEvent(
+                                                addGallery(
                                                     values.eventName,
                                                     'public',
                                                     'none',

@@ -1,10 +1,11 @@
 export const TAKE_PICTURE = 'TAKE_PICTURE'
 export const ADD_TO_GALLERY = 'ADD_TO_GALLERY'
 
-export const takePicture = (uri) => {
+export const takePicture = (uri, base64) => {
     return {
         type: TAKE_PICTURE,
         pictureUri: uri,
+        pictureBase64: base64,
     }
 }
 
@@ -13,8 +14,8 @@ export const addToGallery = (photo, galleryID) => {
         const userID = getState().signupReducer.userInfo.userID
         const body = JSON.stringify({
             userID: userID,
-            photo,
             galleryID,
+            photo,
         })
         console.log('🚀 ~ file: actions.js ~ line 19 ~ return ~ body', body)
         try {

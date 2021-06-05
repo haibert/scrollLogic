@@ -5,6 +5,8 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { createDrawerNavigator } from '@react-navigation/drawer'
 import { enableScreens } from 'react-native-screens'
 
+//custom screen options
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native'
 //enableScreens
 enableScreens()
 
@@ -52,8 +54,24 @@ import { useDispatch } from 'react-redux'
 import { Camera } from 'expo-camera'
 import { Audio } from 'expo-av'
 
+//async AsyncStorage
+import AsyncStorage from '@react-native-async-storage/async-storage'
 const MainStack = createStackNavigator()
 const Drawer = createDrawerNavigator()
+
+//----------------------------------------------------------------CUSTOM DRAWER BEHAVIORS----------------------------------------------------------------
+function getDrawerState(route) {
+    const routeName = getFocusedRouteNameFromRoute(route) ?? 'DashboardScreen'
+    console.log(routeName)
+
+    switch (routeName) {
+        case 'GalleryView':
+            return false
+        case 'GalleryDetailScreen':
+            return false
+    }
+}
+//----------------------------------------------------------------CUSTOM DRAWER BEHAVIORS----------------------------------------------------------------
 
 const SignUpNavigation = () => {
     return (
@@ -123,10 +141,10 @@ const DashModalStack = () => {
                     },
                 })}
                 sharedElementsConfig={(route) => {
-                    const { image } = route.params
+                    const { gallery } = route.params
                     return [
                         {
-                            id: image.id,
+                            id: gallery?.galleryID,
                             animation:
                                 Platform.OS === 'android' ? 'fade-out' : null,
                             // resize: 'none',
@@ -198,7 +216,7 @@ const MainInnerNavigation = () => {
     )
 }
 
-function DrawerNav() {
+function DrawerNav({ navigation, route }) {
     return (
         <Drawer.Navigator
             drawerContent={(props) => <DrawerContent {...props} />}
@@ -210,12 +228,12 @@ function DrawerNav() {
                 activeTintColor: colors.textColor,
                 activeBackgroundColor: colors.buttonPinkTransparent,
             }}
-            detachInactiveScreens
+            detachInactiveScreens={true}
         >
             <Drawer.Screen
                 name="DashboardScreen"
                 component={MainInnerNavigation}
-                options={{
+                options={({ route }) => ({
                     drawerLabel: 'Home',
                     drawerIcon: (config) => (
                         <Ionicons
@@ -224,13 +242,15 @@ function DrawerNav() {
                             size={config.size}
                         />
                     ),
-                }}
+                    // swipeEnabled: getDrawerState(route),
+                })}
             />
         </Drawer.Navigator>
     )
 }
 
 const AppNavigator = () => {
+    //----------------------------------------------------------------PERMISSION CHECKER----------------------------------------------------------------
     const dispatch = useDispatch()
     const checkPermission = useCallback(async () => {
         const { status } = await Camera.getPermissionsAsync()
@@ -247,6 +267,7 @@ const AppNavigator = () => {
     useEffect(() => {
         checkPermission()
     }, [dispatch])
+    //----------------------------------------------------------------PERMISSION CHECKER----------------------------------------------------------------
 
     return (
         <NavigationContainer>

@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, StyleSheet } from 'react-native'
+import { View, StyleSheet, TouchableOpacity } from 'react-native'
 
 //ionicons
 import { Ionicons } from '@expo/vector-icons'
@@ -12,24 +12,38 @@ const EditorBottomActions = (props) => {
     return (
         // <View style={styles.bottomCont}>
         <View style={styles.bottomButtonsCont}>
-            <View style={styles.circle}>
-                <Ionicons
-                    name="download-outline"
-                    size={28}
-                    color="white"
-                    onPress={props.onSave}
-                />
-            </View>
+            <TouchableOpacity onPress={props.onSave}>
+                <View style={styles.circle}>
+                    <Ionicons
+                        name="download-outline"
+                        size={27}
+                        color="white"
+                        onPress={props.onSave}
+                    />
+                </View>
+            </TouchableOpacity>
 
-            <View style={styles.circle}>
-                <Icon
-                    name={props.checkMarkSet ? 'check' : 'upload'}
-                    type="feather"
-                    size={28}
-                    color="white"
-                    onPress={props.onUpload}
-                />
-            </View>
+            <TouchableOpacity
+                onPress={
+                    props.checkMarkSet
+                        ? props.onUpload
+                        : props.onPresentGalleries
+                }
+            >
+                <View style={styles.circle}>
+                    <Ionicons
+                        name={props.checkMarkSet ? 'checkmark' : 'send'}
+                        type="feather"
+                        size={27}
+                        color="white"
+                        onPress={
+                            props.checkMarkSet
+                                ? props.onUpload
+                                : props.onPresentGalleries
+                        }
+                    />
+                </View>
+            </TouchableOpacity>
         </View>
         // </View>
     )

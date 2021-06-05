@@ -32,6 +32,9 @@ import QRCode from 'react-native-qrcode-svg'
 // async storage
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
+//redux
+import { useSelector } from 'react-redux'
+
 const { height, width } = Dimensions.get('screen')
 
 const QrCodeScreen = ({ navigation, route }) => {
@@ -47,6 +50,12 @@ const QrCodeScreen = ({ navigation, route }) => {
             return Math.random().toFixed(3) * 1000
         }
     }, [])
+
+    const newGalID = useSelector((state) => state.galleryReducer.newGalleryID)
+    console.log(
+        '🚀 ~ file: QrCodeScreen.js ~ line 55 ~ QrCodeScreen ~ newGalID',
+        newGalID
+    )
 
     const { qrCodePortion } = route.params
 
@@ -123,7 +132,8 @@ const QrCodeScreen = ({ navigation, route }) => {
                     style={styles.button}
                     onPress={() => {
                         navigation.navigate('CameraScreen', {
-                            checkMark: 'checkMark',
+                            checkMarkSet: 'checkMarkSet',
+                            newGalleryID: newGalID,
                         })
                     }}
                 />

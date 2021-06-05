@@ -1,10 +1,18 @@
-export default class Event {
-    constructor(title, creationDate, images, privateOrPublic) {
-        this.title = title
-        this.creationDate = creationDate
-        this.images = images
-        this.privateOrPublic = privateOrPublic
-        this.description = description
-        this.price = price
+export class Gallery {
+    constructor(galleryID, galleryName, thumbnail, eventDate) {
+        this.galleryID = galleryID
+        this.galleryName = galleryName
+        this.thumbnail = thumbnail
+        this.eventDate = eventDate
+        // this.privateOrPublic = privateOrPublic
+        // this.creationDate = creationDate
+    }
+}
+
+export class Pic {
+    constructor(galleryID, fullPath, id) {
+        this.galleryID = galleryID
+        this.fullPath = fullPath
+        this.id = id
     }
 }

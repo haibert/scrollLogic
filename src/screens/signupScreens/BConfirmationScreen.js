@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import {
     View,
     Text,
@@ -32,6 +32,11 @@ import HeaderBasic from '../../components/HeaderBasic'
 //redux
 import { useDispatch, useSelector } from 'react-redux'
 
+//formik
+import { Formik } from 'formik'
+import * as yup from 'yup'
+import 'yup-phone'
+
 function hideKeyboard() {
     Keyboard.dismiss()
 }
@@ -40,6 +45,8 @@ const { height, width } = Dimensions.get('window')
 
 const AConfirmationScreen = (props) => {
     const insets = useSafeAreaInsets()
+
+    const phoneConfirm = props.route.params?.phoneConfirm
 
     const [topDimensions, setTopDimensions] = useState({ height: 0, width: 0 })
     const [useableScreenDimensions, setUseableScreenDimensions] = useState({
@@ -55,7 +62,17 @@ const AConfirmationScreen = (props) => {
     const dispatch = useDispatch()
 
     function inputChangeHandler(number) {
-        if (number.trim().length === 7) {
+        // console.log(code.toString())
+        // console.log(number.trim().toString())
+        if (phoneConfirm && number.trim() == textCode) {
+            setConfirmationErrorMessage(' ')
+            setConfirmLengthValid(true)
+        } else {
+            setConfirmLengthValid(false)
+        }
+
+        if (!phoneConfirm && number.trim() == emailCode) {
+            setConfirmationErrorMessage(' ')
             setConfirmLengthValid(true)
         } else {
             setConfirmLengthValid(false)
@@ -70,6 +87,27 @@ const AConfirmationScreen = (props) => {
             setConfirmationErrorMessage('Incorrect confirmation code.')
         }
     }
+
+    const emailCode = useSelector(
+        (state) => state.signupReducer.confirmationEmail
+    )
+
+    const textCode = useSelector(
+        (state) => state.signupReducer.confirmationText
+    )
+
+    //----------------------------------------------------------------Validation Schema----------------------------------------------------------------
+    const [showErrors, setShowErrors] = useState(false)
+
+    const validationSchema = yup.object().shape({
+        Code: yup
+            .string()
+            .matches(/^\d+$/, 'The field should have digits only')
+            .max(6)
+            .required('Confirmation code is required.')
+            .min(6)
+            .matches(emailCode || textCode, 'Incorrect validation code.'),
+    })
 
     return (
         <ScreenWrapper>
@@ -117,7 +155,10 @@ const AConfirmationScreen = (props) => {
                             >
                                 Enter the confirmation code we sent to
                                 haibertbarfian@gmail.com.
-                                <TouchableOpacity onPress={() => {}}>
+                                <TouchableOpacity
+                                    onPress={() => {}}
+                                    style={{ bottom: -3 }}
+                                >
                                     <Text
                                         style={styles.underTitleBold}
                                         maxFontSizeMultiplier={
@@ -140,47 +181,107 @@ const AConfirmationScreen = (props) => {
                             },
                         ]}
                     >
-                        <View style={styles.textInputCont}>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Confirmation Code"
-                                placeholderTextColor={colors.placeHolder}
-                                selectionColor={colors.lightTint}
-                                underlineColorAndroid="rgba(255,255,255,0)"
-                                maxFontSizeMultiplier={
-                                    colors.maxFontSizeMultiplier
-                                }
-                                keyboardType="number-pad"
-                                maxLength={7}
-                                onChangeText={inputChangeHandler}
-                                value={enteredNumber}
-                                autoFocus
-                            />
-                            <TouchableOpacity
-                                onPress={() => {
-                                    setEnteredNumber('')
-                                    setConfirmationErrorMessage(' ')
-                                    setConfirmLengthValid(false)
+                        <View>
+                            <Formik
+                                initialValues={{ Code: '' }}
+                                onSubmit={(values) => {
+                                    console.log(values.Code)
+                                    console.log(textCode)
+                                    console.log(phoneConfirm)
+                                    if (
+                                        phoneConfirm &&
+                                        values.Code.trim() == textCode
+                                    ) {
+                                        console.log('got here')
+                                        props.navigation.navigate(
+                                            'CAddYourName'
+                                        )
+                                    }
+
+                                    if (
+                                        !phoneConfirm &&
+                                        values.Code.trim() == emailCode
+                                    ) {
+                                        props.navigation.navigate(
+                                            'CAddYourName'
+                                        )
+                                    }
                                 }}
+                                validationSchema={validationSchema}
                             >
-                                <Ionicons
-                                    name="close-circle"
-                                    size={20}
-                                    color={colors.mediumTint}
-                                    style={{ marginTop: 30 }}
-                                />
-                            </TouchableOpacity>
+                                {({
+                                    handleChange,
+                                    handleBlur,
+                                    handleSubmit,
+                                    values,
+                                    errors,
+                                    resetForm,
+                                }) => (
+                                    <View>
+                                        <View
+                                            style={{
+                                                paddingHorizontal: 8,
+                                                alignItems: 'center',
+                                            }}
+                                        >
+                                            <View style={styles.textInputCont}>
+                                                <TextInput
+                                                    onChangeText={handleChange(
+                                                        'Code'
+                                                    )}
+                                                    onBlur={handleBlur('Code')}
+                                                    value={values.Code}
+                                                    style={styles.input}
+                                                    placeholder="Confirmation Code"
+                                                    placeholderTextColor={
+                                                        colors.placeHolder
+                                                    }
+                                                    selectionColor={
+                                                        colors.lightTint
+                                                    }
+                                                    underlineColorAndroid="rgba(255,255,255,0)"
+                                                    maxFontSizeMultiplier={
+                                                        colors.maxFontSizeMultiplier
+                                                    }
+                                                    keyboardType="numeric"
+                                                    autoFocus
+                                                    max={6}
+                                                />
+                                                <TouchableOpacity
+                                                    onPress={() => {
+                                                        resetForm()
+                                                    }}
+                                                >
+                                                    <Ionicons
+                                                        name="close-circle"
+                                                        size={20}
+                                                        color={
+                                                            colors.mediumTint
+                                                        }
+                                                        style={{
+                                                            marginTop: 30,
+                                                        }}
+                                                    />
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
+
+                                        <Text style={styles.errorText}>
+                                            {showErrors ? errors.Code : ' '}
+                                        </Text>
+
+                                        <Button
+                                            style={styles.button}
+                                            onPress={() => {
+                                                setShowErrors(true)
+                                                handleSubmit()
+                                            }}
+                                            text="Next"
+                                        />
+                                    </View>
+                                )}
+                            </Formik>
                         </View>
-                        <View style={{ width: '100%' }}>
-                            <Text style={styles.errorText}>
-                                {confirmationErrorMessage}
-                            </Text>
-                        </View>
-                        <Button
-                            style={styles.button}
-                            onPress={nextPressedHandler}
-                            text="Next"
-                        />
                     </View>
                 </TouchableWithoutFeedback>
             </View>
@@ -246,32 +347,34 @@ const styles = StyleSheet.create({
         width: '50%',
         marginTop: -1,
     },
-    midCont: {
-        alignItems: 'center',
-    },
     textInputCont: {
         flexDirection: 'row',
         alignItems: 'center',
         borderBottomWidth: 1,
         borderColor: colors.lightTint,
+        paddingHorizontal: 1,
+    },
+    midCont: {
+        alignItems: 'center',
+    },
+    input: {
+        marginTop: 30,
+        width: '95%',
+        height: 50,
+        borderRadius: 5,
+        padding: 5,
+        color: colors.textColor,
+        fontSize: 17,
     },
     errorText: {
         marginHorizontal: 5,
         marginTop: 10,
         color: colors.lightTint,
         fontSize: 15,
-    },
-    input: {
-        marginTop: 30,
-        width: '92%',
-        height: 50,
-        borderRadius: 5,
-        padding: 10,
-        color: colors.textColor,
-        fontSize: 17,
+        height: 20,
     },
     button: {
-        marginTop: 40,
+        marginTop: 30,
     },
 })
 

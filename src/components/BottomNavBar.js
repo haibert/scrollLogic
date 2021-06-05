@@ -7,6 +7,9 @@ import {
 } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
+//custom components
+import ScaleButton from '../components/TouchableScale'
+
 //colors
 import colors from '../constants/colors'
 
@@ -87,9 +90,10 @@ const BottomNavBar = (props) => {
                     bottom: tabBarBottomPosition,
                 }}
             >
-                <TouchableOpacity
-                    activeOpacity={0.9}
+                <ScaleButton
                     onPress={props.onPlusPressed}
+                    activeScale={0.87}
+                    // contentContainerStyle={styles.cellOuter}
                 >
                     <View style={styles.bigPlusButton}>
                         <LinearGradient
@@ -112,7 +116,7 @@ const BottomNavBar = (props) => {
                             />
                         </LinearGradient>
                     </View>
-                </TouchableOpacity>
+                </ScaleButton>
             </View>
         </View>
     )

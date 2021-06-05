@@ -27,6 +27,7 @@ import Thumbnail from '../components/Thumbnail'
 import CustomHeaderBasic from '../components/HeaderBasic'
 import ScreenWrapper from '../components/ScreenWrapper'
 import BottomNavBar from '../components/BottomNavBar'
+import ActionBottomSheet from '../components/ActionBottomSheet'
 
 //customHooks
 import useAppState from '../hooks/useAppState'
@@ -56,6 +57,7 @@ import {
     savePermissionsStatus,
     loadPermissions,
 } from '../store/permissions/actions'
+import { setGalleries } from '../store/event/action'
 import { useDispatch, useSelector } from 'react-redux'
 
 const { height, width } = Dimensions.get('screen')
@@ -64,6 +66,7 @@ const DashboardScreen = (props) => {
     const insets = useSafeAreaInsets()
 
     let tabBarBottomPosition = insets.bottom > 0 ? insets.bottom / 2 + 2 : 10
+    const [deleteID, setDeleteID] = useState()
 
     const dispatch = useDispatch()
 
@@ -75,6 +78,37 @@ const DashboardScreen = (props) => {
     const greenLightOnPermissions = useSelector(
         (state) => state.permissionsReducer.permissions.camera
     )
+
+    //----------------------------------------------------------------BOTTOM SHEET----------------------------------------------------------------
+    const bottomSheetRef = useRef()
+    //----------------------------------------------------------------BOTTOM SHEET----------------------------------------------------------------
+
+    //-----------------------------------------------------LOAD GALLERIES--------------------------------------------------------
+    const [loadingGalleries, setLoadingGalleries] = useState(false)
+    // states
+    const galleries = useSelector((state) => state.galleryReducer.galleries)
+    const id = useSelector((state) => state.signupReducer.userInfo.userID)
+    console.log(
+        '🚀 ~ file: DashboardScreen.js ~ line 91 ~ DashboardScreen ~ id',
+        id
+    )
+
+    const loadGalleries = useCallback(async () => {
+        setLoadingGalleries(true)
+        // setError(null)
+        try {
+            await dispatch(setGalleries())
+        } catch (error) {
+            setLoadingGalleries(false)
+            // setError(error.message)
+        }
+        setLoadingGalleries(false)
+    }, [])
+
+    useEffect(() => {
+        loadGalleries()
+    }, [loadGalleries])
+    //-----------------------------------------------------LOAD GALLERIES--------------------------------------------------------
 
     // useFocusEffect(() => {
     //     const prevent = BackHandler
@@ -150,9 +184,9 @@ const DashboardScreen = (props) => {
         askForQRScannerPermissions()
     }
 
-    function galleryPressedHandler(image) {
+    function galleryPressedHandler(gallery) {
         props.navigation.navigate('GalleryView', {
-            image,
+            gallery,
         })
     }
 
@@ -242,8 +276,10 @@ const DashboardScreen = (props) => {
 
             <FlatList
                 style={styles.flatList}
-                data={images}
-                keyExtractor={(item) => `${item.id}`}
+                onRefresh={loadGalleries}
+                refreshing={loadingGalleries}
+                data={galleries}
+                keyExtractor={(item) => `${item.galleryID}`}
                 renderItem={({ item, index }) => {
                     return (
                         <Thumbnail
@@ -252,6 +288,11 @@ const DashboardScreen = (props) => {
                                 galleryPressedHandler(item)
                             }}
                             navigation={props.navigation}
+                            galleryName={item.galleryName}
+                            onActionsPressed={() => {
+                                bottomSheetRef.current?.handlePresentModalPress()
+                                setDeleteID(item.galleryID)
+                            }}
                         />
                     )
                 }}
@@ -288,7 +329,7 @@ const DashboardScreen = (props) => {
                                         'CreateEventScreen'
                                     )
                                 }}
-                            ></Button>
+                            />
                         </View>
                         <Button
                             style={styles.cancelButton}
@@ -296,10 +337,17 @@ const DashboardScreen = (props) => {
                                 setShowModal(false)
                             }}
                             text="Cancel"
-                        ></Button>
+                        />
                     </View>
                 </View>
             </Modal>
+
+            <ActionBottomSheet
+                ref={bottomSheetRef}
+                navigation={props.navigation}
+                galleryID={deleteID}
+                refreshGalleryList={loadGalleries}
+            />
         </ScreenWrapper>
     )
 }

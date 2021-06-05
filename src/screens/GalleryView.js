@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react'
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import {
     View,
     Text,
@@ -26,6 +26,9 @@ import ScreenWrapper from '../components/ScreenWrapper'
 import HeaderBasic from '../components/HeaderBasic'
 import ThumbnailSmall from '../components/ThumbnailSmall'
 
+//hooks
+import useDidMountEffect from '../hooks/useDidMountEffect'
+
 //useFocus
 import { useFocusEffect } from '@react-navigation/native'
 
@@ -44,10 +47,24 @@ import { Icon } from 'react-native-elements'
 //dummy data
 import images from '../data/images'
 
+//redux
+import { setPics } from '../store/event/action'
+import { useDispatch, useSelector } from 'react-redux'
+
 const GalleryView = ({ route, navigation }) => {
-    const { image } = route.params
+    const { gallery } = route.params
+
+    const shouldRefresh = useMemo(() => {
+        const result = route.params?.shouldRefresh
+        return result
+    }, [route])
+    console.log(
+        '🚀 ~ file: GalleryView.js ~ line 57 ~ shouldRefresh ~ shouldRefresh',
+        shouldRefresh
+    )
 
     const insets = useSafeAreaInsets()
+    const dispatch = useDispatch()
 
     // pan gesture handler
     // const enable = useSharedValue(false).value
@@ -156,6 +173,37 @@ const GalleryView = ({ route, navigation }) => {
         }
     }, [])
 
+    //-----------------------------------------------------LOAD PICS--------------------------------------------------------
+    const [loadingPics, setLoadingPics] = useState()
+
+    // -------------
+    const pics = useSelector((state) => state.galleryReducer.pics)
+
+    const loadPics = useCallback(async () => {
+        setLoadingPics(true)
+        // setError(null)
+        try {
+            await dispatch(setPics(gallery.galleryID))
+        } catch (error) {
+            setError(error.message)
+        }
+        setLoadingPics(false)
+    }, [])
+
+    useFocusEffect(
+        useCallback(() => {
+            console.log('ran')
+            loadPics()
+        }, [loadPics])
+    )
+
+    //-----------------------------------------------------LOAD PICS--------------------------------------------------------
+
+    React.useLayoutEffect(() => {
+        navigation.setOptions({
+            swipeEnabled: false,
+        })
+    }, [navigation])
     return (
         <PanGestureHandler
             ref={panViewRef}
@@ -175,10 +223,13 @@ const GalleryView = ({ route, navigation }) => {
                     // onStartShouldSetResponderCapture={scrollChecker}
                     style={{ paddingBottom: 0 }}
                 >
-                    <SharedElement id={image.id} style={styles.sharedElement}>
+                    <SharedElement
+                        id={gallery?.galleryID}
+                        style={styles.sharedElement}
+                    >
                         <ImageBackground
                             style={styles.imageBg}
-                            source={image.picture}
+                            source={gallery?.thumbnail}
                             resizeMode="cover"
                         ></ImageBackground>
                     </SharedElement>
@@ -194,18 +245,21 @@ const GalleryView = ({ route, navigation }) => {
                         onPressRight={() => {
                             navigation.navigate('CameraScreen', {
                                 checkMarkSet: 'checkMarkSet',
+                                galleryID: gallery.galleryID,
                             })
                         }}
                     />
 
                     <FlatList
+                        onRefresh={loadPics}
+                        refreshing={loadingPics}
                         ref={scrollViewRef}
                         waitFor={enable ? panViewRef : scrollViewRef}
                         scrollEventThrottle={16}
                         onScroll={onScroll}
                         style={styles.flatList}
-                        data={images}
-                        keyExtractor={(item) => `${item.id}`}
+                        data={pics}
+                        keyExtractor={(item) => item.id}
                         renderItem={(item) => {
                             return (
                                 <ThumbnailSmall

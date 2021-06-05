@@ -25,7 +25,7 @@ init()
 import signupReducer from './src/store/signup-auth/reducer'
 import cameraReducer from './src/store/camera/reducer'
 import permissionsReducer from './src/store/permissions/reducer'
-import eventReducer from './src/store/event/reducer'
+import galleryReducer from './src/store/event/reducer'
 
 // if (Platform.OS === 'android') {
 //     // StatusBar.setBackgroundColor('black')
@@ -36,7 +36,7 @@ const rootReducer = combineReducers({
     signupReducer: signupReducer,
     cameraReducer: cameraReducer,
     permissionsReducer: permissionsReducer,
-    eventReducer: eventReducer,
+    galleryReducer: galleryReducer,
 })
 
 const store = createStore(rootReducer, applyMiddleware(ReduxThunk))

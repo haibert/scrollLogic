@@ -101,7 +101,7 @@ const DAddYourBirthday = (props) => {
             <View
                 style={{
                     flex: 1,
-                    paddingHorizontal: 20,
+                    paddingHorizontal: 0,
                 }}
                 onLayout={(event) => {
                     setUseableScreenDimensions({
@@ -168,16 +168,18 @@ const DAddYourBirthday = (props) => {
                             <Text style={styles.errorText}>{dateError}</Text>
                         </View>
 
-                        <View>
+                        <View style={{ alignItems: 'center' }}>
                             <Button
                                 style={styles.button}
                                 onPress={nextPressedHandler}
                                 text="Next"
                             />
-                            <View>
+                            <View
+                                style={{ backgroundColor: 'rgba(0,0,0,0.54)' }}
+                            >
                                 <DateTimePicker
                                     style={{
-                                        width: '100%',
+                                        minWidth: '100%',
                                         height: 200,
                                     }}
                                     testID="dateTimePicker"
@@ -263,6 +265,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderBottomWidth: 1,
         borderColor: colors.lightTint,
+        width: '96%',
     },
     errorText: {
         marginHorizontal: 5,
@@ -280,7 +283,8 @@ const styles = StyleSheet.create({
         fontSize: 17,
     },
     button: {
-        marginTop: 40,
+        marginBottom: 10,
+        width: '90%',
     },
 })
 

@@ -18,6 +18,7 @@ import { Video, AVPlaybackStatus } from 'expo-av'
 import HeaderX from '../components/HeaderX'
 import CameraButton from '../components/CameraButton'
 import EditorBottomActions from '../components/CameraComponents/EditorBottomActions'
+import BottomSheet from '../components/CameraComponents/BottomSheet'
 
 //ionicons
 import { Entypo, Ionicons } from '@expo/vector-icons'
@@ -64,10 +65,13 @@ import { StatusBar } from 'expo-status-bar'
 const { height, width } = Dimensions.get('window')
 
 const CameraScreen = ({ navigation, route }) => {
-    let checkMarkSet = null
-    if (route.params) {
-        checkMarkSet = true
-    }
+    let checkMarkSet = useRef(route.params?.checkMarkSet).current
+    const galleryIDPassed = useRef(route.params?.galleryID).current
+    const newGalleryID = useRef(route.params?.newGalleryID).current
+
+    //----------------------------------------------------------------BOTTOM SHEET----------------------------------------------------------------
+    const bottomSheetRef = useRef()
+    //----------------------------------------------------------------BOTTOM SHEET----------------------------------------------------------------
 
     // RATIO SETTER
     const [imagePadding, setImagePadding] = useState(0)
@@ -121,10 +125,10 @@ const CameraScreen = ({ navigation, route }) => {
                 await cameraRef.current.getAvailablePictureSizesAsync(
                     desiredRatio
                 )
-            console.log(
-                '🚀 ~ file: CameraScreen.js ~ line 123 ~ prepareRatio ~ picSize',
-                picSize
-            )
+            // console.log(
+            //     '🚀 ~ file: CameraScreen.js ~ line 123 ~ prepareRatio ~ picSize',
+            //     picSize
+            // )
             //  calculate the difference between the camera width and the screen height
             const remainder = Math.floor(
                 height - realRatios[desiredRatio] * width
@@ -153,15 +157,17 @@ const CameraScreen = ({ navigation, route }) => {
     const [showVideoModal, setShowVideoModal] = useState(false)
     const insets = useSafeAreaInsets()
 
+    //----------------------------------------------------------------ACTIVATE CAMERA----------------------------------------------------------------
     useFocusEffect(() => {
         if (navigation.isFocused()) {
             setActivateCamera(true)
         }
     })
+    //----------------------------------------------------------------ACTIVATE CAMERA----------------------------------------------------------------
 
     const [pic, setPic] = useState(null)
 
-    const [showModal, setShowModal] = useState(false)
+    const [showModal, setShowPicture] = useState(false)
 
     const cameraRef = useRef()
 
@@ -183,15 +189,15 @@ const CameraScreen = ({ navigation, route }) => {
         try {
             if (cameraRef.current) {
                 const options = {
-                    quality: 0.5,
+                    quality: 0.1,
                     base64: true,
                     skipProcessing: true,
                 }
                 let photo = await cameraRef.current.takePictureAsync(options)
                 setPic(photo.uri)
                 setPicture64(photo.base64)
-                dispatch(takePicture(photo.uri))
-                setShowModal(true)
+                dispatch(takePicture(photo.uri, photo.base64))
+                setShowPicture(true)
             }
         } catch (err) {
             console.log(err)
@@ -294,21 +300,32 @@ const CameraScreen = ({ navigation, route }) => {
 
     // VIDEO RECORDING
     async function beginRecording() {
-        console.log('started')
         let video = await cameraRef.current.recordAsync()
         setVideo(video)
         // dispatch(takePicture(photo.uri))
     }
     async function endRecording() {
-        console.log('ended')
         cameraRef.current.stopRecording()
         setShowVideoModal(true)
     }
 
     //UPLOADING PICTURE
-    const uploadPhotoHandler = () => {
-        console.log(picture64)
-        dispatch(addToGallery(`data:image/jpeg;base64,${picture64}`, '1'))
+    const uploadPhotoHandler = async () => {
+        try {
+            dispatch(
+                addToGallery(
+                    `data:image/jpeg;base64,${picture64}`,
+                    newGalleryID ? [`${newGalleryID}`] : [galleryIDPassed]
+                )
+            )
+            setShowPicture(false)
+
+            // if (!newGalleryID) {
+            //     navigation.navigate('GalleryView', {
+            //         shouldRefresh: 'shouldRefresh',
+            //     })
+            // }
+        } catch (err) {}
     }
 
     return (
@@ -402,7 +419,6 @@ const CameraScreen = ({ navigation, route }) => {
                     </View>
                 </Reanimated.View>
             </PinchGestureHandler>
-
             {showModal && (
                 <View style={{ ...styles.modal, height: height }}>
                     <ImageBackground
@@ -416,7 +432,7 @@ const CameraScreen = ({ navigation, route }) => {
                         <HeaderX
                             color="white"
                             goBack={() => {
-                                setShowModal(false)
+                                setShowPicture(false)
                                 setPic('')
                             }}
                         />
@@ -424,6 +440,9 @@ const CameraScreen = ({ navigation, route }) => {
                             onSave={savePictureLocallyHandler}
                             onUpload={uploadPhotoHandler}
                             checkMarkSet={checkMarkSet}
+                            onPresentGalleries={() => {
+                                bottomSheetRef.current?.handlePresentModalPress()
+                            }}
                         />
                     </ImageBackground>
                 </View>
@@ -463,6 +482,16 @@ const CameraScreen = ({ navigation, route }) => {
                     />
                 </View>
             )}
+            {showModal || showVideoModal ? (
+                <BottomSheet
+                    ref={bottomSheetRef}
+                    navigation={navigation}
+                    base64Pic={picture64}
+                    dismissModal={() => {
+                        setShowPicture(false)
+                    }}
+                />
+            ) : null}
         </View>
     )
 }

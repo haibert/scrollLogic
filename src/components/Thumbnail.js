@@ -32,7 +32,13 @@ const CELL_WIDTH = width / 2
 //ionicons
 import { Ionicons } from '@expo/vector-icons'
 
-const ThumbNail = ({ images, galleryPressedHandler, navigation }) => {
+const ThumbNail = ({
+    galleryName,
+    galleryPressedHandler,
+    navigation,
+    images,
+    onActionsPressed,
+}) => {
     let TouchableCmp = TouchableOpacity
 
     if (Platform.OS === 'android' && Platform.Version >= 21) {
@@ -63,16 +69,24 @@ const ThumbNail = ({ images, galleryPressedHandler, navigation }) => {
                 }}
                 contentContainerStyle={styles.contentContainerStyle}
             >
-                <SharedElement id={images.id}>
+                <SharedElement
+                    id={images.galleryID}
+                    style={{
+                        backgroundColor: 'transparent',
+                    }}
+                >
                     <ImageBackground
                         style={styles.image}
-                        imageStyle={{ borderRadius: 9 }}
+                        imageStyle={{
+                            borderRadius: 9,
+                            backgroundColor: 'transparent',
+                        }}
                         resizeMode="cover"
-                        source={images.picture}
+                        source={{ uri: images.thumbnail }}
                     />
                 </SharedElement>
                 <View style={styles.insideTopCont}>
-                    <Text style={styles.eventTitle}>{images.title}</Text>
+                    <Text style={styles.eventTitle}>{galleryName}</Text>
                 </View>
                 <View style={styles.bottomActions}>
                     <Ionicons
@@ -80,6 +94,7 @@ const ThumbNail = ({ images, galleryPressedHandler, navigation }) => {
                         size={25}
                         color="white"
                         style={styles.actionsStyle}
+                        onPress={onActionsPressed}
                     />
                 </View>
             </ScaleButton>
@@ -95,11 +110,13 @@ const styles = StyleSheet.create({
         marginRight: 10,
         borderRadius: 9,
         justifyContent: 'flex-end',
+        backgroundColor: 'transparent',
     },
     contentContainerStyle: {
         width: width / 2 - 15,
         height: 260,
         borderRadius: 9,
+        backgroundColor: 'transparent',
     },
     image: {
         position: 'absolute',

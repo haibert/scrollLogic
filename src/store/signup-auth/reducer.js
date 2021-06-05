@@ -1,12 +1,21 @@
 import {
     ADD_BIRTHDAY,
     ADD_EMAIL,
+    ADD_PHONE,
     ADD_FIRSTNAME,
     ADD_LASTNAME,
     ADD_PASSWORD,
     ADD_USERNAME,
+    SIGN_UP,
     LOGIN,
+    SET_USER_ID,
+    EMAIL_CODE,
+    TEXT_CODE,
 } from './actions'
+
+//async storage
+
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const initialState = {
     signupInfo: {
@@ -18,7 +27,8 @@ const initialState = {
         birthday: '',
         username: '',
     },
-    confirmationCode: '',
+    confirmationEmail: '',
+    confirmationText: '',
     userInfo: {
         userID: '',
     },
@@ -30,6 +40,15 @@ const signupReducer = (state = initialState, action) => {
             return {
                 ...state,
                 signupInfo: { ...state.signupInfo, email: action.emailAdded },
+            }
+        }
+        case ADD_PHONE: {
+            return {
+                ...state,
+                signupInfo: {
+                    ...state.signupInfo,
+                    phoneNumber: action.phoneAdded,
+                },
             }
         }
         case ADD_FIRSTNAME: {
@@ -77,6 +96,15 @@ const signupReducer = (state = initialState, action) => {
                 },
             }
         }
+        case SIGN_UP: {
+            return {
+                ...state,
+                userInfo: {
+                    ...state.userInfo,
+                    userID: action.userInfo,
+                },
+            }
+        }
         case LOGIN: {
             return {
                 ...state,
@@ -84,6 +112,27 @@ const signupReducer = (state = initialState, action) => {
                     ...state.userInfo,
                     userID: action.userInfo,
                 },
+            }
+        }
+        case SET_USER_ID: {
+            return {
+                ...state,
+                userInfo: {
+                    ...state.userInfo,
+                    userID: action.userID,
+                },
+            }
+        }
+        case EMAIL_CODE: {
+            return {
+                ...state,
+                confirmationEmail: action.emailCode,
+            }
+        }
+        case TEXT_CODE: {
+            return {
+                ...state,
+                confirmationText: action.textCode,
             }
         }
         default:

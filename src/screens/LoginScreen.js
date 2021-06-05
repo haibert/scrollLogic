@@ -37,7 +37,7 @@ import { Icon } from 'react-native-elements'
 import { BlurView } from 'expo-blur'
 
 //redux
-import { login } from '../store/signup-auth/actions'
+import { login, setUserID } from '../store/signup-auth/actions'
 import { useDispatch, useSelector } from 'react-redux'
 
 //formik
@@ -47,6 +47,9 @@ import { color } from 'react-native-reanimated'
 
 //status bar
 import { StatusBar } from 'expo-status-bar'
+
+//async AsyncStorage
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const { height, width } = Dimensions.get('screen')
 
@@ -172,6 +175,20 @@ const LoginScreen = (props) => {
             disable.remove()
         }
     }, [])
+
+    //----------------------------------------------------------------AUTOMATIC LOGIN----------------------------------------------------------------
+    useEffect(() => {
+        const checkUserID = async () => {
+            const userLoggedIn = await AsyncStorage.getItem('userID')
+            if (userLoggedIn) {
+                await dispatch(setUserID(userLoggedIn))
+                props.navigation.navigate('DrawerNav')
+            }
+        }
+
+        checkUserID()
+    }, [])
+    //----------------------------------------------------------------AUTOMATIC LOGIN----------------------------------------------------------------
 
     const insets = useSafeAreaInsets()
     return (

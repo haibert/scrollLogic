@@ -36,7 +36,12 @@ import * as yup from 'yup'
 import 'yup-phone'
 
 //redux
-import { addEmail } from '../../store/signup-auth/actions'
+import {
+    addEmail,
+    addPhone,
+    sendEmailCode,
+    sendTextCode,
+} from '../../store/signup-auth/actions'
 import { useDispatch, useSelector } from 'react-redux'
 
 function hideKeyboard() {
@@ -48,7 +53,7 @@ const validationSchemaEmail = yup.object().shape({
         .string()
         .label('email')
         .required('Email is a required field.')
-        .email('The entered email must be a valid.'),
+        .email('The entered email address is not valid.'),
 })
 
 const validationSchemaPhone = yup.string().phone('US', true).required()
@@ -86,6 +91,17 @@ const SignupScreen = (props) => {
         dispatch(addEmail(email))
     }, [])
 
+    const phoneIsValidSendCode = async (phone) => {
+        dispatch(addPhone(phone))
+        try {
+            await dispatch(sendTextCode(phone))
+            props.navigation.navigate('BConfirmationScreen', {
+                phoneConfirm: phoneSelected,
+            })
+        } catch (err) {
+            console.log(err)
+        }
+    }
     return (
         <ScreenWrapper>
             <HeaderBasic
@@ -154,11 +170,21 @@ const SignupScreen = (props) => {
                         {emailSelected ? (
                             <Formik
                                 initialValues={{ email: '' }}
-                                onSubmit={(values) => {
-                                    addEmailToStore(values.email)
-                                    props.navigation.navigate(
-                                        'BConfirmationScreen'
-                                    )
+                                onSubmit={async (values) => {
+                                    dispatch(addEmail(values.email))
+                                    try {
+                                        await dispatch(
+                                            sendEmailCode(values.email)
+                                        )
+                                        props.navigation.navigate(
+                                            'BConfirmationScreen',
+                                            {
+                                                phoneConfirm: phoneSelected,
+                                            }
+                                        )
+                                    } catch (err) {
+                                        console.log(err)
+                                    }
                                 }}
                                 validationSchema={validationSchemaEmail}
                             >
@@ -250,9 +276,7 @@ const SignupScreen = (props) => {
                                         values.phone
                                     )
                                         ? null
-                                        : props.navigation.navigate(
-                                              'BConfirmationScreen'
-                                          )
+                                        : phoneIsValidSendCode(values.phone)
                                 }}
                                 validationSchema={validationSchemaPhone}
                             >

@@ -173,6 +173,7 @@ const BAddYourName = (props) => {
                                                     }
                                                     keyboardType="default"
                                                     autoFocus
+                                                    autoCapitalize="words"
                                                 />
                                                 <TouchableOpacity
                                                     onPress={() => {

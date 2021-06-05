@@ -2,6 +2,7 @@ import { TAKE_PICTURE, ADD_TO_GALLERY } from './actions'
 
 const initialState = {
     pictureUri: '',
+    pictureBase64: '',
 }
 
 const cameraReducer = (state = initialState, action) => {
@@ -9,6 +10,7 @@ const cameraReducer = (state = initialState, action) => {
         case TAKE_PICTURE: {
             return {
                 pictureUri: action.pictureUri,
+                pictureBase64: action.pictureBase64,
             }
         }
 

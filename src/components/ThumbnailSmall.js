@@ -30,7 +30,7 @@ const ThumbnailSmall = ({ images, picturePressedHandler }) => {
                     height: width / 3,
                 }}
                 resizeMode="cover"
-                source={images.picture}
+                source={{ uri: images.fullPath }}
                 // onLayout={() => {}}
             />
             {/* </SharedElement> */}
