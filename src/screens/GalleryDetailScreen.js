@@ -5,6 +5,7 @@ import { View, Text, StyleSheet, Image, Dimensions } from 'react-native'
 import ScreenWrapper from '../components/ScreenWrapper'
 import HeaderBasic from '../components/HeaderBasic'
 import ActionSheetGV from '../components/ActionSheetGV'
+import CachedImage from '../components/CachedImage'
 
 const { width, height } = Dimensions.get('window')
 
@@ -59,11 +60,24 @@ const GalleryDetailScreen = ({ route, navigation }) => {
             <Image
                 style={{
                     width: width,
-                    height: width,
+                    height: height - 200,
                     marginTop: 10,
                 }}
                 resizeMode="cover"
-                source={{ uri: image.fullPath }}
+                source={{
+                    uri: image.fullPath,
+                    cache: 'force-cache',
+                }}
+                onLayout={(evt) => {
+                    {
+                        evt.nativeEvent.height
+                    }
+                    // console.log(
+                    //     '🚀 ~ file: GalleryDetailScreen.js ~ line 72 ~ GalleryDetailScreen ~ evt.nativeEvent.height',
+                    //     evt.nativeEvent.layout.height
+                    // )
+                }}
+                // cacheKey={`${image.id + 'fullSize'}t`}
             />
             <ActionSheetGV
                 ref={bottomSheetModalRef}

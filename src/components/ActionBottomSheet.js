@@ -29,6 +29,9 @@ import {
     TouchableWithoutFeedback,
 } from '@gorhom/bottom-sheet'
 
+//file system
+import * as FileSystem from 'expo-file-system'
+
 const { height, width } = Dimensions.get('window')
 
 //Due to wrapping the content and handle with TapGestureHandler & PanGestureHandler, any gesture interaction would not function as expected.
@@ -70,7 +73,18 @@ const ActionBottomSheet = forwardRef((props, ref) => {
 
     //----------------------------------------------------------------DELETING GALLERY----------------------------------------------------------------
     const deleteGalleryHandler = useCallback(async () => {
+        const wholeDirectory =
+            FileSystem.cacheDirectory + 'images/' + `${props.galleryID}t`
+        const picDir =
+            FileSystem.cacheDirectory + 'images/' + `${props.galleryID}t`
+        const removePic = await FileSystem.deleteAsync(picDir)
+        console.log(
+            '🚀 ~ file: ActionBottomSheet.js ~ line 78 ~ deleteGalleryHandler ~ removePic',
+            removePic
+        )
+
         await dispatch(deleteGallery(props.galleryID))
+        await await FileSystem.deleteAsync(picDir)
         bottomSheetModalRef.current?.close()
     }, [props])
     //----------------------------------------------------------------DELETING GALLERY----------------------------------------------------------------
@@ -146,11 +160,21 @@ const ActionBottomSheet = forwardRef((props, ref) => {
                                 size={20}
                                 color="red"
                             />
-                            <Text style={styles.deleteText}>Delete</Text>
+                            <Text
+                                style={styles.deleteText}
+                                maxFontSizeMultiplier={
+                                    colors.maxFontSizeMultiplier
+                                }
+                            >
+                                Delete
+                            </Text>
                         </View>
                     </TouchableOpacity>
                     <Animated.View style={[styles.actionButton2, opacity]}>
-                        <Text style={styles.confirmQuestion}>
+                        <Text
+                            style={styles.confirmQuestion}
+                            maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                        >
                             Are you sure?
                         </Text>
                         <View style={styles.yesNo}>
@@ -162,7 +186,14 @@ const ActionBottomSheet = forwardRef((props, ref) => {
                                     props.refreshGalleryList()
                                 }}
                             >
-                                <Text style={styles.confirmQuestion}>Yes</Text>
+                                <Text
+                                    style={styles.confirmQuestion}
+                                    maxFontSizeMultiplier={
+                                        colors.maxFontSizeMultiplier
+                                    }
+                                >
+                                    Yes
+                                </Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={() => {
@@ -170,7 +201,14 @@ const ActionBottomSheet = forwardRef((props, ref) => {
                                     bottomSheetModalRef.current?.close()
                                 }}
                             >
-                                <Text style={styles.confirmQuestion}>No</Text>
+                                <Text
+                                    style={styles.confirmQuestion}
+                                    maxFontSizeMultiplier={
+                                        colors.maxFontSizeMultiplier
+                                    }
+                                >
+                                    No
+                                </Text>
                             </TouchableOpacity>
                         </View>
                     </Animated.View>

@@ -57,10 +57,16 @@ import {
     savePermissionsStatus,
     loadPermissions,
 } from '../store/permissions/actions'
-import { setGalleries } from '../store/event/action'
+import { setGalleries, shouldRefreshSet } from '../store/event/action'
 import { useDispatch, useSelector } from 'react-redux'
 
+// big list
+import BigList from 'react-native-big-list'
+
 const { height, width } = Dimensions.get('screen')
+
+//fake data make sure to comment out
+// import { fakeArray, fakeArray2 } from '../data/images'
 
 const DashboardScreen = (props) => {
     const insets = useSafeAreaInsets()
@@ -87,10 +93,8 @@ const DashboardScreen = (props) => {
     const [loadingGalleries, setLoadingGalleries] = useState(false)
     // states
     const galleries = useSelector((state) => state.galleryReducer.galleries)
-    const id = useSelector((state) => state.signupReducer.userInfo.userID)
-    console.log(
-        '🚀 ~ file: DashboardScreen.js ~ line 91 ~ DashboardScreen ~ id',
-        id
+    const shouldRefresh = useSelector(
+        (state) => state.galleryReducer.shouldRefresh
     )
 
     const loadGalleries = useCallback(async () => {
@@ -108,6 +112,20 @@ const DashboardScreen = (props) => {
     useEffect(() => {
         loadGalleries()
     }, [loadGalleries])
+
+    useFocusEffect(() => {
+        async function resetRefresh() {
+            dispatch(shouldRefreshSet(false))
+        }
+        const refreshConditionally = async () => {
+            if (shouldRefresh) {
+                loadGalleries()
+                await resetRefresh()
+            }
+        }
+
+        refreshConditionally()
+    })
     //-----------------------------------------------------LOAD GALLERIES--------------------------------------------------------
 
     // useFocusEffect(() => {
@@ -184,12 +202,6 @@ const DashboardScreen = (props) => {
         askForQRScannerPermissions()
     }
 
-    function galleryPressedHandler(gallery) {
-        props.navigation.navigate('GalleryView', {
-            gallery,
-        })
-    }
-
     // // handle checking permissions after app state change
     // const checkPermissionsAppState = useCallback(async () => {
     //     const { status } = await Camera.getPermissionsAsync()
@@ -263,6 +275,43 @@ const DashboardScreen = (props) => {
         }
     }
 
+    //-----------------------------------------------------FLAT LIST FUNCTIONS--------------------------------------------------------------
+    const render = useCallback(({ item, index }) => {
+        return (
+            <Thumbnail
+                images={item}
+                galleryPressedHandler={galleryPressedHandler.bind(this, item)}
+                navigation={props.navigation}
+                galleryName={item.galleryName}
+                onActionsPressed={onActionsPressed.bind(this, item)}
+                key={item.galleryID}
+                imageURI={item.thumbnail}
+            />
+        )
+    }, [])
+
+    const galleryPressedHandler = useCallback((gallery) => {
+        props.navigation.navigate('GalleryView', {
+            gallery,
+        })
+    }, [])
+
+    const onActionsPressed = useCallback((item) => {
+        bottomSheetRef.current?.handlePresentModalPress()
+        setDeleteID(item.galleryID)
+    }, [])
+
+    const layOut = useCallback(
+        (data, index) => ({ length: 260, offset: 260 * index, index }),
+        []
+    )
+
+    const keyExtractor = useCallback((item) => `${item.galleryID}`, [])
+    //-----------------------------------------------------FLAT LIST FUNCTIONS--------------------------------------------------------------
+
+    const renderEmpty = () => <View />
+    const renderHeader = () => <View />
+    const renderFooter = () => <View />
     return (
         <ScreenWrapper>
             <CustomHeaderBasic
@@ -274,37 +323,44 @@ const DashboardScreen = (props) => {
                 headerColor={{ color: colors.textColor }}
             />
 
-            <FlatList
+            <BigList
+                data={galleries}
+                renderItem={render}
+                renderEmpty={renderEmpty}
+                renderHeader={renderHeader}
+                renderFooter={renderFooter}
+                itemHeight={270}
+                headerHeight={0}
+                footerHeight={0}
+                contentContainerStyle={{
+                    paddingBottom: tabBarBottomPosition + 80,
+                    marginLeft: 10,
+                }}
+                numColumns={2}
+                style={styles.flatList}
+                onRefresh={loadGalleries}
+                refreshing={loadingGalleries}
+            />
+
+            {/* <FlatList
                 style={styles.flatList}
                 onRefresh={loadGalleries}
                 refreshing={loadingGalleries}
                 data={galleries}
-                keyExtractor={(item) => `${item.galleryID}`}
-                renderItem={({ item, index }) => {
-                    return (
-                        <Thumbnail
-                            images={item}
-                            galleryPressedHandler={() => {
-                                galleryPressedHandler(item)
-                            }}
-                            navigation={props.navigation}
-                            galleryName={item.galleryName}
-                            onActionsPressed={() => {
-                                bottomSheetRef.current?.handlePresentModalPress()
-                                setDeleteID(item.galleryID)
-                            }}
-                        />
-                    )
-                }}
+                keyExtractor={keyExtractor}
+                renderItem={render}
                 showsVerticalScrollIndicator={false}
                 numColumns={2}
                 columnWrapperStyle={{
                     marginLeft: 10,
                 }}
                 contentContainerStyle={{
-                    paddingBottom: tabBarBottomPosition + 60,
+                    paddingBottom: tabBarBottomPosition + 80,
                 }}
-            />
+                initialNumToRender={6}
+                maxToRenderPerBatch={6}
+                getItemLayout={layOut}
+            /> */}
 
             <BottomNavBar
                 onPlusPressed={() => {

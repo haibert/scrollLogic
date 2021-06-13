@@ -28,6 +28,7 @@ import CameraScreen from '../screens/CameraScreen'
 import GalleryView from '../screens/GalleryView'
 import GalleryDetailScreen from '../screens/GalleryDetailScreen'
 import ButtonScreen from '../components/CameraButton'
+import StartUpScreen from '../screens/StartUpScreen'
 
 //event creation
 import CreateEventScreen from '../screens/eventCreation/CreateEventScreen'
@@ -272,6 +273,15 @@ const AppNavigator = () => {
     return (
         <NavigationContainer>
             <MainStack.Navigator>
+                <MainStack.Screen
+                    name="StartUpScreen"
+                    component={StartUpScreen}
+                    options={{
+                        headerShown: false,
+                        animationEnabled: false,
+                    }}
+                    detachInactiveScreens={true}
+                />
                 <MainStack.Screen
                     name="LoginScreen"
                     component={LoginScreen}

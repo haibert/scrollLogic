@@ -6,6 +6,7 @@ import {
     Dimensions,
     ImageBackground,
     Platform,
+    Linking,
 } from 'react-native'
 //shared elements
 import { SharedElement } from 'react-navigation-shared-element'
@@ -49,7 +50,15 @@ import images from '../data/images'
 
 //redux
 import { setPics } from '../store/event/action'
+import {
+    savePermissionsStatus,
+    loadPermissions,
+} from '../store/permissions/actions'
 import { useDispatch, useSelector } from 'react-redux'
+
+//expo camera
+import { Camera } from 'expo-camera'
+import { Audio } from 'expo-av'
 
 const GalleryView = ({ route, navigation }) => {
     const { gallery } = route.params
@@ -58,10 +67,10 @@ const GalleryView = ({ route, navigation }) => {
         const result = route.params?.shouldRefresh
         return result
     }, [route])
-    console.log(
-        '🚀 ~ file: GalleryView.js ~ line 57 ~ shouldRefresh ~ shouldRefresh',
-        shouldRefresh
-    )
+    // console.log(
+    //     '🚀 ~ file: GalleryView.js ~ line 57 ~ shouldRefresh ~ shouldRefresh',
+    //     shouldRefresh
+    // )
 
     const insets = useSafeAreaInsets()
     const dispatch = useDispatch()
@@ -199,11 +208,106 @@ const GalleryView = ({ route, navigation }) => {
 
     //-----------------------------------------------------LOAD PICS--------------------------------------------------------
 
-    React.useLayoutEffect(() => {
-        navigation.setOptions({
-            swipeEnabled: false,
+    //-----------------------------------------------------PERMISSION CHECKER--------------------------------------------------------
+    const greenLightOnPermissions = useSelector(
+        (state) => state.permissionsReducer.permissions.camera
+    )
+
+    function openSettings() {
+        Platform.OS === 'android'
+            ? Linking.openSettings()
+            : Linking.canOpenURL('app-settings:')
+                  .then((supported) => {
+                      if (!supported) {
+                          console.log("Can't handle settings url")
+                      } else {
+                          return Linking.openURL('app-settings:')
+                      }
+                  })
+                  .catch((err) => console.error('An error occurred', err))
+    }
+
+    function sendUserToSettingsHandler() {
+        const alertMessage =
+            'Turn On Camera Permissions to Allow Event Share to Scan QR Codes'
+        Platform.OS === 'android' ? androidAlert() : IOSAlert()
+
+        function IOSAlert() {
+            Alert.alert(alertMessage, '', [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Settings',
+                    onPress: () => {
+                        openSettings()
+                    },
+                },
+            ])
+        }
+        function androidAlert() {
+            Alert.alert('', alertMessage, [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Settings',
+                    onPress: () => {
+                        openSettings()
+                    },
+                },
+            ])
+        }
+    }
+
+    const navFunction = useCallback(() => {
+        navigation.navigate('CameraScreen', {
+            checkMarkSet: 'checkMarkSet',
+            galleryID: gallery.galleryID,
         })
-    }, [navigation])
+    }, [])
+
+    const cameraPressedHandler = async () => {
+        if (greenLightOnPermissions === 'granted') {
+            navFunction()
+        } else {
+            const { status } = await Camera.getPermissionsAsync()
+            const audioStatus = await Audio.getPermissionsAsync()
+
+            // setHasCameraPermission(status === 'granted')
+            if (status && audioStatus.status === 'granted') {
+                dispatch(loadPermissions('granted'))
+                navFunction()
+            } else if (status || audioStatus.status === 'undetermined') {
+                const results = await Camera.requestPermissionsAsync()
+                const audioResults = await Audio.requestPermissionsAsync()
+                if (results.status && audioResults.status === 'granted') {
+                    navFunction()
+                } else if (results.status || audioResults.status === 'denied') {
+                    sendUserToSettingsHandler()
+                    return
+                }
+            } else if (status || audioResults.status === 'denied') {
+                const results2 = await Camera.requestPermissionsAsync()
+                const audioResults2 = await Audio.requestPermissionsAsync()
+                if (results2.status && audioResults2 === 'granted') {
+                    navFunction()
+                } else {
+                    sendUserToSettingsHandler()
+                    return
+                }
+            }
+        }
+    }
+    //-----------------------------------------------------PERMISSION CHECKER--------------------------------------------------------
+
+    // React.useLayoutEffect(() => {
+    //     navigation.setOptions({
+    //         swipeEnabled: false,
+    //     })
+    // }, [navigation])
     return (
         <PanGestureHandler
             ref={panViewRef}
@@ -229,9 +333,13 @@ const GalleryView = ({ route, navigation }) => {
                     >
                         <ImageBackground
                             style={styles.imageBg}
-                            source={gallery?.thumbnail}
+                            source={{
+                                uri: gallery?.thumbnail,
+                                cache: 'force-cache',
+                            }}
                             resizeMode="cover"
-                        ></ImageBackground>
+                            // cacheKey={`${gallery.galleryID}t`}
+                        />
                     </SharedElement>
                     <HeaderBasic
                         rightButton
@@ -241,13 +349,9 @@ const GalleryView = ({ route, navigation }) => {
                         header="Your Event"
                         headerColor={{ color: colors.textColor }}
                         iconName="chevron-down-outline"
-                        rightIcon="add"
-                        onPressRight={() => {
-                            navigation.navigate('CameraScreen', {
-                                checkMarkSet: 'checkMarkSet',
-                                galleryID: gallery.galleryID,
-                            })
-                        }}
+                        rightIcon="camera-outline"
+                        rightIconSize={25}
+                        onPressRight={cameraPressedHandler}
                     />
 
                     <FlatList
@@ -263,6 +367,7 @@ const GalleryView = ({ route, navigation }) => {
                         renderItem={(item) => {
                             return (
                                 <ThumbnailSmall
+                                    key={item.id}
                                     images={item.item}
                                     picturePressedHandler={() => {
                                         picturePressedHandler(item.item)
@@ -291,10 +396,14 @@ const styles = StyleSheet.create({
         left: 0,
         top: 0,
         bottom: 0,
+        height: height,
+        width: width,
     },
     imageBg: {
         flex: 1,
         opacity: 0,
+        height: height,
+        width: width,
     },
     flatList: {
         marginTop: 10,

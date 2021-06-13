@@ -210,7 +210,12 @@ const JoinEventScreen = ({ route, navigation }) => {
                                 size={35}
                                 color={colors.buttonPurple}
                             />
-                            <Text style={styles.forkButtonText}>
+                            <Text
+                                style={styles.forkButtonText}
+                                maxFontSizeMultiplier={
+                                    colors.maxFontSizeMultiplier
+                                }
+                            >
                                 Scan Event QR Code
                             </Text>
                         </View>
@@ -222,7 +227,12 @@ const JoinEventScreen = ({ route, navigation }) => {
                                 size={35}
                                 color={colors.buttonPurple}
                             />
-                            <Text style={styles.forkButtonText}>
+                            <Text
+                                style={styles.forkButtonText}
+                                maxFontSizeMultiplier={
+                                    colors.maxFontSizeMultiplier
+                                }
+                            >
                                 Enter Code Manually
                             </Text>
                         </View>

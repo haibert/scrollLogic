@@ -25,7 +25,7 @@
                 "NSCameraUsageDescription": "This app uses the camera to take pictures, videos and scan barcodes on from other users."
             },
             "bundleIdentifier": "com.simplyrem.GalleryShare",
-            "buildNumber": "1.0.0",
+            "buildNumber": "1.0.6",
             "icon": "./assets/1024.png"
         },
         "android": {
@@ -33,7 +33,8 @@
                 "foregroundImage": "./assets/adaptive-icon.png",
                 "backgroundColor": "#FFFFFF"
             },
-            "userInterfaceStyle": "dark"
+            "userInterfaceStyle": "dark",
+            "package": "com.simplyrem.GalleryShare"
         },
         "web": {
             "favicon": "./assets/favicon.png"

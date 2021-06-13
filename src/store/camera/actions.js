@@ -1,5 +1,6 @@
 export const TAKE_PICTURE = 'TAKE_PICTURE'
 export const ADD_TO_GALLERY = 'ADD_TO_GALLERY'
+export const SET_CAMERA_UP = 'SET_CAMERA_UP'
 
 export const takePicture = (uri, base64) => {
     return {
@@ -17,7 +18,6 @@ export const addToGallery = (photo, galleryID) => {
             galleryID,
             photo,
         })
-        console.log('🚀 ~ file: actions.js ~ line 19 ~ return ~ body', body)
         try {
             const response = await fetch(
                 'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&file-upload=1',
@@ -54,5 +54,14 @@ export const addToGallery = (photo, galleryID) => {
         } catch (error) {
             throw error
         }
+    }
+}
+
+export const setCameraUp = (imagePadding, ratio, previewRatio) => {
+    return {
+        type: SET_CAMERA_UP,
+        imagePadding,
+        ratio,
+        previewRatio,
     }
 }

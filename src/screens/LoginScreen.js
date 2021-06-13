@@ -177,17 +177,17 @@ const LoginScreen = (props) => {
     }, [])
 
     //----------------------------------------------------------------AUTOMATIC LOGIN----------------------------------------------------------------
-    useEffect(() => {
-        const checkUserID = async () => {
-            const userLoggedIn = await AsyncStorage.getItem('userID')
-            if (userLoggedIn) {
-                await dispatch(setUserID(userLoggedIn))
-                props.navigation.navigate('DrawerNav')
-            }
-        }
+    // useEffect(() => {
+    //     const checkUserID = async () => {
+    //         const userLoggedIn = await AsyncStorage.getItem('userID')
+    //         if (userLoggedIn) {
+    //             await dispatch(setUserID(userLoggedIn))
+    //             props.navigation.navigate('DrawerNav')
+    //         }
+    //     }
 
-        checkUserID()
-    }, [])
+    //     checkUserID()
+    // }, [])
     //----------------------------------------------------------------AUTOMATIC LOGIN----------------------------------------------------------------
 
     const insets = useSafeAreaInsets()

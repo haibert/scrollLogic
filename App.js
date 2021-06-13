@@ -14,6 +14,9 @@ import { init } from './src/sql/database'
 //expo status_bar
 import { StatusBar } from 'expo-status-bar'
 
+//file system
+import * as FileSystem from 'expo-file-system'
+
 init()
     .then(() => {
         console.log('Initialized DB')
@@ -42,6 +45,26 @@ const rootReducer = combineReducers({
 const store = createStore(rootReducer, applyMiddleware(ReduxThunk))
 
 export default function App() {
+    useEffect(() => {
+        const createDirectory = async () => {
+            const filesystemURI = FileSystem.cacheDirectory + 'images/'
+            const dirInfo = await FileSystem.getInfoAsync(filesystemURI)
+            if (!dirInfo.exists) {
+                const results = await FileSystem.makeDirectoryAsync(
+                    filesystemURI,
+                    {
+                        intermediates: true,
+                    }
+                )
+                console.log(
+                    '🚀 ~ file: App.js ~ line 54 ~ createDirectory ~ results',
+                    results
+                )
+            }
+        }
+
+        createDirectory()
+    }, [])
     return (
         <Provider store={store}>
             <AppNavigator />

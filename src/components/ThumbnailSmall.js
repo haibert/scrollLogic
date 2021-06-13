@@ -13,6 +13,9 @@ import { TouchableOpacity } from 'react-native-gesture-handler'
 //constants
 import colors from '../constants/colors'
 
+//custom components
+import CachedImage from '../components/CachedImage'
+
 const { width, height } = Dimensions.get('window')
 
 const ThumbnailSmall = ({ images, picturePressedHandler }) => {
@@ -27,12 +30,25 @@ const ThumbnailSmall = ({ images, picturePressedHandler }) => {
             <Image
                 style={{
                     width: width / 3,
-                    height: width / 3,
+                    height: width / 2,
+                    borderWidth: 0.7,
+                    borderColor: colors.pinkLESSTransparent,
+                }}
+                resizeMode="cover"
+                source={{ uri: images.fullPath, cache: 'force-cache' }}
+                // onLayout={() => {}}
+            />
+            {/* <CachedImageComp
+                style={{
+                    width: width / 3,
+                    height: width / 2,
+                    borderWidth: 0.7,
+                    borderColor: colors.pinkLESSTransparent,
                 }}
                 resizeMode="cover"
                 source={{ uri: images.fullPath }}
-                // onLayout={() => {}}
-            />
+                cacheKey={`${images.id}tfullPath`}
+            /> */}
             {/* </SharedElement> */}
         </TouchableCmp>
     )

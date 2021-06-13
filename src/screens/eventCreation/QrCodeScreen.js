@@ -33,11 +33,20 @@ import QRCode from 'react-native-qrcode-svg'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 //redux
-import { useSelector } from 'react-redux'
+import { shouldRefreshSet } from '../../store/event/action'
+import { useSelector, useDispatch } from 'react-redux'
+
+// navigation actions
+import { CommonActions } from '@react-navigation/native'
+
+//expo camera
+import { Camera } from 'expo-camera'
+import { Audio } from 'expo-av'
 
 const { height, width } = Dimensions.get('screen')
 
 const QrCodeScreen = ({ navigation, route }) => {
+    const dispatch = useDispatch()
     const qrWidth = useMemo(() => width * 0.75)
     const [qrCode, setQrCode] = useState()
     const getData = useCallback(async () => {
@@ -57,7 +66,11 @@ const QrCodeScreen = ({ navigation, route }) => {
         newGalID
     )
 
-    const { qrCodePortion } = route.params
+    const qrCodePortion = route.params?.qrCodePortion
+    console.log(
+        '🚀 ~ file: QrCodeScreen.js ~ line 64 ~ QrCodeScreen ~ qrCodePortion',
+        qrCodePortion
+    )
 
     const getQrCode = useCallback(async () => {
         const qrCode = (await getData()) + qrCodePortion
@@ -76,12 +89,74 @@ const QrCodeScreen = ({ navigation, route }) => {
     // ).toString()
 
     // let base64Logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAA..';
+
+    //----------------------------------------------------------------PERMISSIONS LOGIC----------------------------------------------------------------
+    const greenLightOnPermissions = useSelector(
+        (state) => state.permissionsReducer.permissions.camera
+    )
+
+    const navigateToCamera = useCallback(() => {
+        navigation.dispatch(
+            CommonActions.reset({
+                index: 1,
+                routes: [
+                    { name: 'DashModalStack' },
+                    {
+                        name: 'CameraScreen',
+                        params: {
+                            checkMarkSet: 'checkMarkSet',
+                            newGalleryID: newGalID,
+                        },
+                    },
+                ],
+            })
+        )
+    }, [])
+
+    const addPhotoHandler = useCallback(async () => {
+        if (greenLightOnPermissions === 'granted') {
+            navigateToCamera()
+        } else {
+            const { status } = await Camera.getPermissionsAsync()
+            const audioStatus = await Audio.getPermissionsAsync()
+
+            // setHasCameraPermission(status === 'granted')
+            if (status && audioStatus.status === 'granted') {
+                dispatch(loadPermissions('granted'))
+            } else if (status || audioStatus.status === 'undetermined') {
+                const results = await Camera.requestPermissionsAsync()
+                const audioResults = await Audio.requestPermissionsAsync()
+                if (results.status && audioResults.status === 'granted') {
+                    navigateToCamera()
+                } else if (results.status || audioResults.status === 'denied') {
+                    sendUserToSettingsHandler()
+                    return
+                }
+            } else if (status || audioResults.status === 'denied') {
+                const results2 = await Camera.requestPermissionsAsync()
+                const audioResults2 = await Audio.requestPermissionsAsync()
+                if (results2.status && audioResults2 === 'granted') {
+                    navigateToCamera()
+                } else {
+                    sendUserToSettingsHandler()
+                    return
+                }
+            }
+        }
+    }, [])
+    //----------------------------------------------------------------PERMISSIONS LOGIC----------------------------------------------------------------
     return (
         <ScreenWrapper>
             <CustomHeaderBasic
                 // iconName="chevron-back-outline"
                 goBack={() => {
                     navigation.goBack()
+                }}
+                rightButton
+                rightIcon="close"
+                onPressRight={async () => {
+                    await dispatch(shouldRefreshSet(true))
+                    navigation.navigate('DashModalStack')
                 }}
             />
             <View style={styles.outerCont}>
@@ -130,12 +205,7 @@ const QrCodeScreen = ({ navigation, route }) => {
                 <Button
                     text="Add Photos to Gallery"
                     style={styles.button}
-                    onPress={() => {
-                        navigation.navigate('CameraScreen', {
-                            checkMarkSet: 'checkMarkSet',
-                            newGalleryID: newGalID,
-                        })
-                    }}
+                    onPress={addPhotoHandler}
                 />
             </View>
         </ScreenWrapper>

@@ -19,8 +19,22 @@ import colors from '../../constants/colors'
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+//AsyncStorage
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
 const DrawerContent = (props) => {
     const insets = useSafeAreaInsets()
+
+    const deleteUserData = async () => {
+        try {
+            console.log('delete')
+            await AsyncStorage.removeItem('userID')
+            return true
+        } catch (exception) {
+            console.log(exception)
+            return false
+        }
+    }
     return (
         <View style={{ flex: 1 }}>
             <LinearGradient
@@ -45,8 +59,7 @@ const DrawerContent = (props) => {
                         >
                             <Avatar.Image
                                 source={{
-                                    uri:
-                                        'https://api.adorable.io/avatars/50/abott@adorable.png',
+                                    uri: 'https://api.adorable.io/avatars/50/abott@adorable.png',
                                 }}
                                 size={60}
                             />
@@ -112,7 +125,8 @@ const DrawerContent = (props) => {
                                 size={size}
                             />
                         )}
-                        onPress={() => {
+                        onPress={async () => {
+                            deleteUserData()
                             props.navigation.navigate('LoginScreen')
                         }}
                     />

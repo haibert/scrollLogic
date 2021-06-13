@@ -31,7 +31,8 @@ import colors from '../constants/colors'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 //redux
-import { takePicture, addToGallery } from '../store/camera/actions'
+import { takePicture, addToGallery, setCameraUp } from '../store/camera/actions'
+import { shouldRefreshSet } from '../store/event/action'
 import { useDispatch, useSelector } from 'react-redux'
 
 // MediaLibrary
@@ -58,6 +59,7 @@ import Reanimated, {
 
 //nav 5
 import { useFocusEffect } from '@react-navigation/native'
+import { useIsFocused } from '@react-navigation/native'
 
 //status bar
 import { StatusBar } from 'expo-status-bar'
@@ -65,25 +67,45 @@ import { StatusBar } from 'expo-status-bar'
 const { height, width } = Dimensions.get('window')
 
 const CameraScreen = ({ navigation, route }) => {
+    const isFocused = useIsFocused()
     let checkMarkSet = useRef(route.params?.checkMarkSet).current
+    console.log(
+        '🚀 ~ file: CameraScreen.js ~ line 69 ~ CameraScreen ~ checkMarkSet',
+        checkMarkSet
+    )
     const galleryIDPassed = useRef(route.params?.galleryID).current
     const newGalleryID = useRef(route.params?.newGalleryID).current
 
+    const [camWidth, setCamWidth] = useState(0)
     //----------------------------------------------------------------BOTTOM SHEET----------------------------------------------------------------
+    const [picture64, setPicture64] = useState()
+
     const bottomSheetRef = useRef()
     //----------------------------------------------------------------BOTTOM SHEET----------------------------------------------------------------
+    // const imagePadding = useSelector(
+    //     (state) => state.cameraReducer.imagePadding
+    // )
 
+    // const ratio = useSelector((state) => state.cameraReducer.ratio)
+    // const previewRatio = useSelector(
+    //     (state) => state.cameraReducer.previewRatio
+    // )
     // RATIO SETTER
+    const [cameraSettings, setCameraSettings] = useState({
+        imagePadding: 0,
+        ratio: '4:3',
+        previewRatio: 1,
+        isRatioSet: false,
+    })
     const [imagePadding, setImagePadding] = useState(0)
     const [ratio, setRatio] = useState('4:3') // default is 4:3
     const [previewRatio, setPreviewRatio] = useState(1) // default is 4:3
-    const [picture64, setPicture64] = useState()
     // console.log(
     //     '🚀 ~ file: CameraScreen.js ~ line 79 ~ CameraScreen ~ previewRatio',
     //     previewRatio
     // )
     const screenRatio = height / width
-    const [isRatioSet, setIsRatioSet] = useState(false)
+    // const [isRatioSet, setIsRatioSet] = useState(false)
     const prepareRatio = useCallback(async () => {
         let desiredRatio = '4:3' // Start with the system default
         // This issue only affects Android
@@ -135,17 +157,24 @@ const CameraScreen = ({ navigation, route }) => {
             )
 
             // set the preview padding and preview ratio
-            setImagePadding(remainder)
-            setRatio(desiredRatio)
-            setPreviewRatio(+previewRatio.toFixed(2))
-            // Set a flag so we don't do this
-            // calculation each time the screen refreshes
-            setIsRatioSet(true)
+            // dispatch(setCameraUp(remainder, desiredRatio, previewRatioPassed))
+            const previewRatioPassed = +previewRatio.toFixed(2)
+            setCameraSettings({
+                imagePadding: remainder,
+                ratio: desiredRatio,
+                previewRatio: previewRatioPassed,
+                isRatioSet: true,
+            })
+            // setImagePadding(remainder)
+
+            // setRatio(desiredRatio)
+            // setPreviewRatio(+previewRatio.toFixed(2))
+            // setIsRatioSet(true)
         }
     }, [])
 
     const setCameraReady = async () => {
-        if (!isRatioSet) {
+        if (!cameraSettings.isRatioSet) {
             await prepareRatio()
         }
     }
@@ -158,16 +187,16 @@ const CameraScreen = ({ navigation, route }) => {
     const insets = useSafeAreaInsets()
 
     //----------------------------------------------------------------ACTIVATE CAMERA----------------------------------------------------------------
-    useFocusEffect(() => {
-        if (navigation.isFocused()) {
-            setActivateCamera(true)
-        }
-    })
+    // useFocusEffect(() => {
+    //     if (navigation.isFocused()) {
+    //         setActivateCamera(true)
+    //     }
+    // })
     //----------------------------------------------------------------ACTIVATE CAMERA----------------------------------------------------------------
 
     const [pic, setPic] = useState(null)
 
-    const [showModal, setShowPicture] = useState(false)
+    const [showPicModal, setShowPicture] = useState(false)
 
     const cameraRef = useRef()
 
@@ -185,17 +214,23 @@ const CameraScreen = ({ navigation, route }) => {
     // )
 
     // camera Functions
-    const takePictureHandler = async () => {
+    const takePictureHandler = useCallback(async () => {
         try {
             if (cameraRef.current) {
                 const options = {
-                    quality: 0.1,
+                    quality: 0,
                     base64: true,
                     skipProcessing: true,
                 }
                 let photo = await cameraRef.current.takePictureAsync(options)
+                photo.height
+                console.log(
+                    '🚀 ~ file: CameraScreen.js ~ line 231 ~ takePictureHandler ~ photo.height',
+                    photo.height
+                )
                 setPic(photo.uri)
                 setPicture64(photo.base64)
+                await dispatch(shouldRefreshSet(true))
                 dispatch(takePicture(photo.uri, photo.base64))
                 setShowPicture(true)
             }
@@ -205,15 +240,15 @@ const CameraScreen = ({ navigation, route }) => {
 
         // setPickedImage(image.uri)
         // props.onImageTaken(image.uri)
-    }
+    }, [])
 
-    const flipCameraHandler = useCallback(() => {
+    const flipCameraHandler = () => {
         setType(
             type === Camera.Constants.Type.back
                 ? Camera.Constants.Type.front
                 : Camera.Constants.Type.back
         )
-    }, [])
+    }
 
     function flashSwitchHandler() {
         if (flashMode === 'off') {
@@ -346,43 +381,54 @@ const CameraScreen = ({ navigation, route }) => {
                         flex: 1,
                         backgroundColor: 'black',
                         justifyContent: 'flex-start',
-                        paddingBottom: -imagePadding,
+                        paddingBottom: -cameraSettings.imagePadding,
                     }}
                 >
-                    {activateCamera && (
+                    {isFocused && (
                         <Camera
                             style={{
-                                // marginTop: imagePadding,
-                                // marginBottom: imagePadding,
-                                // height: height - imagePadding * 4,
-                                // width: '100%',
                                 aspectRatio:
                                     Platform.OS === 'android'
-                                        ? previewRatio
+                                        ? cameraSettings.previewRatio
                                         : null,
                                 flex: 1,
+                                left: -(camWidth - width) / 2,
                             }}
                             ref={cameraRef}
                             type={type}
                             flashMode={flashMode}
                             zoom={zooming}
                             onCameraReady={setCameraReady}
-                            ratio={ratio}
+                            ratio={cameraSettings.ratio}
                             maxDuration={10000}
                             autoFocus="on"
+                            onLayout={(event) => {
+                                setCamWidth(event.nativeEvent.layout.width)
+                            }}
                         ></Camera>
                     )}
                     <View
                         style={[
                             styles.contentContainer,
                             {
-                                paddingTop: insets.top,
+                                // paddingTop: insets.top,
                                 paddingBottom: insets.bottom,
                                 top: insets.top,
                                 bottom: insets.bottom,
                             },
                         ]}
                     >
+                        <TouchableOpacity
+                            onPress={() => {
+                                navigation.goBack()
+                            }}
+                        >
+                            <Ionicons
+                                name="chevron-back-outline"
+                                size={40}
+                                color="white"
+                            />
+                        </TouchableOpacity>
                         <View style={styles.topLeftCont}>
                             <TouchableOpacity onPress={flipCameraHandler}>
                                 <Entypo
@@ -419,7 +465,7 @@ const CameraScreen = ({ navigation, route }) => {
                     </View>
                 </Reanimated.View>
             </PinchGestureHandler>
-            {showModal && (
+            {showPicModal && (
                 <View style={{ ...styles.modal, height: height }}>
                     <ImageBackground
                         source={{ uri: pic }}
@@ -482,7 +528,7 @@ const CameraScreen = ({ navigation, route }) => {
                     />
                 </View>
             )}
-            {showModal || showVideoModal ? (
+            {showPicModal || showVideoModal ? (
                 <BottomSheet
                     ref={bottomSheetRef}
                     navigation={navigation}

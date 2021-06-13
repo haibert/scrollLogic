@@ -6,7 +6,7 @@ import React, {
     forwardRef,
     useState,
 } from 'react'
-import { StyleSheet, View, FlatList } from 'react-native'
+import { StyleSheet, View, FlatList, Text } from 'react-native'
 import {
     BottomSheetModal,
     BottomSheetModalProvider,
@@ -31,8 +31,8 @@ import {
 //To resolve this issue, please use touchables that this library provides.
 
 //custom CameraComponents
-import Thumbnail from '../../components/Thumbnail'
 import SelectionCellItem from '../../components/CameraComponents/SelectionCellItem'
+import Button from '../../components/Button'
 
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -47,6 +47,9 @@ import colors from '../../constants/colors'
 //redux
 import { addToGallery } from '../../store/camera/actions'
 import { useDispatch, useSelector } from 'react-redux'
+
+// nav actions
+import { CommonActions } from '@react-navigation/native'
 
 const CustomBackdrop = ({ animatedIndex, style }) => {
     // animated variables
@@ -126,7 +129,7 @@ const BottomSheet = forwardRef((props, ref) => {
     const uploadPhotoHandler = useCallback(async () => {
         if (selectedGalleries.length === 0) return
         try {
-            await dispatch(
+            dispatch(
                 addToGallery(
                     `data:image/jpeg;base64,${picTaken}`,
                     selectedGalleries
@@ -135,8 +138,39 @@ const BottomSheet = forwardRef((props, ref) => {
             bottomSheetModalRef.current?.close()
             props.dismissModal()
         } catch (err) {}
-    }, [uploadPhotoHandler])
+    }, [])
     //----------------------------------------------------------------UPLOADING PICTURE----------------------------------------------------------------
+
+    //----------------------------------------------------------------NO GALLERIES CONTENT----------------------------------------------------------------
+    const NoGalleriesContent = useCallback(() => {
+        return (
+            <View style={styles.noGalCont}>
+                <Text maxFontSizeMultiplier={colors.maxFontSizeMultiplier}>
+                    It seems like you have not created any galleries yet.
+                </Text>
+                <Button
+                    text="Create Gallery"
+                    style={styles.button}
+                    onPress={navToCreateGallery}
+                />
+            </View>
+        )
+    }, [])
+
+    const navToCreateGallery = useCallback(() => {
+        props.navigation.dispatch(
+            CommonActions.reset({
+                index: 1,
+                routes: [
+                    { name: 'DashModalStack' },
+                    {
+                        name: 'CreateEventScreen',
+                    },
+                ],
+            })
+        )
+    }, [])
+    //----------------------------------------------------------------NO GALLERIES CONTENT----------------------------------------------------------------
 
     return (
         <BottomSheetModalProvider>
@@ -145,7 +179,7 @@ const BottomSheet = forwardRef((props, ref) => {
                 index={1}
                 snapPoints={snapPoints}
                 onChange={handleSheetChangesModal}
-                backdropComponent={CustomBackdrop}
+                // backdropComponent={CustomBackdrop}
                 dismissOnPanDown={true}
                 handleComponent={CustomHandleComponent}
             >
@@ -162,6 +196,7 @@ const BottomSheet = forwardRef((props, ref) => {
                             paddingBottom: 50 + insets.bottom,
                         }}
                     >
+                        {galleries.length === 0 ? <NoGalleriesContent /> : null}
                         <View style={styles.shadowView}>
                             <View
                                 style={{ overflow: 'hidden', borderRadius: 20 }}
@@ -212,7 +247,7 @@ const BottomSheet = forwardRef((props, ref) => {
                     <View
                         style={{
                             ...styles.bottomActions,
-                            height: 50 + insets.bottom,
+                            height: 60 + insets.bottom,
                         }}
                     >
                         <View style={styles.bottomButtonsCont}>
@@ -230,7 +265,6 @@ const BottomSheet = forwardRef((props, ref) => {
                                         name="send"
                                         size={28}
                                         color={colors.lightTint}
-                                        onPress={uploadPhotoHandler}
                                     />
                                 </View>
                             </TouchableOpacity>
@@ -286,6 +320,15 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    noGalCont: {
+        height: 300,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    button: {
+        marginTop: 40,
+        width: '90%',
     },
 })
 

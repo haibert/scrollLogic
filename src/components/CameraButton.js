@@ -118,50 +118,50 @@ const CameraButton = (props) => {
                 maxDeltaY={1000}
                 style={styles.floatingPlusCont}
             >
-                <LongPressGestureHandler
+                {/* <LongPressGestureHandler
                     ref={longRef}
                     minDurationMs={200}
                     maxDist={1000}
                     onHandlerStateChange={onLongStateChange}
                     shouldCancelWhenOutside={false}
-                >
-                    <Animated.View style={outerCont}>
-                        <Svg
-                            width={radius * 2}
-                            height={radius * 2}
-                            viewBox={`0 0 ${halfCircle * 2} ${halfCircle * 2}`}
+                > */}
+                <Animated.View style={outerCont}>
+                    <Svg
+                        width={radius * 2}
+                        height={radius * 2}
+                        viewBox={`0 0 ${halfCircle * 2} ${halfCircle * 2}`}
+                    >
+                        <G
+                            rotation="-90"
+                            origin={`${halfCircle}, ${halfCircle}`}
                         >
-                            <G
-                                rotation="-90"
-                                origin={`${halfCircle}, ${halfCircle}`}
-                            >
-                                <AnimatedCircle
-                                    strokeWidth={strokeWidth}
-                                    r={radius}
-                                    cx="50%"
-                                    cy="50%"
-                                    fill="none"
-                                    stroke="white"
-                                    strokeOpacity={1}
-                                    // strokeDasharray={`${CIRCUMFERENCE} ${CIRCUMFERENCE}`}
-                                />
-                                <AnimatedCircle
-                                    ref={circleRef}
-                                    strokeWidth={13}
-                                    r={radius}
-                                    cx="50%"
-                                    cy="50%"
-                                    fill="none"
-                                    stroke={colors.lightTint}
-                                    strokeDasharray={circleCircumference}
-                                    strokeDashoffset={circleCircumference}
-                                    strokeLinecap="butt"
-                                    animatedProps={animatedProps}
-                                />
-                            </G>
-                        </Svg>
-                    </Animated.View>
-                </LongPressGestureHandler>
+                            <AnimatedCircle
+                                strokeWidth={strokeWidth}
+                                r={radius}
+                                cx="50%"
+                                cy="50%"
+                                fill="none"
+                                stroke="white"
+                                strokeOpacity={1}
+                                // strokeDasharray={`${CIRCUMFERENCE} ${CIRCUMFERENCE}`}
+                            />
+                            <AnimatedCircle
+                                ref={circleRef}
+                                strokeWidth={13}
+                                r={radius}
+                                cx="50%"
+                                cy="50%"
+                                fill="none"
+                                stroke={colors.lightTint}
+                                strokeDasharray={circleCircumference}
+                                strokeDashoffset={circleCircumference}
+                                strokeLinecap="butt"
+                                animatedProps={animatedProps}
+                            />
+                        </G>
+                    </Svg>
+                </Animated.View>
+                {/* </LongPressGestureHandler> */}
             </TapGestureHandler>
         </View>
     )

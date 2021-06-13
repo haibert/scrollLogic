@@ -23,7 +23,11 @@ import ScreenWrapper from '../../components/ScreenWrapper'
 import HeaderBasic from '../../components/HeaderBasic'
 
 //redux
-import { addUsername, signupUser } from '../../store/signup-auth/actions'
+import {
+    addUsername,
+    signupUser,
+    checkUserExistence,
+} from '../../store/signup-auth/actions'
 import { useDispatch, useSelector } from 'react-redux'
 
 function hideKeyboard() {
@@ -43,9 +47,11 @@ const FUserNameFork = (props) => {
 
     const [usernameValidError, setUsernameValidError] = useState()
     const [userTxtChange, setUserTextChange] = useState()
+    const [httpError, setHttpError] = useState()
 
     function userNameChangeHandler(enteredText) {
         setUserTextChange(enteredText)
+        setHttpError('')
         if (enteredText.trim().length >= 4) {
             setUsernameValidError(null)
             return
@@ -54,14 +60,24 @@ const FUserNameFork = (props) => {
     }
 
     const nextPressedHandler = useCallback(async () => {
-        if (usernameValidError) {
+        if (usernameValidError) return
+        setHttpError('')
+        try {
+            await dispatch(checkUserExistence(userTxtChange))
+        } catch (error) {
+            setHttpError(error.message)
             return
         }
-        dispatch(addUsername(userTxtChange))
-        await dispatch(signupUser())
-        props.navigation.navigate('DrawerNav', {
-            screen: 'DashboardScreen',
-        })
+        try {
+            dispatch(addUsername(userTxtChange))
+            await dispatch(signupUser())
+            props.navigation.navigate('DrawerNav', {
+                screen: 'StartUpScreen',
+            })
+        } catch (error) {
+            setHttpError(error.message)
+            return
+        }
     }, [userTxtChange])
 
     return (
@@ -154,7 +170,7 @@ const FUserNameFork = (props) => {
                                 </TouchableOpacity>
                             </View>
                             <Text style={styles.errorText}>
-                                {usernameValidError}
+                                {httpError ? httpError : usernameValidError}
                             </Text>
                         </View>
                         <Button

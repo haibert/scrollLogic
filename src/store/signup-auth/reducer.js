@@ -97,11 +97,15 @@ const signupReducer = (state = initialState, action) => {
             }
         }
         case SIGN_UP: {
+            console.log(
+                '🚀 ~ file: reducer.js ~ line 102 ~ signupReducer ~ action.newUserID',
+                action.newUserID
+            )
             return {
                 ...state,
                 userInfo: {
                     ...state.userInfo,
-                    userID: action.userInfo,
+                    userID: action.newUserID,
                 },
             }
         }

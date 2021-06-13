@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { View, Text, StyleSheet, Keyboard, Platform } from 'react-native'
 import {
     TouchableOpacity,
@@ -52,11 +52,11 @@ const DAddYourBirthday = (props) => {
     const [date, setDate] = useState(new Date())
     const [mode, setMode] = useState('date')
     const [show, setShow] = useState(false)
+    const [openAndroidDate, setOpenAndroidDate] = useState(false)
 
     const onDateChange = (event, selectedDate) => {
         const currentDate = selectedDate || date
-        setShow(Platform.OS === 'ios')
-
+        // event.type === 'set' ? setOpenAndroidDate(false) : null
         var todayDate = new Date()
 
         if (todayDate < selectedDate) {
@@ -64,22 +64,27 @@ const DAddYourBirthday = (props) => {
             setDateError('Please select a valid date.')
             return
         }
+
         setDate(currentDate)
-        setDateError(' ')
+        Platform.OS === 'android' ? setOpenAndroidDate(false) : null
+        // setDateError(' ')
     }
 
-    const showMode = (currentMode) => {
-        setShow(true)
-        setMode(currentMode)
-    }
+    console.log('rerender')
+    console.log(openAndroidDate)
 
-    const showDatepicker = () => {
-        showMode('date')
-    }
+    // const showMode = (currentMode) => {
+    //     setShow(true)
+    //     setMode(currentMode)
+    // }
 
-    const showTimepicker = () => {
-        showMode('time')
-    }
+    // const showDatepicker = () => {
+    //     showMode('date')
+    // }
+
+    // const showTimepicker = () => {
+    //     showMode('time')
+    // }
 
     function nextPressedHandler() {
         // console.log(dateError)
@@ -89,7 +94,59 @@ const DAddYourBirthday = (props) => {
         dispatch(addBirthday(date))
         props.navigation.navigate('FUserName')
     }
+    //----------------------------------------------------------------ANDROID DATE COMPONENT----------------------------------------------------------------
+    const AndroidDatePicker = useCallback(() => {
+        return openAndroidDate ? (
+            <View
+                style={{
+                    backgroundColor: 'rgba(0,0,0,0.54)',
+                }}
+            >
+                <DateTimePicker
+                    style={{
+                        minWidth: '100%',
+                        height: 200,
+                    }}
+                    testID="dateTimePicker"
+                    value={date}
+                    mode={mode}
+                    // is24Hour={true}
+                    display="spinner"
+                    onChange={onDateChange}
+                />
+            </View>
+        ) : null
+    }, [setOpenAndroidDate, openAndroidDate])
+    //----------------------------------------------------------------ANDROID DATE COMPONENT----------------------------------------------------------------
 
+    //----------------------------------------------------------------IOS DATE COMPONENT----------------------------------------------------------------
+    const IOSDatePicker = () => {
+        return (
+            <View
+                style={{
+                    backgroundColor: 'rgba(0,0,0,0.54)',
+                }}
+            >
+                <DateTimePicker
+                    style={{
+                        minWidth: '100%',
+                        height: 200,
+                    }}
+                    testID="dateTimePicker"
+                    value={date}
+                    mode={mode}
+                    // is24Hour={true}
+                    display="spinner"
+                    onChange={onDateChange}
+                />
+            </View>
+        )
+    }
+    //----------------------------------------------------------------IOS DATE COMPONENT----------------------------------------------------------------
+
+    const androidDatePressedHandler = useCallback(() => {
+        Platform.OS === 'android' ? setOpenAndroidDate(true) : null
+    }, [setOpenAndroidDate, openAndroidDate])
     return (
         <ScreenWrapper>
             <HeaderBasic
@@ -157,6 +214,7 @@ const DAddYourBirthday = (props) => {
                                     maxFontSizeMultiplier={
                                         colors.maxFontSizeMultiplier
                                     }
+                                    onPress={androidDatePressedHandler}
                                 >
                                     {`${date.toLocaleDateString('en-EN', {
                                         year: 'numeric',
@@ -174,22 +232,11 @@ const DAddYourBirthday = (props) => {
                                 onPress={nextPressedHandler}
                                 text="Next"
                             />
-                            <View
-                                style={{ backgroundColor: 'rgba(0,0,0,0.54)' }}
-                            >
-                                <DateTimePicker
-                                    style={{
-                                        minWidth: '100%',
-                                        height: 200,
-                                    }}
-                                    testID="dateTimePicker"
-                                    value={date}
-                                    mode={mode}
-                                    // is24Hour={true}
-                                    display="spinner"
-                                    onChange={onDateChange}
-                                />
-                            </View>
+                            {Platform.OS === 'android' ? (
+                                <AndroidDatePicker />
+                            ) : (
+                                <IOSDatePicker />
+                            )}
                         </View>
                     </View>
                 </TouchableWithoutFeedback>
@@ -283,7 +330,7 @@ const styles = StyleSheet.create({
         fontSize: 17,
     },
     button: {
-        marginBottom: 10,
+        marginBottom: Platform.OS === 'android' ? 30 : 10,
         width: '90%',
     },
 })

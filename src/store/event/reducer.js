@@ -1,10 +1,17 @@
-import { ADD_GALLERY, SET_GALLERIES, SET_PICS, DELETE_GALLERY } from './action'
+import {
+    ADD_GALLERY,
+    SET_GALLERIES,
+    SET_PICS,
+    DELETE_GALLERY,
+    SHOULD_REFRESH,
+} from './action'
 
 const initialState = {
     events: [],
     galleries: [],
     pics: [],
     newGalleryID: '',
+    shouldRefresh: false,
 }
 
 const galleryReducer = (state = initialState, action) => {
@@ -37,6 +44,12 @@ const galleryReducer = (state = initialState, action) => {
             return {
                 ...state,
                 galleries: newArray,
+            }
+        }
+        case SHOULD_REFRESH: {
+            return {
+                ...state,
+                shouldRefresh: action.shouldRefresh,
             }
         }
         default:

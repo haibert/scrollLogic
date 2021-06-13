@@ -47,6 +47,10 @@ const AConfirmationScreen = (props) => {
     const insets = useSafeAreaInsets()
 
     const phoneConfirm = props.route.params?.phoneConfirm
+    console.log(
+        '🚀 ~ file: BConfirmationScreen.js ~ line 50 ~ AConfirmationScreen ~ phoneConfirm',
+        phoneConfirm
+    )
 
     const [topDimensions, setTopDimensions] = useState({ height: 0, width: 0 })
     const [useableScreenDimensions, setUseableScreenDimensions] = useState({
@@ -62,8 +66,6 @@ const AConfirmationScreen = (props) => {
     const dispatch = useDispatch()
 
     function inputChangeHandler(number) {
-        // console.log(code.toString())
-        // console.log(number.trim().toString())
         if (phoneConfirm && number.trim() == textCode) {
             setConfirmationErrorMessage(' ')
             setConfirmLengthValid(true)
@@ -87,6 +89,7 @@ const AConfirmationScreen = (props) => {
             setConfirmationErrorMessage('Incorrect confirmation code.')
         }
     }
+    //----------------------------------------------------------------CONFIRMATION CODES----------------------------------------------------------------
 
     const emailCode = useSelector(
         (state) => state.signupReducer.confirmationEmail
@@ -105,10 +108,12 @@ const AConfirmationScreen = (props) => {
             .matches(/^\d+$/, 'The field should have digits only')
             .max(6)
             .required('Confirmation code is required.')
-            .min(6)
-            .matches(emailCode || textCode, 'Incorrect validation code.'),
+            .min(6),
+        // .matches(emailCode || textCode, 'Incorrect validation code.'),
     })
+    //----------------------------------------------------------------Validation Schema----------------------------------------------------------------
 
+    //----------------------------------------------------------------
     return (
         <ScreenWrapper>
             <HeaderBasic
@@ -153,8 +158,9 @@ const AConfirmationScreen = (props) => {
                                     colors.maxFontSizeMultiplier
                                 }
                             >
-                                Enter the confirmation code we sent to
-                                haibertbarfian@gmail.com.
+                                {/* Enter the confirmation code we sent to
+                                haibertbarfian@gmail.com. */}
+                                Enter the confirmation code we sent you.
                                 <TouchableOpacity
                                     onPress={() => {}}
                                     style={{ bottom: -3 }}
@@ -184,7 +190,7 @@ const AConfirmationScreen = (props) => {
                         <View>
                             <Formik
                                 initialValues={{ Code: '' }}
-                                onSubmit={(values) => {
+                                onSubmit={(values, { setErrors }) => {
                                     console.log(values.Code)
                                     console.log(textCode)
                                     console.log(phoneConfirm)
@@ -196,6 +202,10 @@ const AConfirmationScreen = (props) => {
                                         props.navigation.navigate(
                                             'CAddYourName'
                                         )
+                                    } else {
+                                        setErrors({
+                                            Code: 'Confirmation code is incorrect.',
+                                        })
                                     }
 
                                     if (
@@ -205,6 +215,10 @@ const AConfirmationScreen = (props) => {
                                         props.navigation.navigate(
                                             'CAddYourName'
                                         )
+                                    } else {
+                                        setErrors({
+                                            Code: 'Confirmation code is incorrect.',
+                                        })
                                     }
                                 }}
                                 validationSchema={validationSchema}
@@ -245,7 +259,7 @@ const AConfirmationScreen = (props) => {
                                                     }
                                                     keyboardType="numeric"
                                                     autoFocus
-                                                    max={6}
+                                                    maxLength={6}
                                                 />
                                                 <TouchableOpacity
                                                     onPress={() => {

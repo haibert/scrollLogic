@@ -27,7 +27,11 @@ const CustomHeaderBasic = (props) => {
 
     const iconStyle =
         props.iconName === 'menu-outline' || props.rightIcon === 'add'
-            ? { textAlign: 'center', marginLeft: 2 }
+            ? {
+                  textAlign: 'center',
+                  justifyContent: 'center',
+                  alignSelf: 'center',
+              }
             : null
 
     let defaultIcon = 'chevron-back-outline'
@@ -37,7 +41,10 @@ const CustomHeaderBasic = (props) => {
     return (
         <View style={styles.outerCont}>
             <View style={styles.middleCont}>
-                <Text style={{ ...styles.headerText, ...props.headerColor }}>
+                <Text
+                    style={{ ...styles.headerText, ...props.headerColor }}
+                    maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                >
                     {props.header}
                 </Text>
             </View>
@@ -57,7 +64,11 @@ const CustomHeaderBasic = (props) => {
                         <View style={styles.circle}>
                             <Ionicons
                                 name={props.rightIcon ? props.rightIcon : null}
-                                size={30}
+                                size={
+                                    props.rightIconSize
+                                        ? props.rightIconSize
+                                        : 30
+                                }
                                 color={colors.textColor}
                                 style={iconStyle}
                             />

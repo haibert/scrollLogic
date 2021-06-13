@@ -6,7 +6,7 @@ export const ADD_LASTNAME = 'ADD_LASTNAME'
 export const ADD_PASSWORD = 'ADD_ADD_PASSWORD'
 export const ADD_BIRTHDAY = 'ADD_BIRTHDAY'
 export const ADD_USERNAME = 'ADD_USERNAME'
-export const SIGN_UP = 'ADD_USERNAME'
+export const SIGN_UP = 'SIGN_UP'
 export const LOGIN = 'LOGIN'
 export const SET_USER_ID = 'SET_USER_ID'
 export const EMAIL_CODE = 'EMAIL_CODE'
@@ -70,11 +70,11 @@ export const signupUser = () => {
         const phone =
             getState().signupReducer.signupInfo.phoneNumber.length > 2
                 ? getState().signupReducer.signupInfo.phoneNumber
-                : 'none entered'
+                : ''
         const email =
             getState().signupReducer.signupInfo.email.length > 2
                 ? getState().signupReducer.signupInfo.email
-                : 'none entered'
+                : ''
         const firstName = getState().signupReducer.signupInfo.firstName
         const lastName = getState().signupReducer.signupInfo.lastName
 
@@ -101,14 +101,27 @@ export const signupUser = () => {
             )
             const responseData = await response.json()
             console.log(
-                '🚀 ~ file: actions.js ~ line 94 ~ return ~ responseData',
+                '🚀 ~ file: actions.js ~ line 103 ~ return ~ responseData',
                 responseData
             )
-            const newUserID = responseData.message.userData.uniqID
+
+            const cantRegister =
+                responseData.message?.user?.registeration?.error
+
+            if (cantRegister) {
+                throw new Error('Something went wrong!')
+            }
+
+            const newUserID = responseData.message?.userData?.uniqID
+            console.log(
+                '🚀 ~ file: actions.js ~ line 116 ~ return ~ newUserID',
+                newUserID
+            )
+            await storeData(newUserID)
 
             dispatch({
                 type: SIGN_UP,
-                userInfo: newUserID,
+                newUserID: newUserID,
             })
         } catch {
             throw error
@@ -142,25 +155,17 @@ export const login = (username, password) => {
                 throw new Error(response.status.toString())
             }
 
-            const storeData = async (value) => {
-                try {
-                    await AsyncStorage.setItem('userID', value)
-                } catch (e) {
-                    // throw error
-                }
-            }
-
             try {
                 const data = await response.json()
-                userID = data.message.userData.basic.uniqueID
-                storeData(userID)
+                userID = data.message?.userData?.basic?.uniqueID
+                await storeData(userID)
 
-                const error = data.message.user.authCheck
+                const error = data?.message?.user?.authCheck
                 if (error === 'ERROR') {
                     throw new Error('Incorrect Credentials')
                 }
             } catch (error) {
-                throw new Error('Incorrect Credentials')
+                throw error
             }
 
             dispatch({
@@ -206,17 +211,18 @@ export const sendEmailCode = (email) => {
 
             try {
                 const data = await response.json()
-                code = data.message.code
                 console.log(
-                    '🚀 ~ file: actions.js ~ line 197 ~ return ~ code',
-                    code
+                    '🚀 ~ file: actions.js ~ line 210 ~ return ~ data',
+                    data
                 )
-                const errorCode = data.message.error
+                code = data?.message?.code
+
+                const errorCode = data.message?.error
                 if (errorCode) {
                     throw new Error('The entered email address is not valid.')
                 }
             } catch (error) {
-                throw new Error('Something went wrong!')
+                throw error
             }
 
             dispatch({
@@ -279,5 +285,106 @@ export const sendTextCode = (phone) => {
         } catch (error) {
             throw error
         }
+    }
+}
+
+export const checkUserExistence = (userName) => {
+    return async (dispatch, getState) => {
+        const body = JSON.stringify({
+            userName,
+        })
+        try {
+            const response = await fetch(
+                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&check-userName=1',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        key: 'ThisIsASecretKey',
+                    },
+                    body: body,
+                }
+            )
+
+            if (!response.ok) {
+                throw new Error('Something went wrong!')
+                // OR below you can pass the error status.
+                throw new Error(response.status.toString())
+            }
+
+            try {
+                const data = await response.json()
+                console.log(
+                    '🚀 ~ file: actions.js ~ line 245 ~ return ~ data',
+                    data
+                )
+                const userExists = data.message?.userNameCheck?.error
+                if (userExists) {
+                    throw new Error('This username is unavailable.')
+                }
+            } catch (error) {
+                throw error
+            }
+
+            dispatch({
+                type: TEXT_CODE,
+                textCode: code,
+            })
+        } catch (error) {
+            throw error
+        }
+    }
+}
+
+export const checkEmailExistence = (email) => {
+    return async (dispatch, getState) => {
+        const body = JSON.stringify({
+            email,
+        })
+        try {
+            const response = await fetch(
+                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&check-email=1',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        key: 'ThisIsASecretKey',
+                    },
+                    body: body,
+                }
+            )
+
+            if (!response.ok) {
+                throw new Error('Something went wrong!')
+                // OR below you can pass the error status.
+                throw new Error(response.status.toString())
+            }
+
+            try {
+                const data = await response.json()
+                console.log(
+                    '🚀 ~ file: actions.js ~ line 245 ~ return ~ data',
+                    data
+                )
+                const emailExists = data.message?.emailCheck?.error
+                if (emailExists) {
+                    throw new Error('This email is unavailable.')
+                }
+            } catch (error) {
+                throw error
+            }
+        } catch (error) {
+            throw error
+        }
+    }
+}
+// helpers
+const storeData = async (value) => {
+    try {
+        await AsyncStorage.removeItem('userID')
+        await AsyncStorage.setItem('userID', value)
+    } catch (e) {
+        console.log(e)
+        // throw error
     }
 }

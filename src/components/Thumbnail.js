@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useCallback } from 'react'
 import {
     StyleSheet,
     View,
@@ -19,10 +19,16 @@ import Animated, {
 //shared elements
 import { SharedElement } from 'react-navigation-shared-element'
 
+//custom components
 import ScaleButton from './TouchableScale'
+import CachedImage from '../components/CachedImage'
+// import CachedImage2 from '../components/CachedImage2'
+import Comp from '../components/Comp'
 
+//colors
 import colors from '../constants/colors'
 
+//nav hooks
 import { useFocusEffect } from '@react-navigation/native'
 
 const { width, height } = Dimensions.get('window')
@@ -38,6 +44,8 @@ const ThumbNail = ({
     navigation,
     images,
     onActionsPressed,
+    fakeImages,
+    imageURI,
 }) => {
     let TouchableCmp = TouchableOpacity
 
@@ -56,49 +64,83 @@ const ThumbNail = ({
             animatedOpacity.value = withDelay(200, withTiming(1))
         }
     })
+    //----------------------------------------------------------------RELOAD FAILED IMAGE----------------------------------------------------------------
+    const [downloadAgain, setDownloadAgain] = useState(null)
+    const [showDownload, setShowDownloadAgain] = useState()
+    const showDownloadButton = () => {
+        setShowDownloadAgain(true)
+    }
 
+    const downloadAgainHandler = () => {
+        downloadRef.current?.reDownload()
+        setShowDownloadAgain(false)
+    }
+    //----------------------------------------------------------------RELOAD FAILED IMAGE----------------------------------------------------------------
+
+    //----------------------------------------------------------------OPTIMIZATION----------------------------------------------------------------
+    const onPress = useCallback(() => {
+        animatedOpacity.value = withDelay(300, withTiming(0))
+        galleryPressedHandler()
+    }, [])
+    //----------------------------------------------------------------OPTIMIZATION----------------------------------------------------------------
+
+    const downloadRef = useRef()
     return (
-        <Animated.View style={[styles.container, opacityStyle]}>
-            <ScaleButton
-                // activeOpacity={0.9}
-                activeScale={0.93}
-                onPress={() => {
-                    // setOpacity(0)
-                    animatedOpacity.value = withDelay(300, withTiming(0))
-                    galleryPressedHandler()
-                }}
-                contentContainerStyle={styles.contentContainerStyle}
-            >
-                <SharedElement
-                    id={images.galleryID}
-                    style={{
+        // <Animated.View style={[styles.container, opacityStyle]}>
+        <ScaleButton
+            // activeOpacity={0.9}
+            activeScale={0.93}
+            onPress={onPress}
+            contentContainerStyle={[styles.contentContainerStyle, opacityStyle]}
+        >
+            <SharedElement id={images.galleryID}>
+                {/* <ImageBackground
+                    style={styles.image}
+                    imageStyle={{
+                        borderRadius: 9,
                         backgroundColor: 'transparent',
                     }}
-                >
-                    <ImageBackground
-                        style={styles.image}
-                        imageStyle={{
-                            borderRadius: 9,
-                            backgroundColor: 'transparent',
-                        }}
-                        resizeMode="cover"
-                        source={{ uri: images.thumbnail }}
-                    />
-                </SharedElement>
-                <View style={styles.insideTopCont}>
-                    <Text style={styles.eventTitle}>{galleryName}</Text>
-                </View>
-                <View style={styles.bottomActions}>
-                    <Ionicons
-                        name="ellipsis-horizontal-circle-outline"
-                        size={25}
-                        color="white"
-                        style={styles.actionsStyle}
-                        onPress={onActionsPressed}
-                    />
-                </View>
-            </ScaleButton>
-        </Animated.View>
+                    resizeMode="cover"
+                    source={{
+                        uri: images.thumbnail,
+                        cache: 'force-cache',
+                    }}
+                /> */}
+                <CachedImage
+                    ref={downloadRef}
+                    onError={showDownloadButton}
+                    style={styles.image}
+                    resizeMode="cover"
+                    source={{
+                        uri: `${images.thumbnail}`,
+                    }}
+                    cacheKey={`${images.galleryID}t`}
+                />
+            </SharedElement>
+            {showDownload ? (
+                <Ionicons
+                    name="refresh-outline"
+                    size={80}
+                    color="white"
+                    style={{ ...styles.downloadButton }}
+                    onPress={downloadAgainHandler}
+                />
+            ) : null}
+            <Text
+                style={styles.eventTitle}
+                maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+            >
+                {galleryName}
+            </Text>
+            <Ionicons
+                name="ellipsis-horizontal-circle-outline"
+                size={25}
+                color="white"
+                style={styles.actionsStyle}
+                onPress={onActionsPressed}
+            />
+        </ScaleButton>
+        // </Animated.View>
     )
 }
 
@@ -113,21 +155,16 @@ const styles = StyleSheet.create({
         backgroundColor: 'transparent',
     },
     contentContainerStyle: {
+        marginRight: 10,
+        marginTop: 10,
+
         width: width / 2 - 15,
         height: 260,
         borderRadius: 9,
         backgroundColor: 'transparent',
-    },
-    image: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 0,
-        flex: 1,
-        width: width / 2 - 15,
-        height: 260,
         borderRadius: 9,
+        // uncomment this if you are going to use ImageBackground
+
         shadowColor: 'black',
         shadowRadius: 4,
         shadowOpacity: 1,
@@ -137,11 +174,34 @@ const styles = StyleSheet.create({
             height: 2,
         },
     },
+    image: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        width: width / 2 - 15,
+        height: 260,
+        borderRadius: 9,
+
+        // uncomment this if you are going to REMOVE CACHED IMAGE IMPLEMENTATION
+        // shadowColor: 'black',
+        // shadowRadius: 4,
+        // shadowOpacity: 1,
+        // backgroundColor: 'white',
+        // shadowOffset: {
+        //     width: 0,
+        //     height: 2,
+        // },
+    },
     insideTopCont: {
         flex: 1,
         padding: 10,
     },
     eventTitle: {
+        position: 'absolute',
+        top: 10,
+        left: 12,
         color: 'white',
         fontSize: 19,
         fontWeight: 'bold',
@@ -156,6 +216,9 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     actionsStyle: {
+        position: 'absolute',
+        bottom: 10,
+        right: 12,
         shadowColor: 'black',
         shadowRadius: 0.9,
         shadowOpacity: 0.8,
@@ -163,6 +226,18 @@ const styles = StyleSheet.create({
             width: 0,
             height: 0,
         },
+    },
+    downloadButton: {
+        shadowColor: 'black',
+        shadowRadius: 0.9,
+        shadowOpacity: 0.8,
+        shadowOffset: {
+            width: 0,
+            height: 0,
+        },
+        position: 'absolute',
+        top: 260 / 2 - 40,
+        left: width / 4 - 15 - 30,
     },
 })
 

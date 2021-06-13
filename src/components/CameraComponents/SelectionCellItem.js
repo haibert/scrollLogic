@@ -39,7 +39,12 @@ const SelectionCellItem = (props) => {
             >
                 <View style={styles.cellOuter}>
                     <View style={styles.imageCont}></View>
-                    <Text style={styles.title}>{props.galleryName}</Text>
+                    <Text
+                        style={styles.title}
+                        maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                    >
+                        {props.galleryName}
+                    </Text>
                     <View style={styles.rightSideCont}>
                         {checked ? <CheckedComponent /> : <EmptyCircle />}
                     </View>

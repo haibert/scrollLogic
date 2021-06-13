@@ -2,6 +2,7 @@ export const ADD_GALLERY = 'ADD_GALLERY'
 export const SET_GALLERIES = 'SET_GALLERIES'
 export const SET_PICS = 'SET_PICS'
 export const DELETE_GALLERY = 'DELETE_GALLERY'
+export const SHOULD_REFRESH = 'SHOULD_REFRESH'
 
 //models
 import { Gallery, Pic } from '../../models/Models'
@@ -59,6 +60,7 @@ export const addGallery = (eventName, eventType, thumbnail, allowedUsers) => {
 export const setGalleries = () => {
     return async (dispatch, getState) => {
         const userID = getState().signupReducer.userInfo.userID
+        console.log('🚀 ~ file: action.js ~ line 62 ~ return ~ userID', userID)
         try {
             const body = JSON.stringify({
                 userID: userID,
@@ -145,7 +147,8 @@ export const setPics = (galleryID) => {
                         new Pic(
                             pics[key].galleryID,
                             pics[key].fullPath,
-                            pics[key].id
+                            pics[key].id,
+                            pics[key].thumbPath
                         )
                     )
                 }
@@ -190,10 +193,7 @@ export const deleteGallery = (galleryID) => {
 
             try {
                 const data = await JSON.stringify(response)
-                console.log(
-                    '🚀 ~ file: action.js ~ line 189 ~ return ~ data',
-                    data
-                )
+
                 // const data = await response.json()
                 // const response = data.message.response
                 // if (response === 'success') {
@@ -257,6 +257,19 @@ export const deletePhoto = (photoID) => {
             } catch (error) {
                 throw error
             }
+        } catch (error) {
+            throw error
+        }
+    }
+}
+
+export const shouldRefreshSet = (boolean) => {
+    return async (dispatch, getState) => {
+        try {
+            dispatch({
+                type: SHOULD_REFRESH,
+                shouldRefresh: boolean,
+            })
         } catch (error) {
             throw error
         }

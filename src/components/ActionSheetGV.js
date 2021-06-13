@@ -141,11 +141,21 @@ const ActionSheetGV = forwardRef((props, ref) => {
                                 size={20}
                                 color="red"
                             />
-                            <Text style={styles.deleteText}>Delete</Text>
+                            <Text
+                                style={styles.deleteText}
+                                maxFontSizeMultiplier={
+                                    colors.maxFontSizeMultiplier
+                                }
+                            >
+                                Delete
+                            </Text>
                         </View>
                     </TouchableOpacity>
                     <Animated.View style={[styles.actionButton2, opacity]}>
-                        <Text style={styles.confirmQuestion}>
+                        <Text
+                            style={styles.confirmQuestion}
+                            maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                        >
                             Are you sure?
                         </Text>
                         <View style={styles.yesNo}>
@@ -155,7 +165,14 @@ const ActionSheetGV = forwardRef((props, ref) => {
                                     animatedOpacity.value = 0
                                 }}
                             >
-                                <Text style={styles.confirmQuestion}>Yes</Text>
+                                <Text
+                                    style={styles.confirmQuestion}
+                                    maxFontSizeMultiplier={
+                                        colors.maxFontSizeMultiplier
+                                    }
+                                >
+                                    Yes
+                                </Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={() => {
@@ -163,7 +180,14 @@ const ActionSheetGV = forwardRef((props, ref) => {
                                     bottomSheetModalRef.current?.close()
                                 }}
                             >
-                                <Text style={styles.confirmQuestion}>No</Text>
+                                <Text
+                                    style={styles.confirmQuestion}
+                                    maxFontSizeMultiplier={
+                                        colors.maxFontSizeMultiplier
+                                    }
+                                >
+                                    No
+                                </Text>
                             </TouchableOpacity>
                         </View>
                     </Animated.View>
