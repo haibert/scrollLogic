@@ -109,7 +109,8 @@ const DashModalStack = () => {
             initialRouteName="DashboardScreen"
             screenOptions={{
                 gestureResponseDistance: {
-                    vertical: 1000,
+                    // vertical: 1000,
+                    horizontal: 1000,
                 },
                 gestureDirection: 'vertical',
             }}
@@ -159,6 +160,8 @@ const DashModalStack = () => {
                 component={GalleryDetailScreen}
                 options={{
                     headerShown: false,
+                    useNativeDriver: true,
+                    gestureEnabled: true,
                 }}
             />
         </DashStackShared.Navigator>

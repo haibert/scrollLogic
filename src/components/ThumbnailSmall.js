@@ -35,7 +35,7 @@ const ThumbnailSmall = ({ images, picturePressedHandler }) => {
                     borderColor: colors.pinkLESSTransparent,
                 }}
                 resizeMode="cover"
-                source={{ uri: images.fullPath, cache: 'force-cache' }}
+                source={{ uri: images.thumbPath, cache: 'force-cache' }}
                 // onLayout={() => {}}
             />
             {/* <CachedImageComp
@@ -56,4 +56,4 @@ const ThumbnailSmall = ({ images, picturePressedHandler }) => {
 
 const styles = StyleSheet.create({})
 
-export default ThumbnailSmall
+export default React.memo(ThumbnailSmall)

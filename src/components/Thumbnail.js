@@ -108,7 +108,7 @@ const ThumbNail = ({
                 /> */}
                 <CachedImage
                     ref={downloadRef}
-                    onError={showDownloadButton}
+                    // onError={showDownloadButton}
                     style={styles.image}
                     resizeMode="cover"
                     source={{

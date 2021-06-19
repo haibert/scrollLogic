@@ -18,6 +18,7 @@ export const addToGallery = (photo, galleryID) => {
             galleryID,
             photo,
         })
+        console.log('🚀 ~ file: actions.js ~ line 21 ~ return ~ body', body)
         try {
             const response = await fetch(
                 'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&file-upload=1',

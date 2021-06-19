@@ -72,7 +72,7 @@ const DashboardScreen = (props) => {
     const insets = useSafeAreaInsets()
 
     let tabBarBottomPosition = insets.bottom > 0 ? insets.bottom / 2 + 2 : 10
-    const [deleteID, setDeleteID] = useState()
+    const [deleteID, setDeleteID] = useState({ id: '', index: '' })
 
     const dispatch = useDispatch()
 
@@ -93,6 +93,11 @@ const DashboardScreen = (props) => {
     const [loadingGalleries, setLoadingGalleries] = useState(false)
     // states
     const galleries = useSelector((state) => state.galleryReducer.galleries)
+    console.log(
+        '🚀 ~ file: DashboardScreen.js ~ line 96 ~ DashboardScreen ~ galleries',
+        galleries
+    )
+
     const shouldRefresh = useSelector(
         (state) => state.galleryReducer.shouldRefresh
     )
@@ -103,24 +108,20 @@ const DashboardScreen = (props) => {
         try {
             await dispatch(setGalleries())
         } catch (error) {
-            setLoadingGalleries(false)
             // setError(error.message)
         }
         setLoadingGalleries(false)
-    }, [])
+    }, [setLoadingGalleries, dispatch])
 
     useEffect(() => {
         loadGalleries()
     }, [loadGalleries])
 
     useFocusEffect(() => {
-        async function resetRefresh() {
-            dispatch(shouldRefreshSet(false))
-        }
         const refreshConditionally = async () => {
             if (shouldRefresh) {
                 loadGalleries()
-                await resetRefresh()
+                await dispatch(shouldRefreshSet(false))
             }
         }
 
@@ -283,7 +284,7 @@ const DashboardScreen = (props) => {
                 galleryPressedHandler={galleryPressedHandler.bind(this, item)}
                 navigation={props.navigation}
                 galleryName={item.galleryName}
-                onActionsPressed={onActionsPressed.bind(this, item)}
+                onActionsPressed={onActionsPressed.bind(this, item, index)}
                 key={item.galleryID}
                 imageURI={item.thumbnail}
             />
@@ -296,9 +297,9 @@ const DashboardScreen = (props) => {
         })
     }, [])
 
-    const onActionsPressed = useCallback((item) => {
+    const onActionsPressed = useCallback((item, index) => {
         bottomSheetRef.current?.handlePresentModalPress()
-        setDeleteID(item.galleryID)
+        setDeleteID({ id: item.galleryID, index: index })
     }, [])
 
     const layOut = useCallback(
@@ -308,10 +309,15 @@ const DashboardScreen = (props) => {
 
     const keyExtractor = useCallback((item) => `${item.galleryID}`, [])
     //-----------------------------------------------------FLAT LIST FUNCTIONS--------------------------------------------------------------
-
+    // console.log('rerender')
     const renderEmpty = () => <View />
     const renderHeader = () => <View />
     const renderFooter = () => <View />
+
+    const biglistRef = useRef()
+    // useEffect(() => {
+    //     biglistRef.current?.scrollToIndex({ animated: true, index: 0 })
+    // }, [])
     return (
         <ScreenWrapper>
             <CustomHeaderBasic
@@ -324,14 +330,15 @@ const DashboardScreen = (props) => {
             />
 
             <BigList
+                ref={biglistRef}
                 data={galleries}
                 renderItem={render}
-                renderEmpty={renderEmpty}
-                renderHeader={renderHeader}
-                renderFooter={renderFooter}
+                // renderEmpty={renderEmpty}
+                // renderHeader={renderHeader}
+                // renderFooter={renderFooter}
                 itemHeight={270}
-                headerHeight={0}
-                footerHeight={0}
+                // headerHeight={0}
+                // footerHeight={0}
                 contentContainerStyle={{
                     paddingBottom: tabBarBottomPosition + 80,
                     marginLeft: 10,
@@ -340,6 +347,8 @@ const DashboardScreen = (props) => {
                 style={styles.flatList}
                 onRefresh={loadGalleries}
                 refreshing={loadingGalleries}
+
+                // ListEmptyComponent={}
             />
 
             {/* <FlatList

@@ -23,7 +23,6 @@ const galleryReducer = (state = initialState, action) => {
             }
         }
         case SET_GALLERIES: {
-            console.log(action.galleries)
             return {
                 ...state,
                 galleries: action.galleries,
@@ -36,14 +35,27 @@ const galleryReducer = (state = initialState, action) => {
             }
         }
         case DELETE_GALLERY: {
-            let newArray
-            const index = galleries.indexOf(action.deletedGallery)
-            if (index > -1) {
-                newArray = galleries.splice(index, 1)
-            }
+            let newArray = []
+            // if (action.deletedGallery.index > -1) {
+            //     newArray = state.galleries.splice(
+            //         action.deletedGallery.index,
+            //         1
+            //     )
+            //     console.log(
+            //         '🚀 ~ file: reducer.js ~ line 42 ~ galleryReducer ~ newArray',
+            //         newArray
+            //     )
+            // }
+            const myArray = state.galleries.filter(function (obj) {
+                return obj.id !== action.deletedGallery.id
+            })
+            console.log(
+                '🚀 ~ file: reducer.js ~ line 52 ~ myArray ~ myArray',
+                myArray
+            )
             return {
                 ...state,
-                galleries: newArray,
+                galleries: myArray,
             }
         }
         case SHOULD_REFRESH: {

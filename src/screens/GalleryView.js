@@ -7,6 +7,7 @@ import {
     ImageBackground,
     Platform,
     Linking,
+    Image,
 } from 'react-native'
 //shared elements
 import { SharedElement } from 'react-navigation-shared-element'
@@ -26,6 +27,8 @@ import { snapPoint } from 'react-native-redash'
 import ScreenWrapper from '../components/ScreenWrapper'
 import HeaderBasic from '../components/HeaderBasic'
 import ThumbnailSmall from '../components/ThumbnailSmall'
+import CachedImageGalleryView from '../components/CachedImageGalleryView'
+import GalDetailBottomSheet from '../screens/GalDetailBottomSheet'
 
 //hooks
 import useDidMountEffect from '../hooks/useDidMountEffect'
@@ -90,9 +93,10 @@ const GalleryView = ({ route, navigation }) => {
         tabBarBottomPosition = 55
     }
 
-    function picturePressedHandler(image) {
+    function picturePressedHandler(image, scrollIndex) {
         navigation.navigate('GalleryDetailScreen', {
             image,
+            scrollIndex,
         })
     }
 
@@ -201,7 +205,6 @@ const GalleryView = ({ route, navigation }) => {
 
     useFocusEffect(
         useCallback(() => {
-            console.log('ran')
             loadPics()
         }, [loadPics])
     )
@@ -308,6 +311,11 @@ const GalleryView = ({ route, navigation }) => {
     //         swipeEnabled: false,
     //     })
     // }, [navigation])
+
+    const bottomSheetRef = useRef()
+    const [scrollIndex, setIndex] = useState(0)
+    console.log('reRendered')
+
     return (
         <PanGestureHandler
             ref={panViewRef}
@@ -331,14 +339,14 @@ const GalleryView = ({ route, navigation }) => {
                         id={gallery?.galleryID}
                         style={styles.sharedElement}
                     >
-                        <ImageBackground
+                        <CachedImageGalleryView
                             style={styles.imageBg}
                             source={{
-                                uri: gallery?.thumbnail,
+                                uri: `${gallery?.thumbnail}`,
                                 cache: 'force-cache',
                             }}
                             resizeMode="cover"
-                            // cacheKey={`${gallery.galleryID}t`}
+                            cacheKey={`${gallery.galleryID}t`}
                         />
                     </SharedElement>
                     <HeaderBasic
@@ -364,13 +372,19 @@ const GalleryView = ({ route, navigation }) => {
                         style={styles.flatList}
                         data={pics}
                         keyExtractor={(item) => item.id}
-                        renderItem={(item) => {
+                        renderItem={({ item, index }) => {
                             return (
                                 <ThumbnailSmall
                                     key={item.id}
-                                    images={item.item}
+                                    images={item}
                                     picturePressedHandler={() => {
-                                        picturePressedHandler(item.item)
+                                        // console.log(index)
+                                        // bottomSheetRef.current?.handlePresentModalPress()
+                                        // bottomSheetRef.current?.scrollToItem(
+                                        //     index
+                                        // )
+                                        // setIndex(index)
+                                        picturePressedHandler(pics, index)
                                     }}
                                 />
                             )
@@ -381,8 +395,17 @@ const GalleryView = ({ route, navigation }) => {
                             paddingBottom: tabBarBottomPosition + 60,
                         }}
                         onScrollEndDrag={handleScroll}
+                        // alwaysBounceVertical={false}
+                        // bounces={false}
                     />
                 </ScreenWrapper>
+
+                {/* <GalDetailBottomSheet
+                    ref={bottomSheetRef}
+                    data={pics}
+                    navigation={navigation}
+                    index={scrollIndex}
+                /> */}
             </Animated.View>
         </PanGestureHandler>
     )

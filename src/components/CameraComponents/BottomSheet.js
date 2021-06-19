@@ -129,7 +129,7 @@ const BottomSheet = forwardRef((props, ref) => {
     const uploadPhotoHandler = useCallback(async () => {
         if (selectedGalleries.length === 0) return
         try {
-            dispatch(
+            await dispatch(
                 addToGallery(
                     `data:image/jpeg;base64,${picTaken}`,
                     selectedGalleries

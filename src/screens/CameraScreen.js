@@ -64,6 +64,12 @@ import { useIsFocused } from '@react-navigation/native'
 //status bar
 import { StatusBar } from 'expo-status-bar'
 
+// expo image manipulator
+import * as ImageManipulator from 'expo-image-manipulator'
+
+// expo view shot
+import ViewShot, { captureRef } from 'react-native-view-shot'
+
 const { height, width } = Dimensions.get('window')
 
 const CameraScreen = ({ navigation, route }) => {
@@ -82,15 +88,8 @@ const CameraScreen = ({ navigation, route }) => {
 
     const bottomSheetRef = useRef()
     //----------------------------------------------------------------BOTTOM SHEET----------------------------------------------------------------
-    // const imagePadding = useSelector(
-    //     (state) => state.cameraReducer.imagePadding
-    // )
 
-    // const ratio = useSelector((state) => state.cameraReducer.ratio)
-    // const previewRatio = useSelector(
-    //     (state) => state.cameraReducer.previewRatio
-    // )
-    // RATIO SETTER
+    //----------------------------------------------------------------RATIO SETTER----------------------------------------------------------------
     const [cameraSettings, setCameraSettings] = useState({
         imagePadding: 0,
         ratio: '4:3',
@@ -178,7 +177,7 @@ const CameraScreen = ({ navigation, route }) => {
             await prepareRatio()
         }
     }
-    // RATIO SETTER
+    //----------------------------------------------------------------RATIO SETTER----------------------------------------------------------------
 
     const [type, setType] = useState(Camera.Constants.Type.back)
     const [activateCamera, setActivateCamera] = useState(false)
@@ -212,8 +211,7 @@ const CameraScreen = ({ navigation, route }) => {
     //     '🚀 ~ file: CameraScreen.js ~ line 36 ~ CameraScreen ~ picTaken',
     //     picTaken
     // )
-
-    // camera Functions
+    //----------------------------------------------------------------TAKE PICTURE----------------------------------------------------------------
     const takePictureHandler = useCallback(async () => {
         try {
             if (cameraRef.current) {
@@ -223,24 +221,94 @@ const CameraScreen = ({ navigation, route }) => {
                     skipProcessing: true,
                 }
                 let photo = await cameraRef.current.takePictureAsync(options)
-                photo.height
-                console.log(
-                    '🚀 ~ file: CameraScreen.js ~ line 231 ~ takePictureHandler ~ photo.height',
-                    photo.height
+                // console.log(
+                //     '🚀 ~ file: CameraScreen.js ~ line 231 ~ takePictureHandler ~ photo.height',
+                //     photo.height
+                // )
+                // set photo uri for upload function to be able to use, then show photo
+                const resizedPhoto = await ImageManipulator.manipulateAsync(
+                    photo.uri,
+                    [{ resize: { height: 1100 } }],
+                    { compress: 1, format: 'jpeg', base64: true }
+                )
+                //then create smaller version to save.
+                await dispatch(
+                    takePicture(resizedPhoto.uri, resizedPhoto.base64)
                 )
                 setPic(photo.uri)
-                setPicture64(photo.base64)
-                await dispatch(shouldRefreshSet(true))
-                dispatch(takePicture(photo.uri, photo.base64))
                 setShowPicture(true)
             }
         } catch (err) {
             console.log(err)
         }
-
-        // setPickedImage(image.uri)
-        // props.onImageTaken(image.uri)
     }, [])
+
+    //----------------------------------------------------------------TAKE PICTURE----------------------------------------------------------------
+    //----------------------------------------------------------------SCREEN SHOTTING----------------------------------------------------------------
+    const screenShotRef = useRef()
+
+    const takeScreenShotHandler = async () => {
+        const photoURI = await captureRef(screenShotRef, {
+            format: 'jpg',
+            quality: 1,
+        })
+        const base64 = await captureRef(screenShotRef, {
+            format: 'jpg',
+            quality: 1,
+            result: 'base64',
+        })
+
+        await dispatch(takePicture(photoURI, base64))
+        setPic(photoURI)
+        setShowPicture(true)
+    }
+
+    //----------------------------------------------------------------SCREEN SHOTTING----------------------------------------------------------------
+    //----------------------------------------------------------------UPLOAD PICTURE----------------------------------------------------------------
+    const uploadPhotoHandler = async () => {
+        console.log('iOS upload Ran')
+        const resizedPhoto = await ImageManipulator.manipulateAsync(
+            pic,
+            [{ resize: { height: 1100 } }],
+            { compress: 1, format: 'jpeg', base64: true }
+        )
+
+        try {
+            await dispatch(shouldRefreshSet(true))
+            dispatch(
+                addToGallery(
+                    `data:image/jpeg;base64,${resizedPhoto.base64}`,
+                    newGalleryID ? [`${newGalleryID}`] : [galleryIDPassed]
+                )
+            )
+            setShowPicture(false)
+        } catch (err) {}
+    }
+
+    const screenShotBase64 = useSelector(
+        (state) => state.cameraReducer.pictureBase64
+    )
+
+    const uploadScreenShotHandler = async () => {
+        console.log('android upload fired')
+        try {
+            await dispatch(shouldRefreshSet(true))
+            dispatch(
+                addToGallery(
+                    `data:image/jpeg;base64,${screenShotBase64}`,
+                    newGalleryID ? [`${newGalleryID}`] : [galleryIDPassed]
+                )
+            )
+            setShowPicture(false)
+
+            // if (!newGalleryID) {
+            //     navigation.navigate('GalleryView', {
+            //         shouldRefresh: 'shouldRefresh',
+            //     })
+            // }
+        } catch (err) {}
+    }
+    //----------------------------------------------------------------UPLOAD PICTURE----------------------------------------------------------------
 
     const flipCameraHandler = () => {
         setType(
@@ -259,17 +327,18 @@ const CameraScreen = ({ navigation, route }) => {
         }
     }
 
-    async function savePictureLocallyHandler(localUri) {
+    //----------------------------------------------------------------SAVE PICTURE LOCALLY----------------------------------------------------------------
+    async function savePictureLocallyHandler() {
         const { status } = await MediaLibrary.getPermissionsAsync()
         if (status === 'undetermined') {
             const { status } = await MediaLibrary.requestPermissionsAsync()
             if (status === 'granted') {
-                const asset = await MediaLibrary.createAssetAsync(localUri)
+                const asset = await MediaLibrary.createAssetAsync(pic)
             }
         }
 
         if (status === 'granted') {
-            const asset = await MediaLibrary.createAssetAsync(localUri)
+            const asset = await MediaLibrary.createAssetAsync(pic)
             if (asset) {
                 //display check mark showing it was saved.
             }
@@ -279,10 +348,11 @@ const CameraScreen = ({ navigation, route }) => {
             console.log('Open settings and give permission')
         }
     }
+    //----------------------------------------------------------------SAVE PICTURE LOCALLY----------------------------------------------------------------
 
-    // zoom gesture handler
+    //----------------------------------------------------------------ZOOM LOGIC--------------------------------------------------------------------------
     const zoom = useSharedValue(0)
-    const MAX_ZOOM_FACTOR = 20
+    const MAX_ZOOM_FACTOR = 10
     const SCALE_FULL_ZOOM = 20
     const formatMaxZoom = 1
     const maxZoomFactor = Math.min(formatMaxZoom, MAX_ZOOM_FACTOR)
@@ -332,8 +402,10 @@ const CameraScreen = ({ navigation, route }) => {
             willThisWork()
         },
     })
+    //----------------------------------------------------------------ZOOM LOGIC--------------------------------------------------------------------------
 
-    // VIDEO RECORDING
+    //----------------------------------------------------------------VIDEO RECORDING---------------------------------------------------------------------
+
     async function beginRecording() {
         let video = await cameraRef.current.recordAsync()
         setVideo(video)
@@ -343,25 +415,27 @@ const CameraScreen = ({ navigation, route }) => {
         cameraRef.current.stopRecording()
         setShowVideoModal(true)
     }
+    //----------------------------------------------------------------VIDEO RECORDING---------------------------------------------------------------------
 
-    //UPLOADING PICTURE
-    const uploadPhotoHandler = async () => {
-        try {
-            dispatch(
-                addToGallery(
-                    `data:image/jpeg;base64,${picture64}`,
-                    newGalleryID ? [`${newGalleryID}`] : [galleryIDPassed]
-                )
-            )
-            setShowPicture(false)
+    //----------------------------------------------------------------PLATFORM SPECIFIC----------------------------------------------------------------
 
-            // if (!newGalleryID) {
-            //     navigation.navigate('GalleryView', {
-            //         shouldRefresh: 'shouldRefresh',
-            //     })
-            // }
-        } catch (err) {}
+    const uploadHandler = () => {
+        if (Platform.OS === 'android') {
+            return uploadScreenShotHandler()
+        } else {
+            return uploadPhotoHandler()
+        }
     }
+
+    const takePhotoHandler = () => {
+        if (Platform.OS === 'android') {
+            return takeScreenShotHandler()
+        } else {
+            return takePictureHandler()
+        }
+    }
+
+    //----------------------------------------------------------------PLATFORM SPECIFIC----------------------------------------------------------------
 
     return (
         <View
@@ -385,27 +459,39 @@ const CameraScreen = ({ navigation, route }) => {
                     }}
                 >
                     {isFocused && (
-                        <Camera
-                            style={{
-                                aspectRatio:
-                                    Platform.OS === 'android'
-                                        ? cameraSettings.previewRatio
-                                        : null,
-                                flex: 1,
-                                left: -(camWidth - width) / 2,
-                            }}
-                            ref={cameraRef}
-                            type={type}
-                            flashMode={flashMode}
-                            zoom={zooming}
-                            onCameraReady={setCameraReady}
-                            ratio={cameraSettings.ratio}
-                            maxDuration={10000}
-                            autoFocus="on"
-                            onLayout={(event) => {
-                                setCamWidth(event.nativeEvent.layout.width)
-                            }}
-                        ></Camera>
+                        <ViewShot style={{ flex: 1 }} ref={screenShotRef}>
+                            <Camera
+                                // style={{
+                                //     aspectRatio:
+                                //         Platform.OS === 'android'
+                                //             ? cameraSettings.previewRatio
+                                //             : null,
+                                //     left: -(camWidth - width) / 2,
+                                //     marginTop: insets.top,
+                                //     // aspectRatio: 9 / 16,
+                                //     width: width,
+                                // }}
+                                style={{
+                                    aspectRatio:
+                                        Platform.OS === 'android'
+                                            ? cameraSettings.previewRatio
+                                            : null,
+                                    flex: 1,
+                                    left: -(camWidth - width) / 2,
+                                }}
+                                ref={cameraRef}
+                                type={type}
+                                flashMode={flashMode}
+                                zoom={zooming}
+                                onCameraReady={setCameraReady}
+                                ratio={cameraSettings.ratio}
+                                maxDuration={10000}
+                                autoFocus="on"
+                                onLayout={(event) => {
+                                    setCamWidth(event.nativeEvent.layout.width)
+                                }}
+                            />
+                        </ViewShot>
                     )}
                     <View
                         style={[
@@ -460,7 +546,7 @@ const CameraScreen = ({ navigation, route }) => {
                             }}
                             onLongPress={beginRecording}
                             onEndPress={endRecording}
-                            onTap={takePictureHandler}
+                            onTap={takePhotoHandler}
                         />
                     </View>
                 </Reanimated.View>
@@ -484,7 +570,7 @@ const CameraScreen = ({ navigation, route }) => {
                         />
                         <EditorBottomActions
                             onSave={savePictureLocallyHandler}
-                            onUpload={uploadPhotoHandler}
+                            onUpload={uploadHandler}
                             checkMarkSet={checkMarkSet}
                             onPresentGalleries={() => {
                                 bottomSheetRef.current?.handlePresentModalPress()

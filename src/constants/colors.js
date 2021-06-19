@@ -1,3 +1,6 @@
+import { Dimensions } from 'react-native'
+
+const { width, height } = Dimensions.get('window')
 export default {
     // placeHolder: '#9f7676',
     placeHolder: 'rgba(117,113,154,1)',
@@ -21,6 +24,10 @@ export default {
     pinkUnderLine: '#e896be',
 
     maxFontSizeMultiplier: 1.2,
+    screenHeight: height,
+    screenWidth: width,
+
+    rowHeight: height + 80,
 
     androidFont: 'open-sans',
     androidFontBold: 'open-sans-bold',

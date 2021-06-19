@@ -49,6 +49,10 @@ export default function App() {
         const createDirectory = async () => {
             const filesystemURI = FileSystem.cacheDirectory + 'images/'
             const dirInfo = await FileSystem.getInfoAsync(filesystemURI)
+            console.log(
+                '🚀 ~ file: App.js ~ line 52 ~ createDirectory ~ dirInfo',
+                dirInfo.exists
+            )
             if (!dirInfo.exists) {
                 const results = await FileSystem.makeDirectoryAsync(
                     filesystemURI,

@@ -1,11 +1,12 @@
-import React, { useRef } from 'react'
-import { View, Text, StyleSheet, Image, Dimensions } from 'react-native'
+import React, { useRef, useCallback, useEffect } from 'react'
+import { View, Text, StyleSheet, FlatList, Dimensions } from 'react-native'
 
 //components
 import ScreenWrapper from '../components/ScreenWrapper'
 import HeaderBasic from '../components/HeaderBasic'
 import ActionSheetGV from '../components/ActionSheetGV'
 import CachedImage from '../components/CachedImage'
+import ThumbnailBig from '../components/ThumbnailBig'
 
 const { width, height } = Dimensions.get('window')
 
@@ -19,11 +20,19 @@ import { Ionicons } from '@expo/vector-icons'
 import { deletePhoto } from '../store/event/action'
 import { useDispatch, useSelector } from 'react-redux'
 
+// big list
+import BigList from 'react-native-big-list'
+
 //paper
 import { Avatar, Title, Caption, Paragraph, Drawer } from 'react-native-paper'
+import { ScrollView } from 'react-native'
 
 const GalleryDetailScreen = ({ route, navigation }) => {
-    const { image, refreshPics } = route.params
+    const { image, scrollIndex } = route.params
+    // console.log(
+    //     '🚀 ~ file: GalleryDetailScreen.js ~ line 27 ~ GalleryDetailScreen ~ image',
+    //     image.fullPath
+    // )
     const bottomSheetModalRef = useRef()
 
     //----------------------------------------------------------------DELETE PHOTO----------------------------------------------------------------
@@ -37,6 +46,39 @@ const GalleryDetailScreen = ({ route, navigation }) => {
     }
 
     //----------------------------------------------------------------DELETE PHOTO----------------------------------------------------------------
+
+    //----------------------------------------------------------------FLATLIST OPTIMIZATION----------------------------------------------------------------
+    const bigListRef = useRef()
+
+    const handleScroll = (event) => {
+        if (event.nativeEvent.contentOffset.y < 30) {
+            navigation.goBack()
+        }
+    }
+
+    const render = useCallback(({ item, index }) => {
+        return <ThumbnailBig images={item} key={item.galleryID} />
+    }, [])
+
+    const layOut = useCallback(
+        (data, index) => ({
+            length: colors.rowHeight,
+            offset: colors.rowHeight * index,
+            index,
+        }),
+        []
+    )
+    const keyExtractor = useCallback((item) => item.id, [])
+
+    const scrollFailed = useCallback(() => {
+        setTimeout(() => {
+            bigListRef.current?.scrollToIndex({
+                index: scrollIndex,
+                animated: false,
+            })
+        }, 500)
+    }, [])
+    //----------------------------------------------------------------FLATLIST OPTIMIZATION----------------------------------------------------------------
 
     return (
         <ScreenWrapper style={{ paddingBottom: 0 }}>
@@ -57,27 +99,28 @@ const GalleryDetailScreen = ({ route, navigation }) => {
                     }}
                 />
             </View>
-            <Image
-                style={{
-                    width: width,
-                    height: height - 200,
-                    marginTop: 10,
-                }}
-                resizeMode="cover"
-                source={{
-                    uri: image.fullPath,
-                    cache: 'force-cache',
-                }}
-                onLayout={(evt) => {
-                    {
-                        evt.nativeEvent.height
-                    }
-                    // console.log(
-                    //     '🚀 ~ file: GalleryDetailScreen.js ~ line 72 ~ GalleryDetailScreen ~ evt.nativeEvent.height',
-                    //     evt.nativeEvent.layout.height
-                    // )
-                }}
-                // cacheKey={`${image.id + 'fullSize'}t`}
+            {/* cant use Big list because scroll to index and onScrollEndDrag do not work.*/}
+            <FlatList
+                ref={bigListRef}
+                data={image}
+                renderItem={render}
+                keyExtractor={keyExtractor}
+                onScrollEndDrag={handleScroll}
+                initialNumToRender={5}
+                maxToRenderPerBatch={5}
+                initialScrollIndex={scrollIndex}
+                onScrollToIndexFailed={scrollFailed}
+                getItemLayout={layOut}
+                maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
+                windowSize={3}
+                // contentContainerStyle={
+                //     {
+                //         // paddingBottom: tabBarBottomPosition + 80,
+                //     }
+                // }
+                // ListEmptyComponent={}
+                alwaysBounceVertical={false}
+                bounces={false}
             />
             <ActionSheetGV
                 ref={bottomSheetModalRef}

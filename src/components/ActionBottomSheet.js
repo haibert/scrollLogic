@@ -73,19 +73,17 @@ const ActionBottomSheet = forwardRef((props, ref) => {
 
     //----------------------------------------------------------------DELETING GALLERY----------------------------------------------------------------
     const deleteGalleryHandler = useCallback(async () => {
-        const wholeDirectory =
-            FileSystem.cacheDirectory + 'images/' + `${props.galleryID}t`
+        // const wholeDirectory = FileSystem.cacheDirectory + 'images/'
         const picDir =
-            FileSystem.cacheDirectory + 'images/' + `${props.galleryID}t`
-        const removePic = await FileSystem.deleteAsync(picDir)
-        console.log(
-            '🚀 ~ file: ActionBottomSheet.js ~ line 78 ~ deleteGalleryHandler ~ removePic',
-            removePic
-        )
+            FileSystem.cacheDirectory + 'images/' + `${props.galleryID.id}t`
+        const cacheExists = await FileSystem.getInfoAsync(picDir)
+        if (cacheExists.exists) {
+            await FileSystem.deleteAsync(picDir)
+        }
 
         await dispatch(deleteGallery(props.galleryID))
-        await await FileSystem.deleteAsync(picDir)
         bottomSheetModalRef.current?.close()
+        props.refreshGalleryList()
     }, [props])
     //----------------------------------------------------------------DELETING GALLERY----------------------------------------------------------------
 

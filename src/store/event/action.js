@@ -21,6 +21,7 @@ export const addGallery = (eventName, eventType, thumbnail, allowedUsers) => {
                 thumbnail,
                 allowedUsers,
             })
+            console.log('🚀 ~ file: action.js ~ line 24 ~ return ~ body', body)
 
             const response = await fetch(
                 'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&add-gallery=1',
@@ -42,6 +43,10 @@ export const addGallery = (eventName, eventType, thumbnail, allowedUsers) => {
 
             try {
                 const data = await response.json()
+                console.log(
+                    '🚀 ~ file: action.js ~ line 46 ~ return ~ data',
+                    data
+                )
                 const createdGalleryID = data.message.galleryID
 
                 dispatch({
@@ -60,7 +65,6 @@ export const addGallery = (eventName, eventType, thumbnail, allowedUsers) => {
 export const setGalleries = () => {
     return async (dispatch, getState) => {
         const userID = getState().signupReducer.userInfo.userID
-        console.log('🚀 ~ file: action.js ~ line 62 ~ return ~ userID', userID)
         try {
             const body = JSON.stringify({
                 userID: userID,
@@ -74,6 +78,7 @@ export const setGalleries = () => {
                         key: 'ThisIsASecretKey',
                     },
                     body: body,
+                    cache: 'no-cache',
                 }
             )
 
@@ -170,7 +175,7 @@ export const deleteGallery = (galleryID) => {
     return async (dispatch, getState) => {
         try {
             const body = JSON.stringify({
-                id: galleryID,
+                id: galleryID.id,
             })
             console.log('🚀 ~ file: action.js ~ line 169 ~ return ~ body', body)
             const response = await fetch(
@@ -197,10 +202,10 @@ export const deleteGallery = (galleryID) => {
                 // const data = await response.json()
                 // const response = data.message.response
                 // if (response === 'success') {
-                //     dispatch({
-                //         type: DELETE_GALLERY,
-                //         deletedGallery: galleryID,
-                //     })
+                dispatch({
+                    type: DELETE_GALLERY,
+                    deletedGallery: galleryID,
+                })
                 // } else {
                 //     throw new Error('Something went wrong!')
                 // }
