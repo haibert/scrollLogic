@@ -28,15 +28,26 @@ const Button = (props) => {
     return (
         <View style={{ ...styles.button, ...props.style }}>
             <TouchableCmp
-                style={styles.touchable}
+                style={{
+                    ...styles.touchable,
+                    borderRadius: props.style?.borderRadius
+                        ? props.style?.borderRadius
+                        : 15,
+                }}
                 onPress={props.onPress}
                 activeOpacity={0.5}
             >
                 <LinearGradient
                     // colors={['rgba(252,140,250,1)', 'rgba(155,97,234,1)']}
-                    colors={[colors.mediumTint, 'rgba(155,97,234,1)']}
+                    colors={[colors.nPButton, colors.nPButton]}
+                    // colors={[colors.mediumTint, 'rgba(155,97,234,1)']}
                     // colors={[colors.blue3, colors.blue]}
-                    style={styles.touchable}
+                    style={{
+                        ...styles.touchable,
+                        borderRadius: props.style?.borderRadius
+                            ? props.style?.borderRadius
+                            : 15,
+                    }}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                 >
@@ -66,7 +77,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         // backgroundColor: colors.buttonColor,
-        borderRadius: 5,
+        borderRadius: 15,
         shadowColor: 'black',
         shadowRadius: 2,
         shadowOpacity: 0.4,
@@ -83,8 +94,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         width: '100%',
         minWidth: '100%',
-        borderRadius: 5,
-        height: 51,
+        borderRadius: 15,
+        height: '100%',
         flexDirection: 'row',
     },
     text: {

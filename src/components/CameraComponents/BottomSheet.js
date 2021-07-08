@@ -180,70 +180,47 @@ const BottomSheet = forwardRef((props, ref) => {
                 snapPoints={snapPoints}
                 onChange={handleSheetChangesModal}
                 // backdropComponent={CustomBackdrop}
-                dismissOnPanDown={true}
+                // dismissOnPanDown={true}
                 handleComponent={CustomHandleComponent}
+                dismissOnPanDown={true}
             >
                 <View
                     style={{
-                        paddingTop: insets.top,
+                        paddingTop: insets.top + 60,
                         flex: 1,
                         paddingVertical: 10,
+                        paddingBottom: 90,
                     }}
                 >
-                    <BottomSheetScrollView
-                        contentContainerStyle={{
-                            paddingTop: insets.top,
-                            paddingBottom: 50 + insets.bottom,
+                    <BottomSheetFlatList
+                        style={styles.flatList}
+                        data={galleries}
+                        keyExtractor={(item) => `${item.galleryID}`}
+                        renderItem={({ item, index }) => {
+                            return (
+                                <SelectionCellItem
+                                    navigation={props.navigation}
+                                    galleryName={item.galleryName}
+                                    galleryID={item.galleryID}
+                                    onSelect={() => {
+                                        selectedGalleries.push(item.galleryID)
+                                        console.log(
+                                            '🚀 ~ file: BottomSheet.js ~ line 88 ~ BottomSheet ~ selectedGalleries',
+                                            selectedGalleries
+                                        )
+                                    }}
+                                />
+                            )
                         }}
-                    >
-                        {galleries.length === 0 ? <NoGalleriesContent /> : null}
-                        <View style={styles.shadowView}>
-                            <View
-                                style={{ overflow: 'hidden', borderRadius: 20 }}
-                            >
-                                {galleries.map(renderItem)}
-                                {/* <BottomSheetFlatList
-                                style={styles.flatList}
-                                data={galleries}
-                                keyExtractor={(item) => `${item.galleryID}`}
-                                renderItem={({ item, index }) => {
-                    console.log("🚀 ~ file: BottomSheet.js ~ line 144 ~ BottomSheet ~                     const exists = selectedGalleries.find(gallery => gallery.galleryID)
-",                     const exists = selectedGalleries.find(gallery => gallery.galleryID)
-)
-                                    return (
-                                        <SelectionCellItem
-                                            navigation={props.navigation}
-                                            galleryName={item.galleryName}
-                                            galleryID={item.galleryID}
-                                            onSelect={() => {
-                                                selectedGalleries.push(
-                                                    item.galleryID
-                                                )
-                                                console.log(
-                                                    '🚀 ~ file: BottomSheet.js ~ line 88 ~ BottomSheet ~ selectedGalleries',
-                                                    selectedGalleries
-                                                )
-                                            }}
-                                        />
-                                    )
-                                }}
-                                scrollEnabled={false}
-                                showsVerticalScrollIndicator={false}
-                                // columnWrapperStyle={{
-                                //     marginLeft: 10,
-                                // }}
-                                // contentContainerStyle={{
-                                //     paddingBottom: tabBarBottomPosition + 60,
-                                // }}
-                            /> */}
-                                {/* <BottomSheetScrollView
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={styles.contentContainer}
-                    keyboardDismissMode="on-drag"
-                ></BottomSheetScrollView> */}
-                            </View>
-                        </View>
-                    </BottomSheetScrollView>
+                        showsVerticalScrollIndicator={false}
+                        // columnWrapperStyle={{
+                        //     marginLeft: 10,
+                        // }}
+                        // contentContainerStyle={{
+                        //     paddingBottom: tabBarBottomPosition + 60,
+                        // }}
+                    />
+
                     <View
                         style={{
                             ...styles.bottomActions,
@@ -333,3 +310,96 @@ const styles = StyleSheet.create({
 })
 
 export default BottomSheet
+
+// return (
+//     <BottomSheetModalProvider>
+//         <BottomSheetModal
+//             ref={bottomSheetModalRef}
+//             index={1}
+//             snapPoints={snapPoints}
+//             onChange={handleSheetChangesModal}
+//             // backdropComponent={CustomBackdrop}
+//             dismissOnPanDown={true}
+//             handleComponent={CustomHandleComponent}
+//         >
+//             <View
+//                 style={{
+//                     paddingTop: insets.top,
+//                     flex: 1,
+//                     paddingVertical: 10,
+//                 }}
+//             >
+//                 {/* <BottomSheetScrollView
+//                     contentContainerStyle={{
+//                         paddingTop: insets.top,
+//                         paddingBottom: 50 + insets.bottom,
+//                     }}
+//                 > */}
+//                 {galleries.length === 0 ? <NoGalleriesContent /> : null}
+//                 {/* <View style={styles.shadowView}> */}
+//                 {/* <View
+//                             style={{ overflow: 'hidden', borderRadius: 20 }}
+//                         > */}
+//                 {/* {galleries.map(renderItem)} */}
+//                 <BottomSheetFlatList
+//                     style={styles.flatList}
+//                     data={galleries}
+//                     keyExtractor={(item) => `${item.galleryID}`}
+//                     renderItem={({ item, index }) => {
+//                         return (
+//                             <SelectionCellItem
+//                                 navigation={props.navigation}
+//                                 galleryName={item.galleryName}
+//                                 galleryID={item.galleryID}
+//                                 onSelect={() => {
+//                                     selectedGalleries.push(item.galleryID)
+//                                     console.log(
+//                                         '🚀 ~ file: BottomSheet.js ~ line 88 ~ BottomSheet ~ selectedGalleries',
+//                                         selectedGalleries
+//                                     )
+//                                 }}
+//                             />
+//                         )
+//                     }}
+//                     showsVerticalScrollIndicator={false}
+//                     // columnWrapperStyle={{
+//                     //     marginLeft: 10,
+//                     // }}
+//                     // contentContainerStyle={{
+//                     //     paddingBottom: tabBarBottomPosition + 60,
+//                     // }}
+//                 />
+//                 {/* </View> */}
+//                 {/* </View> */}
+//                 {/* </BottomSheetScrollView> */}
+//                 <View
+//                     style={{
+//                         ...styles.bottomActions,
+//                         height: 60 + insets.bottom,
+//                     }}
+//                 >
+//                     <View style={styles.bottomButtonsCont}>
+//                         {/* <View style={styles.circle}>
+//                             <Ionicons
+//                                 name="download-outline"
+//                                 size={28}
+//                                 color="white"
+//                                 onPress={props.onSave}
+//                             />
+//                         </View> */}
+//                         <TouchableOpacity onPress={uploadPhotoHandler}>
+//                             <View style={styles.circle}>
+//                                 <Ionicons
+//                                     name="send"
+//                                     size={28}
+//                                     color={colors.lightTint}
+//                                 />
+//                             </View>
+//                         </TouchableOpacity>
+//                     </View>
+//                 </View>
+//             </View>
+//         </BottomSheetModal>
+//     </BottomSheetModalProvider>
+// )
+// })

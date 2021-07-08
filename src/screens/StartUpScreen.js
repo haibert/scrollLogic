@@ -49,12 +49,17 @@ const StartUpScreen = (props) => {
     useEffect(() => {
         const checkUserID = async () => {
             const userLoggedIn = await AsyncStorage.getItem('userID')
+            const userName = await AsyncStorage.getItem('username')
+            const password = await AsyncStorage.getItem('password')
             console.log(
                 '🚀 ~ file: StartUpScreen.js ~ line 52 ~ checkUserID ~ userLoggedIn',
                 userLoggedIn
             )
+            props.navigation.navigate('DrawerNav')
+
             if (userLoggedIn) {
                 await dispatch(setUserID(userLoggedIn))
+                await dispatch(login(userName, password))
                 props.navigation.navigate('DrawerNav')
             } else {
                 props.navigation.navigate('LoginScreen')
@@ -68,7 +73,7 @@ const StartUpScreen = (props) => {
     return (
         <ScreenWrapper style={styles.screen}>
             <StatusBar
-                style="light"
+                style="dark"
                 translucent
                 backgroundColor="rgba(255,255,255,0)"
                 animated

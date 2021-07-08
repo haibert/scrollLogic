@@ -89,14 +89,10 @@ const DashboardScreen = (props) => {
     const bottomSheetRef = useRef()
     //----------------------------------------------------------------BOTTOM SHEET----------------------------------------------------------------
 
-    //-----------------------------------------------------LOAD GALLERIES--------------------------------------------------------
+    //----------------------------------------------------------------LOAD GALLERIES--------------------------------------------------------
     const [loadingGalleries, setLoadingGalleries] = useState(false)
     // states
     const galleries = useSelector((state) => state.galleryReducer.galleries)
-    console.log(
-        '🚀 ~ file: DashboardScreen.js ~ line 96 ~ DashboardScreen ~ galleries',
-        galleries
-    )
 
     const shouldRefresh = useSelector(
         (state) => state.galleryReducer.shouldRefresh
@@ -127,8 +123,17 @@ const DashboardScreen = (props) => {
 
         refreshConditionally()
     })
-    //-----------------------------------------------------LOAD GALLERIES--------------------------------------------------------
+    //----------------------------------------------------------------LOAD GALLERIES--------------------------------------------------------
 
+    //----------------------------------------------------------------PREVENT BACK BUTTON ANDROID----------------------------------------------------------------
+    useEffect(
+        () =>
+            props.navigation.addListener('beforeRemove', (e) => {
+                e.preventDefault()
+            }),
+        []
+    )
+    //----------------------------------------------------------------PREVENT BACK BUTTON ANDROID----------------------------------------------------------------
     // useFocusEffect(() => {
     //     const prevent = BackHandler
     //     if (props.navigation.isFocused()) {
@@ -303,7 +308,7 @@ const DashboardScreen = (props) => {
     }, [])
 
     const layOut = useCallback(
-        (data, index) => ({ length: 260, offset: 260 * index, index }),
+        (data, index) => ({ length: 270, offset: 270 * index, index }),
         []
     )
 
@@ -326,7 +331,7 @@ const DashboardScreen = (props) => {
                     props.navigation.toggleDrawer()
                 }}
                 header="Gallery"
-                headerColor={{ color: colors.textColor }}
+                headerColor={{ color: colors.darkestColorP1 }}
             />
 
             <BigList
@@ -337,6 +342,8 @@ const DashboardScreen = (props) => {
                 // renderHeader={renderHeader}
                 // renderFooter={renderFooter}
                 itemHeight={270}
+                layOut={layOut}
+                keyExtractor={keyExtractor}
                 // headerHeight={0}
                 // footerHeight={0}
                 contentContainerStyle={{
@@ -376,6 +383,9 @@ const DashboardScreen = (props) => {
                     setShowModal(true)
                 }}
                 onRightPressed={cameraPressedHandler}
+                onSearchPressed={() => {
+                    props.navigation.navigate('SearchScreen')
+                }}
             />
             <Modal visible={showModal} transparent animationType="slide">
                 <View style={styles.modal}>

@@ -23,7 +23,8 @@ const ScreenWrapper = (props) => {
         //     }}
         // >
         <LinearGradient
-            colors={['rgba(252,140,250,1)', colors.blue]}
+            // colors={['rgba(252,140,250,1)', colors.blue]}
+            colors={['white', 'white']}
             style={{
                 flex: 1,
                 paddingTop: Platform.OS === 'android' ? insets.top : null,
@@ -37,8 +38,8 @@ const ScreenWrapper = (props) => {
             <View
                 style={{
                     flex: 1,
-                    ...props.style,
                     paddingTop: insets.top,
+                    ...props.style,
                 }}
             >
                 {props.children}

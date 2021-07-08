@@ -171,7 +171,6 @@ const GalDetailBottomSheet = forwardRef((props, ref) => {
                         // onRefresh={loadGalleries}
                         // refreshing={loadingGalleries}
                         // ListEmptyComponent={}
-                        disableScrollViewPanResponder
                     />
 
                     {/* <BottomSheetFlatList

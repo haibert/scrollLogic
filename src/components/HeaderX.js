@@ -22,11 +22,11 @@ const HeaderX = (props) => {
     return (
         <View style={styles.xCont}>
             <TouchableCmp onPress={props.goBack}>
-                <View style={styles.circle}>
+                <View style={{ ...styles.circle, ...props.circleColor }}>
                     <Ionicons
                         name="close-outline"
                         size={30}
-                        color={!props.color ? colors.mediumTint : props.color}
+                        color={!props.color ? 'white' : props.color}
                         style={styles.xShadow}
                     />
                 </View>

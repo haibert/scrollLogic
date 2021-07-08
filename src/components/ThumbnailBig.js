@@ -1,34 +1,29 @@
-import React, { useState, useRef, useCallback } from 'react'
+import React, { useRef, useCallback, useMemo } from 'react'
 import {
     StyleSheet,
     View,
-    Image,
-    TouchableNativeFeedback,
     Text,
     Dimensions,
     ImageBackground,
-    Platform,
+    Pressable,
+    Image,
+    ActivityIndicator,
 } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import Animated, {
     useSharedValue,
     withTiming,
     useAnimatedStyle,
-    withDelay,
 } from 'react-native-reanimated'
-//shared elements
-import { SharedElement } from 'react-navigation-shared-element'
 
-//custom components
-import ScaleButton from './TouchableScale'
-// import CachedImage from '../components/CachedImage'
-import Comp from '../components/Comp'
-
-//Linear Gradient
-import { LinearGradient } from 'expo-linear-gradient'
+// expo blurview
+import { BlurView } from 'expo-blur'
 
 //colors
 import colors from '../constants/colors'
+
+//custom  component
+import Heart from '../components/Heart'
 
 const { width, height } = Dimensions.get('window')
 
@@ -36,47 +31,234 @@ const CELL_WIDTH = width / 2
 
 //ionicons
 import { Ionicons } from '@expo/vector-icons'
+import { EvilIcons } from '@expo/vector-icons'
+
+//safe area
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
+//custom components
+import CachedImage from '../components/CachedImage'
 
 const ThumbnailBig = (props) => {
-    let TouchableCmp = TouchableOpacity
+    const insets = useSafeAreaInsets()
 
-    if (Platform.OS === 'android' && Platform.Version >= 21) {
-        TouchableCmp = TouchableNativeFeedback
+    //----------------------------------------------------------------ROW HEIGHT CALCS----------------------------------------------------------------
+    const rowHeightAdjusted = useMemo(() => {
+        const calcHeight = height - 40 - insets.top - insets.bottom - 70 - 30
+        return +calcHeight.toFixed(0)
+    })
+    const rowWidthAdjust = useMemo(() => (rowHeightAdjusted * 9) / 16)
+    //----------------------------------------------------------------ROW HEIGHT CALCS----------------------------------------------------------------
+
+    //----------------------------------------------------------------DELETE ANIMATION LOGIC----------------------------------------------------------------
+    const animatedHight = useSharedValue(colors.rowHeight)
+
+    const deleteStyle = useAnimatedStyle(() => {
+        return {
+            height: animatedHight.value,
+            width: '100%',
+        }
+    })
+
+    const startDeleteAnimation = () => {
+        animatedHight.value = withTiming(0, { duration: 300 })
     }
+    // const animatedScaleStyle = useAnimatedStyle(() => {
+    //     return {
+    //         transform: [
+    //             {
+    //                 scale: props.animatedValue,
+    //             },
+    //         ],
+    //     }
+    // })
+    //----------------------------------------------------------------DELETE ANIMATION LOGIC----------------------------------------------------------------
 
-    //----------------------------------------------------------------OPTIMIZATION----------------------------------------------------------------
-    const onPress = useCallback(() => {
-        animatedOpacity.value = withDelay(300, withTiming(0))
-        galleryPressedHandler()
+    //----------------------------------------------------------------HIDE ACTIONS ANIMATION----------------------------------------------------------------
+
+    const animatedOpacity = useSharedValue(1)
+
+    const bigContStyle = useAnimatedStyle(() => {
+        return {
+            opacity: animatedOpacity.value,
+        }
+    })
+
+    const startOpacityAnim = useCallback(() => {
+        console.log(animatedOpacity.value)
+        if (animatedOpacity.value === 1) {
+            console.log('go here')
+            animatedOpacity.value = withTiming(0, { duration: 200 })
+        } else {
+            animatedOpacity.value = withTiming(1, { duration: 200 })
+        }
     }, [])
-    //----------------------------------------------------------------OPTIMIZATION----------------------------------------------------------------
+    //----------------------------------------------------------------HIDE ACTIONS ANIMATION----------------------------------------------------------------
+
+    //----------------------------------------------------------------LOADING LOGIC----------------------------------------------------------------
+    const animatedOpacity2 = useSharedValue(1)
+
+    const opacityStyle = useAnimatedStyle(() => {
+        return {
+            opacity: animatedOpacity2.value,
+        }
+    })
+
+    const startOpacity2Anim = useCallback(() => {
+        animatedOpacity2.value = withTiming(0, { duration: 0 })
+    }, [])
+
+    const loadingView = useRef()
+
+    const onLoad = useCallback(() => {
+        startOpacity2Anim()
+        // loadingView.current?.setNativeProps({
+        //     style: {
+        //         opacity: 0,
+        //     },
+        // })
+    }, [])
+    //----------------------------------------------------------------LOADING LOGIC----------------------------------------------------------------
+
     return (
-        <View style={styles.cont}>
-            <Image
-                style={styles.image}
-                resizeMode="cover"
-                source={{
-                    uri: props.images.fullPath,
+        <Pressable
+            style={{ ...styles.pressable, width: rowHeightAdjusted }}
+            onPress={startOpacityAnim}
+        >
+            <View
+                style={{
+                    height: rowHeightAdjusted,
+                    width: rowWidthAdjust,
+                    transform: [
+                        {
+                            rotate: '90deg',
+                        },
+                    ],
                 }}
-            />
-            <LinearGradient
-                colors={['rgba(252,140,250,1)', colors.blue]}
-                style={styles.actions}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-            ></LinearGradient>
-        </View>
+            >
+                {/* <ImageBackground
+                    style={styles.image}
+                    source={{
+                        uri: props.images.fullPath,
+                    }}
+                    // onLoadStart={onLoadStart}
+                    onLoad={onLoad}
+                /> */}
+
+                <CachedImage
+                    style={styles.image}
+                    resizeMode="cover"
+                    source={{
+                        uri: `${props.images.fullPath}`,
+                    }}
+                    cacheKey={`${props.images.id}t`}
+                    onLoad={onLoad}
+                />
+
+                <Animated.Image
+                    style={[
+                        styles.image,
+                        StyleSheet.absoluteFill,
+                        opacityStyle,
+                    ]}
+                    source={{
+                        uri: props.images.thumbPath,
+                    }}
+                    resizeMode="cover"
+                    // blurRadius={1}
+                />
+                <Animated.View style={[styles.wholeCont, bigContStyle]}>
+                    <ImageBackground
+                        style={styles.actionBar}
+                        blurRadius={100}
+                        source={require('../../assets/AndroidTransparentPngBLUR.png')}
+                        resizeMode="stretch"
+                    />
+                    <Ionicons
+                        name="ellipsis-horizontal"
+                        size={25}
+                        color={colors.darkestColorP1}
+                        onPress={props.oneEllipsisPressed}
+                        style={styles.deleteIcon}
+                    />
+                    <Heart style={styles.heartIcon} />
+                    <Text style={styles.likes}>500</Text>
+                    <EvilIcons
+                        name="comment"
+                        size={41}
+                        color={colors.darkestColorP1}
+                        onPress={props.oneEllipsisPressed}
+                        style={styles.commentIcon}
+                    />
+                    <Text style={styles.comments}>12</Text>
+                </Animated.View>
+            </View>
+        </Pressable>
     )
 }
 
 const styles = StyleSheet.create({
-    cont: { height: height + 80, width: width },
-
-    image: {
-        height: height,
+    pressable: {
+        height: width,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    actions: {
-        height: 80,
+    image: {
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        left: 0,
+        bottom: 0,
+        flex: 1,
+        padding: 20,
+        alignItems: 'center',
+        borderRadius: 17,
+        overflow: 'hidden',
+        // aspectRatio: 9 / 16,
+    },
+    wholeCont: {
+        flex: 1,
+        padding: 15,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 17,
+        overflow: 'hidden',
+    },
+    actionBar: {
+        height: 60,
+        backgroundColor: colors.backgroundBlurLight,
+        position: 'absolute',
+        bottom: 15,
+        width: '100%',
+        borderRadius: 13,
+        overflow: 'hidden',
+    },
+    deleteIcon: {
+        position: 'absolute',
+        right: 30,
+        bottom: 30,
+    },
+    heartIcon: {
+        position: 'absolute',
+        left: 30,
+        bottom: 20,
+    },
+    likes: {
+        position: 'absolute',
+        left: 65,
+        bottom: 33,
+        fontSize: 19,
+    },
+    commentIcon: {
+        position: 'absolute',
+        left: 120,
+        bottom: 29,
+    },
+    comments: {
+        position: 'absolute',
+        left: 163,
+        bottom: 33,
+        fontSize: 19,
     },
 })
 

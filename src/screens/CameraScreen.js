@@ -5,6 +5,8 @@ import {
     Dimensions,
     ImageBackground,
     BackHandler,
+    Alert,
+    Linking,
 } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
@@ -31,7 +33,13 @@ import colors from '../constants/colors'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 //redux
-import { takePicture, addToGallery, setCameraUp } from '../store/camera/actions'
+import {
+    takePicture,
+    addToGallery,
+    setCameraUp,
+    setPics,
+} from '../store/camera/actions'
+
 import { shouldRefreshSet } from '../store/event/action'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -55,6 +63,8 @@ import Reanimated, {
     useAnimatedStyle,
     runOnJS,
     runOnUI,
+    useAnimatedRef,
+    withTiming,
 } from 'react-native-reanimated'
 
 //nav 5
@@ -70,7 +80,19 @@ import * as ImageManipulator from 'expo-image-manipulator'
 // expo view shot
 import ViewShot, { captureRef } from 'react-native-view-shot'
 
+//expo constatns
+import Constants from 'expo-constants'
+
 const { height, width } = Dimensions.get('window')
+console.log('🚀 ~ file: CameraScreen.js ~ line 77 ~ height', height)
+console.log('🚀 ~ file: CameraScreen.js ~ line 77 ~ width', width)
+
+//----------------------------------------------------------------Camera Zoom Items----------------------------------------------------------------
+const AnimatedCamera = Reanimated.createAnimatedComponent(Camera)
+Reanimated.addWhitelistedNativeProps({
+    zoom: true,
+})
+//----------------------------------------------------------------Camera Zoom Items----------------------------------------------------------------
 
 const CameraScreen = ({ navigation, route }) => {
     const isFocused = useIsFocused()
@@ -197,7 +219,9 @@ const CameraScreen = ({ navigation, route }) => {
 
     const [showPicModal, setShowPicture] = useState(false)
 
-    const cameraRef = useRef()
+    // const cameraRef = useRef()
+
+    const cameraRef = useAnimatedRef()
 
     const dispatch = useDispatch()
 
@@ -299,6 +323,7 @@ const CameraScreen = ({ navigation, route }) => {
                     newGalleryID ? [`${newGalleryID}`] : [galleryIDPassed]
                 )
             )
+
             setShowPicture(false)
 
             // if (!newGalleryID) {
@@ -328,14 +353,55 @@ const CameraScreen = ({ navigation, route }) => {
     }
 
     //----------------------------------------------------------------SAVE PICTURE LOCALLY----------------------------------------------------------------
+    function sendUserToSettingsHandler() {
+        const alertMessage = 'EventShare Would Like to Access Your Photo'
+        Platform.OS === 'android' ? androidAlert() : IOSAlert()
+
+        function IOSAlert() {
+            Alert.alert(alertMessage, '', [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Settings',
+                    onPress: () => {
+                        openSettings()
+                    },
+                },
+            ])
+        }
+        function androidAlert() {
+            Alert.alert('', alertMessage, [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Settings',
+                    onPress: () => {
+                        openSettings()
+                    },
+                },
+            ])
+        }
+    }
+
+    function openSettings() {
+        Platform.OS === 'android'
+            ? Linking.openSettings()
+            : Linking.canOpenURL('app-settings:')
+                  .then((supported) => {
+                      if (!supported) {
+                          console.log("Can't handle settings url")
+                      } else {
+                          return Linking.openURL('app-settings:')
+                      }
+                  })
+                  .catch((err) => console.error('An error occurred', err))
+    }
     async function savePictureLocallyHandler() {
         const { status } = await MediaLibrary.getPermissionsAsync()
-        if (status === 'undetermined') {
-            const { status } = await MediaLibrary.requestPermissionsAsync()
-            if (status === 'granted') {
-                const asset = await MediaLibrary.createAssetAsync(pic)
-            }
-        }
 
         if (status === 'granted') {
             const asset = await MediaLibrary.createAssetAsync(pic)
@@ -343,14 +409,31 @@ const CameraScreen = ({ navigation, route }) => {
                 //display check mark showing it was saved.
             }
         }
-
+        if (status === 'undetermined') {
+            const results = await MediaLibrary.requestPermissionsAsync()
+            if (results.status === 'granted') {
+                await MediaLibrary.createAssetAsync(pic)
+                //show success
+            } else {
+                sendUserToSettingsHandler()
+                return
+            }
+        }
         if (status === 'denied') {
-            console.log('Open settings and give permission')
+            const results = await MediaLibrary.requestPermissionsAsync()
+            if (results.status === 'granted') {
+                await MediaLibrary.createAssetAsync(pic)
+                //show success
+            } else {
+                sendUserToSettingsHandler()
+                return
+            }
         }
     }
     //----------------------------------------------------------------SAVE PICTURE LOCALLY----------------------------------------------------------------
 
     //----------------------------------------------------------------ZOOM LOGIC--------------------------------------------------------------------------
+
     const zoom = useSharedValue(0)
     const MAX_ZOOM_FACTOR = 10
     const SCALE_FULL_ZOOM = 20
@@ -380,6 +463,15 @@ const CameraScreen = ({ navigation, route }) => {
         runOnJS(updateValue)()
     }
 
+    // cameraRef.current.setNativeProps({ zoom: zoom.value })
+
+    const cameraAnimatedProps = useAnimatedProps(
+        () => ({
+            zoom: withTiming(zoom.value),
+        }),
+        [zoom]
+    )
+
     const onPinchGesture = useAnimatedGestureHandler({
         onStart: (_, context) => {
             context.startZoom = zoom.value
@@ -406,7 +498,8 @@ const CameraScreen = ({ navigation, route }) => {
 
     //----------------------------------------------------------------VIDEO RECORDING---------------------------------------------------------------------
 
-    async function beginRecording() {
+    const beginRecording = async () => {
+        console.log('got here')
         let video = await cameraRef.current.recordAsync()
         setVideo(video)
         // dispatch(takePicture(photo.uri))
@@ -445,9 +538,9 @@ const CameraScreen = ({ navigation, route }) => {
             }}
         >
             <StatusBar
-                style=""
+                style="light"
                 translucent
-                backgroundColor="rgba(255,255,255,0)"
+                backgroundColor="rgba(0,0,0,1)"
             />
             <PinchGestureHandler onGestureEvent={onPinchGesture}>
                 <Reanimated.View
@@ -459,8 +552,29 @@ const CameraScreen = ({ navigation, route }) => {
                     }}
                 >
                     {isFocused && (
-                        <ViewShot style={{ flex: 1 }} ref={screenShotRef}>
-                            <Camera
+                        <ViewShot
+                            style={{
+                                // flex: 1,
+                                marginTop: insets.top,
+
+                                // for new aspect ratio related code
+                                aspectRatio: 9 / 16,
+                                top: 0,
+                                right: 0,
+                                left: 0,
+                                position: 'absolute',
+                            }}
+                            ref={screenShotRef}
+                            collapsable={false}
+                            onLayout={(event) => {
+                                event.nativeEvent.layout.height
+                                console.log(
+                                    '🚀 ~ file: CameraScreen.js ~ line 525 ~ CameraScreen ~  event.nativeEvent.layout.height',
+                                    event.nativeEvent.layout.height
+                                )
+                            }}
+                        >
+                            <AnimatedCamera
                                 // style={{
                                 //     aspectRatio:
                                 //         Platform.OS === 'android'
@@ -468,21 +582,22 @@ const CameraScreen = ({ navigation, route }) => {
                                 //             : null,
                                 //     left: -(camWidth - width) / 2,
                                 //     marginTop: insets.top,
-                                //     // aspectRatio: 9 / 16,
+                                //     aspectRatio: 9 / 16,
                                 //     width: width,
                                 // }}
                                 style={{
-                                    aspectRatio:
-                                        Platform.OS === 'android'
-                                            ? cameraSettings.previewRatio
-                                            : null,
-                                    flex: 1,
-                                    left: -(camWidth - width) / 2,
+                                    // aspectRatio:
+                                    //     Platform.OS === 'android'
+                                    //         ? cameraSettings.previewRatio
+                                    //         : null,
+                                    // // flex: 1,
+                                    // left: -(camWidth - width) / 2,
+                                    aspectRatio: 9 / 16,
                                 }}
                                 ref={cameraRef}
                                 type={type}
                                 flashMode={flashMode}
-                                zoom={zooming}
+                                zoom={zoom.value}
                                 onCameraReady={setCameraReady}
                                 ratio={cameraSettings.ratio}
                                 maxDuration={10000}
@@ -490,6 +605,7 @@ const CameraScreen = ({ navigation, route }) => {
                                 onLayout={(event) => {
                                     setCamWidth(event.nativeEvent.layout.width)
                                 }}
+                                // animatedProps={cameraAnimatedProps}
                             />
                         </ViewShot>
                     )}
@@ -497,10 +613,7 @@ const CameraScreen = ({ navigation, route }) => {
                         style={[
                             styles.contentContainer,
                             {
-                                // paddingTop: insets.top,
-                                paddingBottom: insets.bottom,
                                 top: insets.top,
-                                bottom: insets.bottom,
                             },
                         ]}
                     >
@@ -552,13 +665,17 @@ const CameraScreen = ({ navigation, route }) => {
                 </Reanimated.View>
             </PinchGestureHandler>
             {showPicModal && (
-                <View style={{ ...styles.modal, height: height }}>
+                <View
+                    style={{
+                        ...styles.modal,
+                        marginTop: insets.top,
+                        aspectRatio: 9 / 16,
+                    }}
+                >
                     <ImageBackground
                         source={{ uri: pic }}
                         style={{
                             ...styles.takenImage,
-                            paddingTop: insets.top,
-                            paddingBottom: insets.bottom,
                         }}
                     >
                         <HeaderX
@@ -580,14 +697,19 @@ const CameraScreen = ({ navigation, route }) => {
                 </View>
             )}
             {showVideoModal && (
-                <View style={{ ...styles.modal, height: height }}>
+                <View
+                    style={{
+                        ...styles.modal,
+                        marginTop: insets.top,
+                    }}
+                >
                     <Video
                         // ref={video}
                         style={[
                             StyleSheet.absoluteFill,
                             {
                                 backgroundColor: 'black',
-                                height: height,
+                                flex: 1,
                             },
                         ]}
                         source={{
@@ -602,7 +724,7 @@ const CameraScreen = ({ navigation, route }) => {
                     />
                     <View
                         style={{
-                            paddingTop: insets.top,
+                            paddingTop: 10,
                         }}
                     ></View>
                     <HeaderX
@@ -634,20 +756,20 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
     },
     contentContainer: {
-        flex: 1,
         position: 'absolute',
+        aspectRatio: 9 / 16,
         right: 0,
         left: 0,
+        paddingTop: 10,
     },
     camera: {
         flex: 1,
         flexDirection: 'row',
     },
-
     topLeftCont: {
         position: 'absolute',
         width: 45,
-        top: 0,
+        top: 10,
         right: 10,
         borderRadius: 20,
         backgroundColor: 'rgba(184,184,184,0.42)',
@@ -671,11 +793,13 @@ const styles = StyleSheet.create({
         top: 0,
         right: 0,
         left: 0,
-        bottom: 0,
+        // bottom: 0,
+        aspectRatio: 9 / 16,
     },
     takenImage: {
         flex: 1,
         justifyContent: 'space-between',
+        paddingTop: 10,
     },
     bottomCont: {
         flex: 1,
@@ -689,7 +813,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 5,
     },
     floatingPlusCont: {
-        bottom: 25,
+        bottom: 10,
         position: 'absolute',
         width: 90,
         height: 90,

@@ -14,8 +14,8 @@ const ScaleButton = ({
     activeScale = 0.9,
     springConfig = {
         damping: 20,
-        mass: 2,
-        stiffness: 200,
+        mass: 1,
+        stiffness: 500,
     },
     contentContainerStyle,
 }) => {

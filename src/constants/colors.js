@@ -1,4 +1,6 @@
 import { Dimensions } from 'react-native'
+//safe area
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const { width, height } = Dimensions.get('window')
 export default {
@@ -22,12 +24,26 @@ export default {
     blue3: 'rgba(67,97,238,1)',
     blue4: 'rgba(1,53,139,1)',
     pinkUnderLine: '#e896be',
+    separatorLine: 'rgba(224,224,224,1)',
 
+    //biyoura purple
+    biyouraPurple: 'rgba(67, 0, 138, 1)',
+
+    // new pallet
+    nPButton: 'rgba(245, 97, 139, 1)',
+    darkestColorP1: '#1A1B1E',
+    darkColorP1: 'rgba(42,44,58,1)',
+    lightestColorP1: 'rgba(146, 136, 153, 1)',
+    backgroundBlurLight: 'rgba(145, 145, 145, 0.6)',
+
+    // new pallet 2
+    mainColorP2: 'rgba(107,126,225,1)',
+    borderRadius: 16,
     maxFontSizeMultiplier: 1.2,
     screenHeight: height,
     screenWidth: width,
 
-    rowHeight: height + 80,
+    rowHeight: (width * 16) / 9,
 
     androidFont: 'open-sans',
     androidFontBold: 'open-sans-bold',

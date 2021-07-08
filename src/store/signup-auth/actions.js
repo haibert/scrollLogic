@@ -11,6 +11,11 @@ export const LOGIN = 'LOGIN'
 export const SET_USER_ID = 'SET_USER_ID'
 export const EMAIL_CODE = 'EMAIL_CODE'
 export const TEXT_CODE = 'TEXT_CODE'
+export const CHANGE_AVATAR = 'CHANGE_AVATAR'
+export const SEARCH = 'SEARCH'
+export const LOAD_PROFILE = 'LOAD_PROFILE '
+
+import { Search } from '../../models/Models'
 
 const LINK = 'http://144.126.212.5/api.php?key=!thisIsARandomString1981111212&'
 
@@ -157,8 +162,29 @@ export const login = (username, password) => {
 
             try {
                 const data = await response.json()
-                userID = data.message?.userData?.basic?.uniqueID
-                await storeData(userID)
+                console.log(
+                    '🚀 ~ file: actions.js ~ line 160 ~ return ~ data',
+                    data
+                )
+
+                const userID = data.message?.userData?.basic?.uniqueID
+                const userInfo = data.message?.userData
+                const credentials = data.message?.userData?.body
+                console.log(
+                    '🚀 ~ file: actions.js ~ line 163 ~ return ~ credentials',
+                    credentials
+                )
+                // await storeData(userID)
+                await storeCredentials(
+                    credentials.userName,
+                    credentials.password,
+                    userID
+                )
+                dispatch({
+                    type: LOGIN,
+                    userInfo: userID,
+                    fullInfo: userInfo,
+                })
 
                 const error = data?.message?.user?.authCheck
                 if (error === 'ERROR') {
@@ -167,11 +193,6 @@ export const login = (username, password) => {
             } catch (error) {
                 throw error
             }
-
-            dispatch({
-                type: LOGIN,
-                userInfo: userID,
-            })
         } catch (error) {
             throw error
         }
@@ -378,11 +399,187 @@ export const checkEmailExistence = (email) => {
         }
     }
 }
+
+export const changeAvatar = (avatar) => {
+    return async (dispatch, getState) => {
+        const userID = getState().signupReducer.userInfo.userID
+
+        const body = JSON.stringify({
+            userID,
+            avatar,
+        })
+        console.log('🚀 ~ file: actions.js ~ line 407 ~ return ~ body', body)
+        try {
+            const response = await fetch(
+                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&change-avatar=1',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        key: 'ThisIsASecretKey',
+                    },
+                    body: body,
+                }
+            )
+
+            if (!response.ok) {
+                throw new Error('Something went wrong!')
+                // OR below you can pass the error status.
+                throw new Error(response.status.toString())
+            }
+
+            try {
+                const data = await response.json()
+                console.log(
+                    '🚀 ~ file: actions.js ~ line 428 ~ return ~ data',
+                    data
+                )
+
+                const newAvatarThumb = data?.message?.avatarThumb
+                const newAvatar = data?.message?.fullPath
+
+                dispatch({
+                    type: CHANGE_AVATAR,
+                    newAvatarThumb,
+                    newAvatar,
+                })
+            } catch (error) {
+                throw error
+            }
+        } catch (error) {
+            throw error
+        }
+    }
+}
+
+export const search = (text) => {
+    return async (dispatch, getState) => {
+        // const userID = getState().signupReducer.userInfo.userID
+
+        const body = JSON.stringify({
+            userName: text,
+        })
+        console.log('🚀 ~ file: actions.js ~ line 461 ~ return ~ body', body)
+        try {
+            const response = await fetch(
+                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&search-profile=1',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        key: 'ThisIsASecretKey',
+                    },
+                    body: body,
+                }
+            )
+
+            if (!response.ok) {
+                throw new Error('Something went wrong!')
+                // OR below you can pass the error status.
+                throw new Error(response.status.toString())
+            }
+
+            try {
+                const data = await response.json()
+                const searches = data.message.data
+                console.log(
+                    '🚀 ~ file: actions.js ~ line 483 ~ return ~ searches',
+                    searches
+                )
+                const loadedSearches = []
+                for (const key in searches) {
+                    loadedSearches.push(
+                        new Search(
+                            searches[key].uniqueID,
+                            searches[key].userName,
+                            searches[key].firstName,
+                            searches[key].lastName,
+                            searches[key].avatar
+                        )
+                    )
+                }
+                console.log(
+                    '🚀 ~ file: actions.js ~ line 485 ~ return ~ loadedSearches',
+                    loadedSearches
+                )
+
+                dispatch({
+                    type: SEARCH,
+                    searches: loadedSearches,
+                })
+            } catch (error) {
+                throw error
+            }
+        } catch (error) {
+            throw error
+        }
+    }
+}
+
+export const loadProfile = (userID) => {
+    return async (dispatch, getState) => {
+        // const userID = getState().signupReducer.userInfo.userID
+
+        const body = JSON.stringify({
+            userID,
+        })
+        console.log('🚀 ~ file: actions.js ~ line 461 ~ return ~ body', body)
+        try {
+            const response = await fetch(
+                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&get-user=1',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        key: 'ThisIsASecretKey',
+                    },
+                    body: body,
+                }
+            )
+
+            if (!response.ok) {
+                throw new Error('Something went wrong!')
+                // OR below you can pass the error status.
+                throw new Error(response.status.toString())
+            }
+
+            try {
+                const data = await response.json()
+                const loadedProfile = data.message.data
+                console.log(
+                    '🚀 ~ file: actions.js ~ line 549 ~ return ~ loadedProfile',
+                    loadedProfile
+                )
+
+                dispatch({
+                    type: LOAD_PROFILE,
+                    loadedProfile: loadedProfile,
+                })
+            } catch (error) {
+                throw error
+            }
+        } catch (error) {
+            throw error
+        }
+    }
+}
+
 // helpers
 const storeData = async (value) => {
     try {
         await AsyncStorage.removeItem('userID')
         await AsyncStorage.setItem('userID', value)
+    } catch (e) {
+        console.log(e)
+        // throw error
+    }
+}
+
+const storeCredentials = async (username, password, userID) => {
+    try {
+        await AsyncStorage.setItem('username', username)
+        await AsyncStorage.setItem('password', password)
+        await AsyncStorage.setItem('userID', userID)
     } catch (e) {
         console.log(e)
         // throw error

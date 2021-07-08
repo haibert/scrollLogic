@@ -39,7 +39,7 @@ const CustomHeaderBasic = (props) => {
         defaultIcon = 'chevron-down-outline'
     }
     return (
-        <View style={styles.outerCont}>
+        <View style={{ ...styles.outerCont, ...props.style }}>
             <View style={styles.middleCont}>
                 <Text
                     style={{ ...styles.headerText, ...props.headerColor }}
@@ -50,29 +50,29 @@ const CustomHeaderBasic = (props) => {
             </View>
             <View style={styles.xCont}>
                 <TouchableCmp onPress={props.goBack}>
-                    <View style={styles.circle}>
-                        <Ionicons
-                            name={props.iconName ? props.iconName : defaultIcon}
-                            size={30}
-                            color={colors.textColor}
-                            style={iconStyle}
-                        />
-                    </View>
+                    {/* <View style={styles.circle}> */}
+                    <Ionicons
+                        name={props.iconName ? props.iconName : defaultIcon}
+                        size={30}
+                        // color={colors.textColor}
+                        color={colors.darkestColorP1}
+                        style={iconStyle}
+                    />
+                    {/* </View> */}
                 </TouchableCmp>
                 {props.rightButton ? (
                     <TouchableCmp onPress={props.onPressRight}>
-                        <View style={styles.circle}>
-                            <Ionicons
-                                name={props.rightIcon ? props.rightIcon : null}
-                                size={
-                                    props.rightIconSize
-                                        ? props.rightIconSize
-                                        : 30
-                                }
-                                color={colors.textColor}
-                                style={iconStyle}
-                            />
-                        </View>
+                        {/* <View style={styles.circle}> */}
+                        <Ionicons
+                            name={props.rightIcon ? props.rightIcon : null}
+                            size={
+                                props.rightIconSize ? props.rightIconSize : 30
+                            }
+                            // color={colors.textColor}
+                            color={colors.darkestColorP1}
+                            style={iconStyle}
+                        />
+                        {/* </View> */}
                     </TouchableCmp>
                 ) : null}
             </View>
@@ -84,6 +84,7 @@ const CustomHeaderBasic = (props) => {
 const styles = StyleSheet.create({
     outerCont: {
         width: '100%',
+        backgroundColor: 'rgba(255,255,255,0)',
     },
     xCont: {
         flexDirection: 'row',
@@ -91,6 +92,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         width: '100%',
         paddingHorizontal: 10,
+        backgroundColor: 'rgba(255,255,255,0)',
+
         // paddingTop: 5,
     },
     middleCont: {
@@ -103,6 +106,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         minWidth: '100%',
         height: 40,
+        backgroundColor: 'rgba(255,255,255,0)',
     },
     headerText: {
         color: 'white',

@@ -34,23 +34,26 @@ const BottomNavBar = (props) => {
             <View
                 style={{
                     ...styles.tabBarShadow,
-                    width: width,
-                    bottom: 0,
-                    height: 50 + insets.bottom,
+                    width: width - 20,
+                    bottom: tabBarBottomPosition,
                 }}
             >
                 <LinearGradient
-                    colors={[colors.darkColorP1, colors.darkColorP1]}
-                    style={styles.innerCont}
+                    colors={[
+                        'rgba(247, 37, 133, 1)',
+                        'rgba(171,67,239,1)',
+                        'rgba(76, 201, 240, 1)',
+                    ]}
+                    style={{ flex: 1, borderRadius: 15 }}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                 >
-                    <TouchableWithoutFeedback onPress={props.onSearchPressed}>
+                    <TouchableWithoutFeedback onPress={props.onRightPressed}>
                         <View style={styles.tabButton}></View>
                     </TouchableWithoutFeedback>
 
                     <View style={{ width: 50 }}></View>
-                    <TouchableWithoutFeedback onPress={props.onRightPressed}>
+                    <TouchableWithoutFeedback onPress={() => {}}>
                         <View style={styles.tabButton}></View>
                     </TouchableWithoutFeedback>
 
@@ -77,15 +80,14 @@ const BottomNavBar = (props) => {
                             top: 11,
                             left: (width - 26) / 6,
                         }}
-                        onPress={props.onSearchPressed}
                     />
                 </LinearGradient>
             </View>
             <View
                 style={{
                     ...styles.floatingPlusCont,
-                    left: width / 2 - 25,
-                    bottom: tabBarBottomPosition + 12,
+                    left: width / 2 - 40,
+                    bottom: tabBarBottomPosition,
                 }}
             >
                 <ScaleButton
@@ -95,7 +97,13 @@ const BottomNavBar = (props) => {
                 >
                     <View style={styles.bigPlusButton}>
                         <LinearGradient
-                            colors={[colors.nPButton, colors.nPButton]}
+                            colors={[
+                                // 'rgba(255, 237, 187, 1)',
+                                // 'rgba(150, 227, 255, 1)',
+                                colors.lightTint,
+                                colors.lightTint,
+                                // colors.buttonPink,
+                            ]}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 0 }}
                             style={styles.bigPlusButton}
@@ -121,23 +129,21 @@ const styles = StyleSheet.create({
         // backgroundColor: 'rgba(255, 227, 255, 1)',
         justifyContent: 'space-evenly',
         flexDirection: 'row',
+        borderRadius: 15,
         marginHorizontal: 10,
         position: 'absolute',
         alignItems: 'center',
         overflow: 'hidden',
     },
-    innerCont: {
-        flex: 1,
-        flexDirection: 'row',
-    },
     tabBarImage: {
         height: 50,
+        borderRadius: 15,
         marginHorizontal: 10,
         position: 'absolute',
     },
     tabBarGradient: {
         flex: 1,
-        // borderRadius: 15,
+        borderRadius: 15,
     },
     tabButton: {
         alignItems: 'center',
@@ -159,7 +165,8 @@ const styles = StyleSheet.create({
         height: 50,
         backgroundColor: 'white',
         flexDirection: 'row',
-        // borderRadius: 15,
+        borderRadius: 15,
+        marginHorizontal: 10,
         shadowColor: 'black',
         shadowRadius: 3,
         shadowOpacity: 0.3,
@@ -170,10 +177,10 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     bigPlusButton: {
-        backgroundColor: colors.darkestColorP1,
-        width: 50,
-        height: 50,
-        borderRadius: 25,
+        backgroundColor: colors.mediumTint,
+        width: 80,
+        height: 80,
+        borderRadius: 40,
         alignItems: 'center',
         justifyContent: 'center',
         shadowColor: 'black',
@@ -186,9 +193,9 @@ const styles = StyleSheet.create({
     },
     floatingPlusCont: {
         position: 'absolute',
-        width: 50,
-        height: 50,
-        borderRadius: 25,
+        width: 80,
+        height: 80,
+        borderRadius: 40,
         // overflow: Platform.OS === 'android' ? 'hidden' : 'visible',
         elevation: 10,
     },
@@ -196,6 +203,8 @@ const styles = StyleSheet.create({
         width: 80,
         height: 80,
         borderRadius: 40,
+        borderWidth: 2,
+        borderColor: 'black',
         backgroundColor: 'red',
     },
 })

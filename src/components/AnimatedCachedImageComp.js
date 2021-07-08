@@ -14,7 +14,7 @@ import PropTypes from 'prop-types'
 
 import { useFocusEffect } from '@react-navigation/native'
 
-const CachedImage = forwardRef((props, ref) => {
+const AnimatedCachedImageComp = forwardRef((props, ref) => {
     const imageRef = useRef()
 
     const {
@@ -29,6 +29,51 @@ const CachedImage = forwardRef((props, ref) => {
     // console.log('reRendered')
 
     let shouldRefresh = true
+    // useEffect(() => {
+    //     // componentIsMounted.current = true
+    //     console.log(
+    //         '🚀 ~ file: CachedImage.js ~ line 30 ~ useEffect ~ componentIsMounted.current',
+    //         componentIsMounted.current
+    //     )
+
+    //     // componentIsMounted.current = true
+    //     const loadImage = async ({ fileURI }) => {
+    //         try {
+    //             // Use the cached image if it exists
+    //             const metadata = await FileSystem.getInfoAsync(fileURI)
+    //             if (!metadata.exists) {
+    //                 console.log('exists & download')
+    //                 // download to cache
+    //                 if (componentIsMounted.current) {
+    //                     // setImgURI(null)
+    //                     await FileSystem.downloadAsync(uri, fileURI)
+    //                     imageRef.current?.setNativeProps({
+    //                         source: [{ uri: newImageSource }],
+    //                     })
+    //                 }
+    //                 if (componentIsMounted.current) {
+    //                     console.log('exists & set')
+    //                     imageRef.current?.setNativeProps({
+    //                         source: [{ uri: newImageSource }],
+    //                     })
+    //                     // setImgURI(fileURI)
+    //                     componentIsMounted.current = false
+    //                 }
+    //             } else {
+    //             }
+    //         } catch (err) {
+    //             // props.onError()
+    //             // componentIsMounted.current = true
+    //             // setImgURI(uri)
+    //         }
+    //     }
+
+    //     loadImage({ fileURI: filesystemURI })
+
+    //     // return () => {
+    //     //     componentIsMounted.current = false
+    //     // }
+    // }, [props.source]) // eslint-disable-line react-hooks/exhaustive-deps
 
     useFocusEffect(() => {
         const loadImage = async ({ fileURI }) => {
@@ -93,7 +138,7 @@ const CachedImage = forwardRef((props, ref) => {
             // source={{
             //     uri: imgURI,
             // }}
-            fadeDuration={50}
+            fadeDuration={800}
             onLoad={props.onLoad}
         />
     )
@@ -103,4 +148,4 @@ CachedImage.propTypes = {
     cacheKey: PropTypes.string.isRequired,
 }
 
-export default CachedImage
+export default AnimatedCachedImageComp

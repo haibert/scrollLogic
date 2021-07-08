@@ -4,6 +4,8 @@ import {
     SET_PICS,
     DELETE_GALLERY,
     SHOULD_REFRESH,
+    DELETE_PHOTO,
+    EMPTY_PICS_ARRAY,
 } from './action'
 
 const initialState = {
@@ -35,17 +37,6 @@ const galleryReducer = (state = initialState, action) => {
             }
         }
         case DELETE_GALLERY: {
-            let newArray = []
-            // if (action.deletedGallery.index > -1) {
-            //     newArray = state.galleries.splice(
-            //         action.deletedGallery.index,
-            //         1
-            //     )
-            //     console.log(
-            //         '🚀 ~ file: reducer.js ~ line 42 ~ galleryReducer ~ newArray',
-            //         newArray
-            //     )
-            // }
             const myArray = state.galleries.filter(function (obj) {
                 return obj.id !== action.deletedGallery.id
             })
@@ -58,12 +49,32 @@ const galleryReducer = (state = initialState, action) => {
                 galleries: myArray,
             }
         }
+        case DELETE_PHOTO: {
+            const myArray = state.pics.filter(function (obj) {
+                return obj.id !== action.deletedPhoto
+            })
+            console.log(
+                '🚀 ~ file: reducer.js ~ line 52 ~ myArray ~ myArray',
+                myArray
+            )
+            return {
+                ...state,
+                pics: myArray,
+            }
+        }
         case SHOULD_REFRESH: {
             return {
                 ...state,
                 shouldRefresh: action.shouldRefresh,
             }
         }
+        case EMPTY_PICS_ARRAY: {
+            return {
+                ...state,
+                pics: [],
+            }
+        }
+
         default:
             return state
     }

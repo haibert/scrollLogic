@@ -17,6 +17,9 @@ import { StatusBar } from 'expo-status-bar'
 //file system
 import * as FileSystem from 'expo-file-system'
 
+//utilities
+import { cleanupCache } from './src/utilities/cleanUpCash'
+
 init()
     .then(() => {
         console.log('Initialized DB')
@@ -46,28 +49,7 @@ const store = createStore(rootReducer, applyMiddleware(ReduxThunk))
 
 export default function App() {
     useEffect(() => {
-        const createDirectory = async () => {
-            const filesystemURI = FileSystem.cacheDirectory + 'images/'
-            const dirInfo = await FileSystem.getInfoAsync(filesystemURI)
-            console.log(
-                '🚀 ~ file: App.js ~ line 52 ~ createDirectory ~ dirInfo',
-                dirInfo.exists
-            )
-            if (!dirInfo.exists) {
-                const results = await FileSystem.makeDirectoryAsync(
-                    filesystemURI,
-                    {
-                        intermediates: true,
-                    }
-                )
-                console.log(
-                    '🚀 ~ file: App.js ~ line 54 ~ createDirectory ~ results',
-                    results
-                )
-            }
-        }
-
-        createDirectory()
+        cleanupCache({ size: 500 })
     }, [])
     return (
         <Provider store={store}>

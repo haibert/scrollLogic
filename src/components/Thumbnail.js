@@ -86,7 +86,6 @@ const ThumbNail = ({
 
     const downloadRef = useRef()
     return (
-        // <Animated.View style={[styles.container, opacityStyle]}>
         <ScaleButton
             // activeOpacity={0.9}
             activeScale={0.93}
@@ -117,15 +116,6 @@ const ThumbNail = ({
                     cacheKey={`${images.galleryID}t`}
                 />
             </SharedElement>
-            {showDownload ? (
-                <Ionicons
-                    name="refresh-outline"
-                    size={80}
-                    color="white"
-                    style={{ ...styles.downloadButton }}
-                    onPress={downloadAgainHandler}
-                />
-            ) : null}
             <Text
                 style={styles.eventTitle}
                 maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
@@ -140,7 +130,6 @@ const ThumbNail = ({
                 onPress={onActionsPressed}
             />
         </ScaleButton>
-        // </Animated.View>
     )
 }
 
@@ -166,12 +155,12 @@ const styles = StyleSheet.create({
         // uncomment this if you are going to use ImageBackground
 
         shadowColor: 'black',
-        shadowRadius: 4,
-        shadowOpacity: 1,
+        shadowRadius: 10,
+        shadowOpacity: 0.17,
         backgroundColor: 'white',
         shadowOffset: {
             width: 0,
-            height: 2,
+            height: 10,
         },
     },
     image: {

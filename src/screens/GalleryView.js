@@ -8,6 +8,7 @@ import {
     Platform,
     Linking,
     Image,
+    ActivityIndicator,
 } from 'react-native'
 //shared elements
 import { SharedElement } from 'react-navigation-shared-element'
@@ -20,6 +21,7 @@ import Animated, {
     runOnJS,
     Extrapolate,
     interpolate,
+    withDelay,
 } from 'react-native-reanimated'
 import { snapPoint } from 'react-native-redash'
 
@@ -33,8 +35,9 @@ import GalDetailBottomSheet from '../screens/GalDetailBottomSheet'
 //hooks
 import useDidMountEffect from '../hooks/useDidMountEffect'
 
-//useFocus
-import { useFocusEffect } from '@react-navigation/native'
+//useFocus InteractionManager
+import { InteractionManager } from 'react-native'
+import { useFocusEffect, useIsFocused } from '@react-navigation/native'
 
 //constants
 import colors from '../constants/colors'
@@ -52,7 +55,12 @@ import { Icon } from 'react-native-elements'
 import images from '../data/images'
 
 //redux
-import { setPics } from '../store/event/action'
+import {
+    setPics,
+    shouldRefreshSet,
+    emptyPicsArray,
+} from '../store/event/action'
+
 import {
     savePermissionsStatus,
     loadPermissions,
@@ -66,25 +74,25 @@ import { Audio } from 'expo-av'
 const GalleryView = ({ route, navigation }) => {
     const { gallery } = route.params
 
-    const shouldRefresh = useMemo(() => {
-        const result = route.params?.shouldRefresh
-        return result
-    }, [route])
-    // console.log(
-    //     '🚀 ~ file: GalleryView.js ~ line 57 ~ shouldRefresh ~ shouldRefresh',
-    //     shouldRefresh
-    // )
+    // shouldRefresh
+    const shouldRefresh = useSelector(
+        (state) => state.galleryReducer.shouldRefresh
+    )
 
+    //insets
     const insets = useSafeAreaInsets()
+
+    //dispatch
     const dispatch = useDispatch()
+
+    //isFocused?
+    const isFocused = useIsFocused()
 
     // pan gesture handler
     // const enable = useSharedValue(false).value
     const [enable, setEnabled] = useState()
     const translateX = useSharedValue(0)
     const translateY = useSharedValue(0)
-    const scrollViewRef = useRef()
-    const panViewRef = useRef()
     const isGestureActive = useSharedValue(false)
 
     let tabBarBottomPosition = insets.bottom > 0 ? insets.bottom / 2 + 2 : 10
@@ -93,35 +101,71 @@ const GalleryView = ({ route, navigation }) => {
         tabBarBottomPosition = 55
     }
 
-    function picturePressedHandler(image, scrollIndex) {
-        navigation.navigate('GalleryDetailScreen', {
-            image,
-            scrollIndex,
-        })
-    }
+    const picturePressedHandler = useCallback(
+        (image, scrollIndex, picID, fullPathNav) => {
+            navigation.navigate('GalleryDetailScreen', {
+                image,
+                scrollIndex,
+                picID,
+                fullPathNav,
+            })
+        },
+        []
+    )
 
     //old way of handling gesture event
-    const handleScroll = (event) => {
-        if (event.nativeEvent.contentOffset.y < 1) {
+    const handleScroll = useCallback((event) => {
+        if (event.nativeEvent.contentOffset.y < 0) {
             Platform.OS === 'android' ? navigation.goBack() : null
         }
-    }
-    // const scrollChecker = () => {
-    //     if (scrollOffset <= 0) {
-    //         return true
-    //     } else {
-    //         return false
-    //     }
-    // }
+    }, [])
 
-    let scrollOffset = 1
+    //----------------------------------------------------------------PAN ANIMATION LOGIC----------------------------------------------------------------
+    const panViewRef = useRef()
+    const scrollViewRef = useRef()
+    let offset = 0
+    const onScroll = useCallback(
+        ({ nativeEvent }) => {
+            let currentOffset = nativeEvent.contentOffset.y
+            let direction = currentOffset > offset ? 'down' : 'up'
 
-    function timeToClose() {
+            if (
+                direction === 'up' &&
+                nativeEvent.contentOffset.y <= 0 &&
+                !enable
+            ) {
+                console.log('enabled!')
+                setEnabled(true)
+            }
+            if (
+                direction === 'down' &&
+                nativeEvent.contentOffset.y > 0 &&
+                enable
+            ) {
+                console.log('disabled!')
+                setEnabled(false)
+            }
+        },
+        [setEnabled, enable]
+    )
+
+    const timeToClose = useCallback(() => {
         navigation.goBack()
-    }
-    function willThisWork() {
+        dispatch(emptyPicsArray())
+    }, [])
+
+    function closePage() {
         'worklet'
         runOnJS(timeToClose)()
+    }
+
+    const reEnableFlatList = useCallback(() => {
+        setEnabled((prev) => !prev)
+    }, [enable])
+
+    function enableScroll() {
+        'worklet'
+        runOnJS(reEnableFlatList)()
     }
 
     const onGestureEvent = useAnimatedGestureHandler({
@@ -131,16 +175,18 @@ const GalleryView = ({ route, navigation }) => {
         },
         onActive: ({ translationX, translationY }) => {
             if (!enable) return
-            translateX.value = translationX
             translateY.value = translationY
+            translateX.value = translationX
         },
         onEnd: ({ velocityX, velocityY }) => {
             if (!enable) return
             const goBack =
-                snapPoint(translateY.value, velocityY, [0, height]) === height
+                snapPoint(translateY.value, velocityY, [0, height - 500]) ===
+                height - 500
             if (goBack) {
-                willThisWork()
+                closePage()
             } else {
+                enableScroll()
                 translateX.value = withTiming(0, { duration: 100 })
                 translateY.value = withTiming(0, { duration: 100 })
             }
@@ -174,40 +220,63 @@ const GalleryView = ({ route, navigation }) => {
             ],
         }
     })
+    //----------------------------------------------------------------PAN ANIMATION LOGIC----------------------------------------------------------------
 
-    const onScroll = useCallback(({ nativeEvent }) => {
-        if (nativeEvent.contentOffset.y <= 0 && !enable) {
-            setEnabled(true)
-            // enable.value = true
-        }
-        if (nativeEvent.contentOffset.y > 0 && enable) {
-            setEnabled(false)
-            // enable.value = false
-        }
-    }, [])
-
-    //-----------------------------------------------------LOAD PICS--------------------------------------------------------
-    const [loadingPics, setLoadingPics] = useState()
-
-    // -------------
+    //----------------------------------------------------------------LOAD PICS--------------------------------------------------------
     const pics = useSelector((state) => state.galleryReducer.pics)
 
-    const loadPics = useCallback(async () => {
-        setLoadingPics(true)
-        // setError(null)
-        try {
-            await dispatch(setPics(gallery.galleryID))
-        } catch (error) {
-            setError(error.message)
+    const [loadingPics, setLoadingPics] = useState()
+
+    const loadingOpacity = useSharedValue(1)
+    const opacityStyle = useAnimatedStyle(() => {
+        return {
+            opacity: loadingOpacity.value,
         }
-        setLoadingPics(false)
+    })
+    const startOpacityAnim = useCallback(() => {
+        loadingOpacity.value = withTiming(0, { duration: 0 })
     }, [])
 
+    const loadPics = useCallback(async () => {
+        loadingOpacity.value = 1
+        try {
+            await dispatch(setPics(gallery.galleryID))
+        } catch (error) {}
+        startOpacityAnim()
+    }, [])
+
+    // useFocusEffect(() => {
+    //     const refreshConditionally = async () => {
+    //         if (shouldRefresh) {
+    //             loadPics()
+    //             await dispatch(shouldRefreshSet(false))
+    //         }
+    //     }
+    //     refreshConditionally()
+    // })
+
     useFocusEffect(
-        useCallback(() => {
-            loadPics()
-        }, [loadPics])
+        React.useCallback(() => {
+            const task = InteractionManager.runAfterInteractions(() => {
+                console.log('ran')
+                const refreshConditionally = async () => {
+                    if (shouldRefresh) {
+                        loadPics()
+                        await dispatch(shouldRefreshSet(false))
+                    }
+                }
+                refreshConditionally()
+            })
+            return () => task.cancel()
+        }, [])
     )
+
+    useEffect(() => {
+        const task = InteractionManager.runAfterInteractions(() => {
+            loadPics()
+        })
+        return () => task.cancel()
+    }, [])
 
     //-----------------------------------------------------LOAD PICS--------------------------------------------------------
 
@@ -230,7 +299,7 @@ const GalleryView = ({ route, navigation }) => {
                   .catch((err) => console.error('An error occurred', err))
     }
 
-    function sendUserToSettingsHandler() {
+    const sendUserToSettingsHandler = useCallback(() => {
         const alertMessage =
             'Turn On Camera Permissions to Allow Event Share to Scan QR Codes'
         Platform.OS === 'android' ? androidAlert() : IOSAlert()
@@ -263,7 +332,7 @@ const GalleryView = ({ route, navigation }) => {
                 },
             ])
         }
-    }
+    }, [])
 
     const navFunction = useCallback(() => {
         navigation.navigate('CameraScreen', {
@@ -272,14 +341,13 @@ const GalleryView = ({ route, navigation }) => {
         })
     }, [])
 
-    const cameraPressedHandler = async () => {
+    const cameraPressedHandler = useCallback(async () => {
         if (greenLightOnPermissions === 'granted') {
             navFunction()
         } else {
             const { status } = await Camera.getPermissionsAsync()
             const audioStatus = await Audio.getPermissionsAsync()
 
-            // setHasCameraPermission(status === 'granted')
             if (status && audioStatus.status === 'granted') {
                 dispatch(loadPermissions('granted'))
                 navFunction()
@@ -303,19 +371,63 @@ const GalleryView = ({ route, navigation }) => {
                 }
             }
         }
-    }
+    }, [greenLightOnPermissions])
     //-----------------------------------------------------PERMISSION CHECKER--------------------------------------------------------
 
-    // React.useLayoutEffect(() => {
-    //     navigation.setOptions({
-    //         swipeEnabled: false,
-    //     })
-    // }, [navigation])
+    const goBack = useCallback(() => {
+        navigation.goBack()
+        dispatch(emptyPicsArray())
+    }, [])
 
-    const bottomSheetRef = useRef()
-    const [scrollIndex, setIndex] = useState(0)
-    console.log('reRendered')
+    //----------------------------------------------------FLAT LIST OPTIMIZATION--------------------------------------------------------
+    const ListEmptyComponent = useCallback(() => {
+        return (
+            <View
+                style={{
+                    flex: 1,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: height - 40 - insets.top,
+                }}
+            >
+                <Text
+                    style={{
+                        fontSize: 16,
+                        width: '50%',
+                        flexWrap: 'wrap',
+                        textAlign: 'center',
+                    }}
+                >
+                    There are no pictures in this gallery, add some!
+                </Text>
+            </View>
+        )
+    }, [])
 
+    const keyExtractor = useCallback((item) => item.id, [])
+
+    const getItemLayout = useCallback(
+        (data, index) => ({
+            length: width / 2,
+            offset: (width / 2) * index,
+            index: index,
+        }),
+        []
+    )
+
+    const renderItem = useCallback(({ item, index }) => {
+        return (
+            <ThumbnailSmall
+                key={item.id}
+                images={item}
+                picturePressedHandler={() => {
+                    picturePressedHandler(pics, index, item.id, item.fullPath)
+                }}
+                navigation={navigation}
+            />
+        )
+    }, [])
+    //----------------------------------------------------FLAT LIST OPTIMIZATION--------------------------------------------------------
     return (
         <PanGestureHandler
             ref={panViewRef}
@@ -351,53 +463,57 @@ const GalleryView = ({ route, navigation }) => {
                     </SharedElement>
                     <HeaderBasic
                         rightButton
-                        goBack={() => {
-                            navigation.goBack()
-                        }}
+                        goBack={goBack}
                         header="Your Event"
-                        headerColor={{ color: colors.textColor }}
+                        headerColor={{ color: colors.darkestColorP1 }}
                         iconName="chevron-down-outline"
                         rightIcon="camera-outline"
-                        rightIconSize={25}
+                        rightIconSize={30}
                         onPressRight={cameraPressedHandler}
                     />
-
                     <FlatList
+                        ref={scrollViewRef}
+                        data={pics}
+                        keyExtractor={keyExtractor}
+                        getItemLayout={getItemLayout}
+                        renderItem={renderItem}
                         onRefresh={loadPics}
                         refreshing={loadingPics}
-                        ref={scrollViewRef}
                         waitFor={enable ? panViewRef : scrollViewRef}
                         scrollEventThrottle={16}
                         onScroll={onScroll}
                         style={styles.flatList}
-                        data={pics}
-                        keyExtractor={(item) => item.id}
-                        renderItem={({ item, index }) => {
-                            return (
-                                <ThumbnailSmall
-                                    key={item.id}
-                                    images={item}
-                                    picturePressedHandler={() => {
-                                        // console.log(index)
-                                        // bottomSheetRef.current?.handlePresentModalPress()
-                                        // bottomSheetRef.current?.scrollToItem(
-                                        //     index
-                                        // )
-                                        // setIndex(index)
-                                        picturePressedHandler(pics, index)
-                                    }}
-                                />
-                            )
-                        }}
                         showsVerticalScrollIndicator={false}
                         numColumns={3}
+                        initialNumToRender={5}
+                        windowSize={7}
+                        updateCellsBatchingPeriod={100}
+                        removeClippedSubviews={true}
+                        maxToRenderPerBatch={12}
                         contentContainerStyle={{
                             paddingBottom: tabBarBottomPosition + 60,
                         }}
                         onScrollEndDrag={handleScroll}
+                        ListEmptyComponent={
+                            isFocused ? ListEmptyComponent : null
+                        }
+                        //Risky
+                        removeClippedSubviews={true}
                         // alwaysBounceVertical={false}
                         // bounces={false}
                     />
+                    <Animated.View
+                        pointerEvents={'none'}
+                        style={[
+                            styles.loadingView,
+                            opacityStyle,
+                            {
+                                top: insets.top + 40,
+                            },
+                        ]}
+                    >
+                        <ActivityIndicator />
+                    </Animated.View>
                 </ScreenWrapper>
 
                 {/* <GalDetailBottomSheet
@@ -431,6 +547,15 @@ const styles = StyleSheet.create({
     flatList: {
         marginTop: 10,
         flex: 1,
+    },
+    loadingView: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'white',
+        position: 'absolute',
+        width: '100%',
+        bottom: 0,
     },
 })
 

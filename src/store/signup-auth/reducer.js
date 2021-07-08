@@ -11,6 +11,10 @@ import {
     SET_USER_ID,
     EMAIL_CODE,
     TEXT_CODE,
+    CHANGE_AVATAR,
+    SEARCH,
+    LOAD_PROFILE,
+    EMPTY_PICS_ARRAY,
 } from './actions'
 
 //async storage
@@ -31,7 +35,14 @@ const initialState = {
     confirmationText: '',
     userInfo: {
         userID: '',
+        firstName: '',
+        lastName: '',
+        username: '',
+        avatarThumb: '',
+        avatar: '',
     },
+    searches: [],
+    loadedProfile: {},
 }
 
 const signupReducer = (state = initialState, action) => {
@@ -110,11 +121,19 @@ const signupReducer = (state = initialState, action) => {
             }
         }
         case LOGIN: {
+            console.log(
+                '🚀 ~ file: reducer.js ~ line 122 ~ signupReducer ~ action.userInfo',
+                action.fullInfo
+            )
+
             return {
                 ...state,
                 userInfo: {
                     ...state.userInfo,
                     userID: action.userInfo,
+                    firstName: action.fullInfo.basic.firstName,
+                    lastName: action.fullInfo.basic.lastName,
+                    username: action.fullInfo.basic.userName,
                 },
             }
         }
@@ -139,6 +158,29 @@ const signupReducer = (state = initialState, action) => {
                 confirmationText: action.textCode,
             }
         }
+        case CHANGE_AVATAR: {
+            return {
+                ...state,
+                userInfo: {
+                    ...state.userInfo,
+                    avatarThumb: action.newAvatarThumb,
+                    avatar: action.newAvatar,
+                },
+            }
+        }
+        case SEARCH: {
+            return {
+                ...state,
+                searches: action.searches,
+            }
+        }
+        case LOAD_PROFILE: {
+            return {
+                ...state,
+                loadedProfile: action.loadedProfile,
+            }
+        }
+
         default:
             return state
     }

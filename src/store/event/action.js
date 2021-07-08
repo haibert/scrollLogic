@@ -3,6 +3,8 @@ export const SET_GALLERIES = 'SET_GALLERIES'
 export const SET_PICS = 'SET_PICS'
 export const DELETE_GALLERY = 'DELETE_GALLERY'
 export const SHOULD_REFRESH = 'SHOULD_REFRESH'
+export const DELETE_PHOTO = 'DELETE_PHOTO'
+export const EMPTY_PICS_ARRAY = 'EMPTY_PICS_ARRAY'
 
 //models
 import { Gallery, Pic } from '../../models/Models'
@@ -244,11 +246,15 @@ export const deletePhoto = (photoID) => {
 
             try {
                 const data = await JSON.stringify(response)
-                console.log(
-                    '🚀 ~ file: action.js ~ line 189 ~ return ~ data',
-                    data
-                )
+                // console.log(
+                //     '🚀 ~ file: action.js ~ line 189 ~ return ~ data',
+                //     data
+                // )
 
+                dispatch({
+                    type: DELETE_PHOTO,
+                    deletedPhoto: photoID,
+                })
                 // const data = await response.json()
                 // const response = data.message.response
                 // if (response === 'success') {
@@ -274,6 +280,18 @@ export const shouldRefreshSet = (boolean) => {
             dispatch({
                 type: SHOULD_REFRESH,
                 shouldRefresh: boolean,
+            })
+        } catch (error) {
+            throw error
+        }
+    }
+}
+
+export const emptyPicsArray = () => {
+    return async (dispatch, getState) => {
+        try {
+            dispatch({
+                type: EMPTY_PICS_ARRAY,
             })
         } catch (error) {
             throw error
