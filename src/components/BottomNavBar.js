@@ -28,7 +28,12 @@ const { width } = Dimensions.get('screen')
 const BottomNavBar = (props) => {
     const insets = useSafeAreaInsets()
 
-    let tabBarBottomPosition = insets.bottom > 0 ? insets.bottom / 2 + 2 : 10
+    let tabBarBottomPosition = insets.bottom > 0 ? insets.bottom + 5 : 5
+    console.log(
+        '🚀 ~ file: BottomNavBar.js ~ line 32 ~ BottomNavBar ~ tabBarBottomPosition',
+        tabBarBottomPosition
+    )
+
     return (
         <View>
             <View
@@ -39,53 +44,76 @@ const BottomNavBar = (props) => {
                     height: 50 + insets.bottom,
                 }}
             >
-                <LinearGradient
-                    colors={[colors.darkColorP1, colors.darkColorP1]}
-                    style={styles.innerCont}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                >
-                    <TouchableWithoutFeedback onPress={props.onSearchPressed}>
-                        <View style={styles.tabButton}></View>
-                    </TouchableWithoutFeedback>
+                <TouchableWithoutFeedback onPress={props.onHomePressed}>
+                    <View style={styles.tabButton}></View>
+                </TouchableWithoutFeedback>
 
-                    <View style={{ width: 50 }}></View>
-                    <TouchableWithoutFeedback onPress={props.onRightPressed}>
-                        <View style={styles.tabButton}></View>
-                    </TouchableWithoutFeedback>
+                <TouchableWithoutFeedback onPress={props.onSearchPressed}>
+                    <View style={styles.tabButton}></View>
+                </TouchableWithoutFeedback>
 
-                    <Ionicons
-                        name="camera-outline"
-                        // color={colors.textColor}
-                        color={'white'}
-                        size={29}
-                        style={{
-                            position: 'absolute',
-                            top: 10,
-                            right: (width - 26) / 6,
-                        }}
-                        onPress={props.onRightPressed}
-                    />
+                <View style={{ width: 50 }}></View>
+                <TouchableWithoutFeedback onPress={props.onPersonPressed}>
+                    <View style={styles.tabButton}></View>
+                </TouchableWithoutFeedback>
 
-                    <Ionicons
-                        name="search-outline"
-                        size={28}
-                        // color={colors.textColor}
-                        color={'white'}
-                        style={{
-                            position: 'absolute',
-                            top: 11,
-                            left: (width - 26) / 6,
-                        }}
-                        onPress={props.onSearchPressed}
-                    />
-                </LinearGradient>
+                <TouchableWithoutFeedback onPress={props.onCameraPressed}>
+                    <View style={styles.tabButton}></View>
+                </TouchableWithoutFeedback>
+
+                <Ionicons
+                    name="camera-outline"
+                    color={'white'}
+                    size={29}
+                    style={{
+                        position: 'absolute',
+                        top: 10,
+                        right: (width - 26) / 12,
+                    }}
+                    onPress={props.onCameraPressed}
+                />
+
+                <Ionicons
+                    name="person-outline"
+                    color={'white'}
+                    size={25}
+                    style={{
+                        position: 'absolute',
+                        top: 10,
+                        right: (width - 26) / 3.5,
+                    }}
+                    onPress={props.onPersonPressed}
+                />
+
+                <Ionicons
+                    name="search-outline"
+                    size={28}
+                    color={'white'}
+                    style={{
+                        position: 'absolute',
+                        top: 11,
+                        left: (width - 26) / 3.5,
+                    }}
+                    onPress={props.onSearchPressed}
+                />
+
+                <Ionicons
+                    name="home-outline"
+                    size={28}
+                    color={'white'}
+                    style={{
+                        position: 'absolute',
+                        top: 11,
+                        left: (width - 26) / 12,
+                    }}
+                    onPress={props.onHomePressed}
+                />
             </View>
             <View
                 style={{
                     ...styles.floatingPlusCont,
-                    left: width / 2 - 25,
-                    bottom: tabBarBottomPosition + 12,
+                    left: width / 2 - 20,
+                    bottom: tabBarBottomPosition,
                 }}
             >
                 <ScaleButton
@@ -157,7 +185,7 @@ const styles = StyleSheet.create({
     tabBarShadow: {
         position: 'absolute',
         height: 50,
-        backgroundColor: 'white',
+        backgroundColor: colors.darkColorP1,
         flexDirection: 'row',
         // borderRadius: 15,
         shadowColor: 'black',
@@ -171,9 +199,9 @@ const styles = StyleSheet.create({
     },
     bigPlusButton: {
         backgroundColor: colors.darkestColorP1,
-        width: 50,
-        height: 50,
-        borderRadius: 25,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
         alignItems: 'center',
         justifyContent: 'center',
         shadowColor: 'black',
@@ -186,17 +214,16 @@ const styles = StyleSheet.create({
     },
     floatingPlusCont: {
         position: 'absolute',
-        width: 50,
-        height: 50,
-        borderRadius: 25,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
         // overflow: Platform.OS === 'android' ? 'hidden' : 'visible',
         elevation: 10,
     },
     floatingTouchable: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: 'red',
+        width: 40,
+        height: 40,
+        borderRadius: 20,
     },
 })
 

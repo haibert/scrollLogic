@@ -105,18 +105,11 @@ const ThumbnailBig = (props) => {
     })
 
     const startOpacity2Anim = useCallback(() => {
-        animatedOpacity2.value = withTiming(0, { duration: 0 })
+        animatedOpacity2.value = withTiming(0, { duration: 200 })
     }, [])
-
-    const loadingView = useRef()
 
     const onLoad = useCallback(() => {
         startOpacity2Anim()
-        // loadingView.current?.setNativeProps({
-        //     style: {
-        //         opacity: 0,
-        //     },
-        // })
     }, [])
     //----------------------------------------------------------------LOADING LOGIC----------------------------------------------------------------
 

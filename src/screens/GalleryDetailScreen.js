@@ -124,7 +124,7 @@ const GalleryDetailScreen = ({ route, navigation }) => {
         }
     })
     const startOpacityAnim = useCallback(() => {
-        listOpacity.value = withDelay(300, withTiming(1))
+        listOpacity.value = withDelay(300, withTiming(1, { duration: 200 }))
     }, [])
 
     useEffect(() => {
@@ -136,7 +136,8 @@ const GalleryDetailScreen = ({ route, navigation }) => {
                 y: scroll,
                 animated: false,
             })
-        }, 100)
+        }, 200)
+
         startOpacityAnim()
     }, [])
 
@@ -164,13 +165,13 @@ const GalleryDetailScreen = ({ route, navigation }) => {
     const [activeIndex, setActiveIndex] = useState(0)
 
     const onMomentumScrollEnd = useCallback((ev) => {
-        const index = ev.nativeEvent.contentOffset.y.toFixed(0) / width
+        const index = ev.nativeEvent.contentOffset.y / width
         console.log(
             '🚀 ~ file: GalleryDetailScreen.js ~ line 147 ~ onMomentumScrollEnd ~ index',
-            index.toFixed(0)
+            Math.round(index)
         )
 
-        scrollToActiveIndex(index)
+        scrollToActiveIndex(Math.round(index))
     }, [])
     const scrollToActiveIndex = useCallback((index) => {
         setActiveIndex(index)
@@ -239,7 +240,9 @@ const GalleryDetailScreen = ({ route, navigation }) => {
 
     const render2 = useCallback(
         ({ item, index }) => {
-            // console.log(activeIndex, index)
+            console.log('activeIndex', activeIndex.toFixed(0))
+            console.log('index', index)
+
             return (
                 <TouchableOpacity
                     onPress={() => {
@@ -285,9 +288,11 @@ const GalleryDetailScreen = ({ route, navigation }) => {
     const keyExtractor2 = useCallback((item) => item.id, [])
 
     const scrollFailed = useCallback(() => {
+        const scroll = width * scrollIndex
         setTimeout(() => {
-            bigListRef.current?.scrollToIndex({
-                index: scrollIndex,
+            bigListRef.current?.scrollTo({
+                x: 0,
+                y: scroll,
                 animated: false,
             })
         }, 500)
@@ -295,8 +300,10 @@ const GalleryDetailScreen = ({ route, navigation }) => {
 
     const scrollFailed2 = useCallback(() => {
         setTimeout(() => {
-            smallListRef.current?.scrollToIndex({
-                index: scrollIndex,
+            const scroll = width * scrollIndex
+            bigListRef.current?.scrollTo({
+                x: 0,
+                y: scroll,
                 animated: false,
             })
         }, 500)

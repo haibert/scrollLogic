@@ -44,6 +44,9 @@ import * as ImagePicker from 'expo-image-picker'
 import { changeAvatar } from '../../store/signup-auth/actions'
 import { useDispatch, useSelector } from 'react-redux'
 
+// expo image manipulator
+import * as ImageManipulator from 'expo-image-manipulator'
+
 const PhotoEditScreen = ({ route, ...props }) => {
     //picture source
     const picSource = useSelector(
@@ -148,20 +151,25 @@ const PhotoEditScreen = ({ route, ...props }) => {
 
         if (havePermission) {
             let result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.All,
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
                 aspect: [1, 1],
-                quality: 0.1,
+                quality: 0,
                 base64: true,
             })
+            //then create compressed version to save.
+            const compressedPhoto = await ImageManipulator.manipulateAsync(
+                result.uri,
+                [{ resize: { height: 500 } }],
+                { compress: 1, format: 'jpeg', base64: true }
+            )
+
             if (!result.cancelled) {
                 await dispatch(
                     changeAvatar(`data:image/jpeg;base64,${result.base64}`)
                 )
-                setChosenImage(result.uri)
+                setChosenImage(compressedPhoto.uri)
             }
-        } else {
-            //dont have permission
         }
     }
     //----------------------------------------------------------------EDIT PRESSED----------------------------------------------------------------
@@ -188,7 +196,11 @@ const PhotoEditScreen = ({ route, ...props }) => {
         },
         onEnd: ({ velocityX, velocityY }) => {
             const goBack =
-                snapPoint(translateY.value, velocityY, [0, height]) === height
+                snapPoint(translateY.value, velocityY, [
+                    0,
+                    height - height / 2,
+                ]) ===
+                height - height / 2
             if (goBack) {
                 closePage()
             } else {

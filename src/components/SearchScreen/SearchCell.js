@@ -21,7 +21,9 @@ const SearchCell = (props) => {
     const onPress = useCallback(async () => {
         try {
             dispatch(loadProfile(props.searchResults.uniqueID))
-            props.navigation.navigate('OtherProfileScreen')
+            props.navigation.navigate('OtherProfileScreen', {
+                uniqueID: props.searchResults.uniqueID,
+            })
         } catch (err) {
             console.log(err)
         }

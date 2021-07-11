@@ -7,6 +7,8 @@ import {
     ImageBackground,
     Image,
     TouchableWithoutFeedback,
+    Linking,
+    Alert,
 } from 'react-native'
 
 //components
@@ -14,6 +16,7 @@ import ScreenWrapper from '../components/ScreenWrapper'
 import HeaderBasic from '../components/HeaderBasic'
 import Button from '../components/Button'
 import GalRequestCell from '../components/ProfileScreen/GalRequestCell'
+import BottomNavBar from '../components/BottomNavBar'
 
 //paper
 import { Avatar, Title, Caption, Paragraph, Drawer } from 'react-native-paper'
@@ -53,12 +56,120 @@ const { width, height } = Dimensions.get('window')
 //shared elements
 import { SharedElement } from 'react-navigation-shared-element'
 
+//expo camera
+import { Camera } from 'expo-camera'
+import { Audio } from 'expo-av'
+
 const ProfileScreenTwo = (props) => {
     //personal info
     const personalInfo = useSelector((state) => state.signupReducer.userInfo)
 
     //insets
     const insets = useSafeAreaInsets()
+
+    //----------------------------------------------------------------CAMERA PRESSED HANDLER----------------------------------------------------------------
+    const greenLightOnPermissions = useSelector(
+        (state) => state.permissionsReducer.permissions.camera
+    )
+
+    const cameraPressedHandler = async () => {
+        if (greenLightOnPermissions === 'granted') {
+            props.navigation.navigate('CameraScreen')
+        } else {
+            const { status } = await Camera.getPermissionsAsync()
+            const audioStatus = await Audio.getPermissionsAsync()
+
+            // setHasCameraPermission(status === 'granted')
+            if (status && audioStatus.status === 'granted') {
+                dispatch(loadPermissions('granted'))
+                props.navigation.navigate('CameraScreen')
+            } else if (status || audioStatus.status === 'undetermined') {
+                const results = await Camera.requestPermissionsAsync()
+                const audioResults = await Audio.requestPermissionsAsync()
+                if (results.status && audioResults.status === 'granted') {
+                    props.navigation.navigate('CameraScreen')
+                } else if (results.status || audioResults.status === 'denied') {
+                    sendUserToSettingsHandler()
+                    return
+                }
+            } else if (status || audioResults.status === 'denied') {
+                const results2 = await Camera.requestPermissionsAsync()
+                const audioResults2 = await Audio.requestPermissionsAsync()
+                if (results2.status && audioResults2 === 'granted') {
+                    props.navigation.navigate('CameraScreen')
+                } else {
+                    sendUserToSettingsHandler()
+                    return
+                }
+            }
+        }
+    }
+
+    const askForQRScannerPermissions = async () => {
+        const { status } = await BarCodeScanner.requestPermissionsAsync()
+        setShowModal(false)
+
+        setHasCameraPermission(status === 'granted')
+        if (status === 'granted') {
+            props.navigation.navigate('JoinEventScreen', {
+                permission: status,
+            })
+        } else {
+            props.navigation.navigate('JoinEventScreen', {
+                permission: status,
+            })
+        }
+    }
+
+    const openSettings = useCallback(() => {
+        Platform.OS === 'android'
+            ? Linking.openSettings()
+            : Linking.canOpenURL('app-settings:')
+                  .then((supported) => {
+                      if (!supported) {
+                          console.log("Can't handle settings url")
+                      } else {
+                          return Linking.openURL('app-settings:')
+                      }
+                  })
+                  .catch((err) => console.error('An error occurred', err))
+    }, [])
+
+    const sendUserToSettingsHandler = useCallback(() => {
+        const alertMessage =
+            'Turn On Camera Permissions to Allow Event Share to Scan QR Codes'
+        Platform.OS === 'android' ? androidAlert() : IOSAlert()
+
+        function IOSAlert() {
+            Alert.alert(alertMessage, '', [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Settings',
+                    onPress: () => {
+                        openSettings()
+                    },
+                },
+            ])
+        }
+        function androidAlert() {
+            Alert.alert('', alertMessage, [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Settings',
+                    onPress: () => {
+                        openSettings()
+                    },
+                },
+            ])
+        }
+    }, [])
+    //----------------------------------------------------------------CAMERA PRESSED HANDLER----------------------------------------------------------------
 
     //----------------------------------------------------------------ANIMATION LOGIC----------------------------------------------------------------
     const animatedValue = useSharedValue(0)
@@ -114,7 +225,7 @@ const ProfileScreenTwo = (props) => {
         props.navigation.navigate('ProfileEditScreen')
     }, [])
     return (
-        <ScreenWrapper style={{ alignItems: 'center', paddingTop: 0 }}>
+        <ScreenWrapper style={{ paddingTop: 0 }}>
             <ImageBackground
                 style={{ ...styles.topCont, paddingTop: insets.top * 2 - 10 }}
                 source={{
@@ -215,6 +326,18 @@ const ProfileScreenTwo = (props) => {
                 getItemLayout={layOut}
                 style={styles.bigList}
                 showsVerticalScrollIndicator={true}
+            />
+            <BottomNavBar
+                onPlusPressed={() => {
+                    setShowModal(true)
+                }}
+                onCameraPressed={cameraPressedHandler}
+                onSearchPressed={() => {
+                    props.navigation.navigate('SearchScreen')
+                }}
+                onHomePressed={() => {
+                    props.navigation.navigate('DashboardScreen')
+                }}
             />
         </ScreenWrapper>
     )

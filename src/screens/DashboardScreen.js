@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react'
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import {
     View,
     Text,
@@ -74,6 +74,7 @@ const DashboardScreen = (props) => {
     let tabBarBottomPosition = insets.bottom > 0 ? insets.bottom / 2 + 2 : 10
     const [deleteID, setDeleteID] = useState({ id: '', index: '' })
 
+    //dispatch
     const dispatch = useDispatch()
 
     const [hasCameraPermission, setHasCameraPermission] = useState(null)
@@ -89,7 +90,7 @@ const DashboardScreen = (props) => {
     const bottomSheetRef = useRef()
     //----------------------------------------------------------------BOTTOM SHEET----------------------------------------------------------------
 
-    //----------------------------------------------------------------LOAD GALLERIES--------------------------------------------------------
+    //----------------------------------------------------------------LOAD GALLERIES----------------------------------------------------------------
     const [loadingGalleries, setLoadingGalleries] = useState(false)
     // states
     const galleries = useSelector((state) => state.galleryReducer.galleries)
@@ -123,7 +124,7 @@ const DashboardScreen = (props) => {
 
         refreshConditionally()
     })
-    //----------------------------------------------------------------LOAD GALLERIES--------------------------------------------------------
+    //----------------------------------------------------------------LOAD GALLERIES----------------------------------------------------------------
 
     //----------------------------------------------------------------PREVENT BACK BUTTON ANDROID----------------------------------------------------------------
     useEffect(
@@ -307,22 +308,21 @@ const DashboardScreen = (props) => {
         setDeleteID({ id: item.galleryID, index: index })
     }, [])
 
+    const itemHeight = useMemo(() => width / 2 - 5)
+
     const layOut = useCallback(
-        (data, index) => ({ length: 270, offset: 270 * index, index }),
+        (data, index) => ({
+            length: itemHeight,
+            offset: itemHeight * index,
+            index,
+        }),
         []
     )
 
     const keyExtractor = useCallback((item) => `${item.galleryID}`, [])
-    //-----------------------------------------------------FLAT LIST FUNCTIONS--------------------------------------------------------------
-    // console.log('rerender')
-    const renderEmpty = () => <View />
-    const renderHeader = () => <View />
-    const renderFooter = () => <View />
 
-    const biglistRef = useRef()
-    // useEffect(() => {
-    //     biglistRef.current?.scrollToIndex({ animated: true, index: 0 })
-    // }, [])
+    //-----------------------------------------------------FLAT LIST FUNCTIONS--------------------------------------------------------------
+
     return (
         <ScreenWrapper>
             <CustomHeaderBasic
@@ -335,26 +335,19 @@ const DashboardScreen = (props) => {
             />
 
             <BigList
-                ref={biglistRef}
                 data={galleries}
                 renderItem={render}
-                // renderEmpty={renderEmpty}
-                // renderHeader={renderHeader}
-                // renderFooter={renderFooter}
-                itemHeight={270}
+                itemHeight={itemHeight}
                 layOut={layOut}
                 keyExtractor={keyExtractor}
-                // headerHeight={0}
-                // footerHeight={0}
                 contentContainerStyle={{
+                    ...styles.bigListContentCont,
                     paddingBottom: tabBarBottomPosition + 80,
-                    marginLeft: 10,
                 }}
                 numColumns={2}
                 style={styles.flatList}
                 onRefresh={loadGalleries}
                 refreshing={loadingGalleries}
-
                 // ListEmptyComponent={}
             />
 
@@ -382,9 +375,12 @@ const DashboardScreen = (props) => {
                 onPlusPressed={() => {
                     setShowModal(true)
                 }}
-                onRightPressed={cameraPressedHandler}
+                onCameraPressed={cameraPressedHandler}
                 onSearchPressed={() => {
                     props.navigation.navigate('SearchScreen')
+                }}
+                onPersonPressed={() => {
+                    props.navigation.navigate('ProfileScreenTwo')
                 }}
             />
             <Modal visible={showModal} transparent animationType="slide">
@@ -448,6 +444,9 @@ const styles = StyleSheet.create({
         flex: 1,
         marginTop: 10,
     },
+    bigListContentCont: {
+        marginLeft: 10,
+    },
     modalActions: {
         width: '80%',
         height: 200,
@@ -500,7 +499,6 @@ const styles = StyleSheet.create({
         flex: 1,
         minHeight: '100%',
     },
-
     tabLabel: {
         color: 'white',
         fontSize: 10,

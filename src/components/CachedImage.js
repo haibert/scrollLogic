@@ -41,15 +41,20 @@ const CachedImage = forwardRef((props, ref) => {
                         // console.log(
                         //     'Picture didnt exist, downloaded it, set it, no need to refresh'
                         // )
-                        imageRef.current?.setNativeProps({
-                            source: [{ uri: fileURI }],
-                        })
+                        if (Platform.OS === 'android') {
+                            imageRef.current?.setNativeProps({
+                                src: [{ uri: fileURI }],
+                            })
+                        } else {
+                            imageRef.current?.setNativeProps({
+                                source: [{ uri: fileURI }],
+                            })
+                        }
                         shouldRefresh = false
                     } else {
                         console.log(
                             'Picture didnt exist, couldnt download it, need to refresh'
                         )
-
                         shouldRefresh = true
                     }
                 } else {

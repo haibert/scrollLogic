@@ -96,21 +96,10 @@ const QrCodeScreen = ({ navigation, route }) => {
     )
 
     const navigateToCamera = useCallback(() => {
-        navigation.dispatch(
-            CommonActions.reset({
-                index: 1,
-                routes: [
-                    { name: 'DashModalStack' },
-                    {
-                        name: 'CameraScreen',
-                        params: {
-                            checkMarkSet: 'checkMarkSet',
-                            newGalleryID: newGalID,
-                        },
-                    },
-                ],
-            })
-        )
+        navigation.navigate('CameraScreen', {
+            checkMarkSet: 'checkMarkSet',
+            newGalleryID: newGalID,
+        })
     }, [])
 
     const addPhotoHandler = useCallback(async () => {
@@ -156,7 +145,7 @@ const QrCodeScreen = ({ navigation, route }) => {
                 rightIcon="close"
                 onPressRight={async () => {
                     await dispatch(shouldRefreshSet(true))
-                    navigation.navigate('DashModalStack')
+                    navigation.navigate('DashboardScreen')
                 }}
             />
             <View style={styles.outerCont}>

@@ -49,7 +49,7 @@ const store = createStore(rootReducer, applyMiddleware(ReduxThunk))
 
 export default function App() {
     useEffect(() => {
-        cleanupCache({ size: 500 })
+        cleanupCache({ size: 200 })
     }, [])
     return (
         <Provider store={store}>

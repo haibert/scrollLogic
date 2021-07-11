@@ -40,11 +40,19 @@ import * as ImagePicker from 'expo-image-picker'
 import { Ionicons } from '@expo/vector-icons'
 
 //redux
-import { search } from '../store/signup-auth/actions'
+import { search, emptyProfile } from '../store/signup-auth/actions'
 import { useDispatch, useSelector } from 'react-redux'
 
 // big list
 import BigList from 'react-native-big-list'
+
+//expo camera
+import { Camera } from 'expo-camera'
+import { Audio } from 'expo-av'
+
+//useFocus InteractionManager
+import { InteractionManager } from 'react-native'
+import { useFocusEffect } from '@react-navigation/native'
 
 const SearchScreen = ({ route, ...props }) => {
     //picture source
@@ -60,7 +68,12 @@ const SearchScreen = ({ route, ...props }) => {
     // console.log(
     //     '🚀 ~ file: SearchScreen.js ~ line 59 ~ SearchScreen ~ searches',
     //     searches
-    // )
+    //)
+
+    //----------------------------------------------------------------EMPTY PROFILE----------------------------------------------------------------
+    useEffect(() => {
+        dispatch(emptyProfile())
+    }, [])
 
     //----------------------------------------------------------------CANCEL BUTTON ANIMATION----------------------------------------------------------------
     const animatedWidth = useSharedValue(width - 20)
@@ -115,6 +128,15 @@ const SearchScreen = ({ route, ...props }) => {
         }
     }, [])
     //----------------------------------------------------------------CANCEL BUTTON ANIMATION----------------------------------------------------------------
+    const profileInfo = useSelector(
+        (state) => state.signupReducer.loadedProfile
+    )
+    useFocusEffect(() => {
+        console.log(
+            '🚀 ~ file: SearchScreen.js ~ line 125 ~ SearchScreen ~ profileInfo',
+            profileInfo
+        )
+    })
 
     //----------------------------------------------------------------LOADING ANIMATION----------------------------------------------------------------
     const loadingOpacity = useSharedValue(0)
@@ -345,12 +367,15 @@ const SearchScreen = ({ route, ...props }) => {
                 <ActivityIndicator />
             </Animated.View>
             <BottomNavBar
+                onHomePressed={() => {
+                    props.navigation.navigate('DashboardScreen')
+                }}
                 onPlusPressed={() => {
                     setShowModal(true)
                 }}
-                onRightPressed={cameraPressedHandler}
-                onSearchPressed={() => {
-                    props.navigation.navigate('SearchScreen')
+                onCameraPressed={cameraPressedHandler}
+                onPersonPressed={() => {
+                    props.navigation.navigate('ProfileScreenTwo')
                 }}
             />
         </ScreenWrapper>

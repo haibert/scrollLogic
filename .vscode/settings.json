@@ -5,6 +5,8 @@
         "flatlist",
         "pressable",
         "remove",
-        "subviews"
+        "subviews",
+        "unfollow",
+        "unmounting"
     ]
 }

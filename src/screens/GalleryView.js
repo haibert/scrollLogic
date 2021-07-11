@@ -181,8 +181,11 @@ const GalleryView = ({ route, navigation }) => {
         onEnd: ({ velocityX, velocityY }) => {
             if (!enable) return
             const goBack =
-                snapPoint(translateY.value, velocityY, [0, height - 500]) ===
-                height - 500
+                snapPoint(translateY.value, velocityY, [
+                    0,
+                    height - height / 2,
+                ]) ===
+                height - height / 2
             if (goBack) {
                 closePage()
             } else {
@@ -224,6 +227,10 @@ const GalleryView = ({ route, navigation }) => {
 
     //----------------------------------------------------------------LOAD PICS--------------------------------------------------------
     const pics = useSelector((state) => state.galleryReducer.pics)
+    console.log(
+        '🚀 ~ file: GalleryView.js ~ line 230 ~ GalleryView ~ pics',
+        pics
+    )
 
     const [loadingPics, setLoadingPics] = useState()
 
@@ -245,31 +252,15 @@ const GalleryView = ({ route, navigation }) => {
         startOpacityAnim()
     }, [])
 
-    // useFocusEffect(() => {
-    //     const refreshConditionally = async () => {
-    //         if (shouldRefresh) {
-    //             loadPics()
-    //             await dispatch(shouldRefreshSet(false))
-    //         }
-    //     }
-    //     refreshConditionally()
-    // })
-
-    useFocusEffect(
-        React.useCallback(() => {
-            const task = InteractionManager.runAfterInteractions(() => {
-                console.log('ran')
-                const refreshConditionally = async () => {
-                    if (shouldRefresh) {
-                        loadPics()
-                        await dispatch(shouldRefreshSet(false))
-                    }
-                }
-                refreshConditionally()
-            })
-            return () => task.cancel()
-        }, [])
-    )
+    useFocusEffect(() => {
+        const refreshConditionally = async () => {
+            if (shouldRefresh) {
+                loadPics()
+                await dispatch(shouldRefreshSet(false))
+            }
+        }
+        refreshConditionally()
+    })
 
     useEffect(() => {
         const task = InteractionManager.runAfterInteractions(() => {

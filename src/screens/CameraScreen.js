@@ -68,8 +68,8 @@ import Reanimated, {
 } from 'react-native-reanimated'
 
 //nav 5
-import { useFocusEffect } from '@react-navigation/native'
-import { useIsFocused } from '@react-navigation/native'
+import { useFocusEffect, useIsFocused } from '@react-navigation/native'
+import { InteractionManager } from 'react-native'
 
 //status bar
 import { StatusBar } from 'expo-status-bar'
@@ -110,6 +110,24 @@ const CameraScreen = ({ navigation, route }) => {
 
     const bottomSheetRef = useRef()
     //----------------------------------------------------------------BOTTOM SHEET----------------------------------------------------------------
+
+    //----------------------------------------------------------------MOUNT/UNMOUNT CAMERA ON FOCUS/BLUR----------------------------------------------------------------
+    const [screenFocused, setScreenFocused] = useState(true)
+
+    // useFocusEffect(() => {
+    //     setScreenFocused(true)
+    // })
+
+    // useEffect(() => {
+    //     const unsubscribe = navigation.addListener('blur', () => {
+    //         const task = InteractionManager.runAfterInteractions(() => {
+    //             setScreenFocused(false)
+    //         })
+    //         return () => task.cancel()
+    //     })
+    //     return unsubscribe
+    // }, [navigation])
+    //----------------------------------------------------------------MOUNT/UNMOUNT CAMERA ON FOCUS/BLUR----------------------------------------------------------------
 
     //----------------------------------------------------------------RATIO SETTER----------------------------------------------------------------
     const [cameraSettings, setCameraSettings] = useState({
@@ -283,7 +301,7 @@ const CameraScreen = ({ navigation, route }) => {
         })
 
         await dispatch(takePicture(photoURI, base64))
-        setPic(photoURI)
+        setPic(base64)
         setShowPicture(true)
     }
 
@@ -551,7 +569,7 @@ const CameraScreen = ({ navigation, route }) => {
                         paddingBottom: -cameraSettings.imagePadding,
                     }}
                 >
-                    {isFocused && (
+                    {screenFocused && (
                         <ViewShot
                             style={{
                                 // flex: 1,

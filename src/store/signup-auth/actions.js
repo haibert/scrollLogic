@@ -14,6 +14,9 @@ export const TEXT_CODE = 'TEXT_CODE'
 export const CHANGE_AVATAR = 'CHANGE_AVATAR'
 export const SEARCH = 'SEARCH'
 export const LOAD_PROFILE = 'LOAD_PROFILE '
+export const FOLLOW = 'FOLLOW'
+export const UNFOLLOW = 'UNFOLLOW'
+export const EMPTY_PROFILE = 'EMPTY_PROFILE'
 
 import { Search } from '../../models/Models'
 
@@ -564,6 +567,84 @@ export const loadProfile = (userID) => {
     }
 }
 
+export const emptyProfile = () => {
+    console.log('emptyProfile RAN')
+    return async (dispatch, getState) => {
+        try {
+            dispatch({
+                type: EMPTY_PROFILE,
+                loadedProfile: null,
+            })
+        } catch (error) {
+            throw error
+        }
+    }
+}
+
+export const followUnfollow = (followID, followType) => {
+    console.log(
+        '🚀 ~ file: actions.js ~ line 570 ~ followUnfollow ~ followID',
+        followID
+    )
+    return async (dispatch, getState) => {
+        const userID = getState().signupReducer.userInfo.userID
+        console.log(
+            '🚀 ~ file: actions.js ~ line 572 ~ return ~ userID',
+            userID
+        )
+
+        let link =
+            'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&follow-user=1'
+
+        if (followType === 'unFollow') {
+            link =
+                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&unfollow-user=1'
+        }
+
+        const body = JSON.stringify({
+            userID: followID,
+            followerID: userID,
+        })
+        console.log('🚀 ~ file: actions.js ~ line 585 ~ return ~ body', body)
+
+        try {
+            const response = await fetch(link, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+            })
+
+            if (!response.ok) {
+                throw new Error('Something went wrong!')
+                // OR below you can pass the error status.
+                throw new Error(response.status.toString())
+            }
+
+            try {
+                const data = await response.json()
+                console.log(
+                    '🚀 ~ file: actions.js ~ line 604 ~ return ~ data',
+                    data
+                )
+                const results = data.message.response
+
+                if (results === 'success') {
+                    dispatch({
+                        type: UNFOLLOW,
+                        // loadedProfile: loadedProfile,
+                    })
+                }
+            } catch (error) {
+                throw error
+            }
+        } catch (error) {
+            throw error
+        }
+    }
+}
 // helpers
 const storeData = async (value) => {
     try {

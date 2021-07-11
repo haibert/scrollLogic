@@ -83,11 +83,10 @@ const ThumbNail = ({
         galleryPressedHandler()
     }, [])
     //----------------------------------------------------------------OPTIMIZATION----------------------------------------------------------------
-
+    console.log(images.galleryID, images.thumbnail)
     const downloadRef = useRef()
     return (
         <ScaleButton
-            // activeOpacity={0.9}
             activeScale={0.93}
             onPress={onPress}
             contentContainerStyle={[styles.contentContainerStyle, opacityStyle]}
@@ -106,8 +105,6 @@ const ThumbNail = ({
                     }}
                 /> */}
                 <CachedImage
-                    ref={downloadRef}
-                    // onError={showDownloadButton}
                     style={styles.image}
                     resizeMode="cover"
                     source={{
@@ -137,7 +134,7 @@ const styles = StyleSheet.create({
     container: {
         marginTop: 10,
         width: width / 2 - 15,
-        height: 260,
+        height: width / 2 - 15,
         marginRight: 10,
         borderRadius: 9,
         justifyContent: 'flex-end',
@@ -148,7 +145,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
 
         width: width / 2 - 15,
-        height: 260,
+        height: width / 2 - 15,
         borderRadius: 9,
         backgroundColor: 'transparent',
         borderRadius: 9,
@@ -170,7 +167,7 @@ const styles = StyleSheet.create({
         top: 0,
         bottom: 0,
         width: width / 2 - 15,
-        height: 260,
+        height: width / 2 - 15,
         borderRadius: 9,
 
         // uncomment this if you are going to REMOVE CACHED IMAGE IMPLEMENTATION

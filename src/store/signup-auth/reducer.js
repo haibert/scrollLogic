@@ -14,7 +14,7 @@ import {
     CHANGE_AVATAR,
     SEARCH,
     LOAD_PROFILE,
-    EMPTY_PICS_ARRAY,
+    EMPTY_PROFILE,
 } from './actions'
 
 //async storage
@@ -178,6 +178,12 @@ const signupReducer = (state = initialState, action) => {
             return {
                 ...state,
                 loadedProfile: action.loadedProfile,
+            }
+        }
+        case EMPTY_PROFILE: {
+            return {
+                ...state,
+                loadedProfile: null,
             }
         }
 
