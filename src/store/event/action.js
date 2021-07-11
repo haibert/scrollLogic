@@ -5,7 +5,6 @@ export const DELETE_GALLERY = 'DELETE_GALLERY'
 export const SHOULD_REFRESH = 'SHOULD_REFRESH'
 export const DELETE_PHOTO = 'DELETE_PHOTO'
 export const EMPTY_PICS_ARRAY = 'EMPTY_PICS_ARRAY'
-
 //models
 import { Gallery, Pic } from '../../models/Models'
 
