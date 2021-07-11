@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-
+import 'expo-dev-client'
 //redux
 import { createStore, combineReducers, applyMiddleware } from 'redux'
 import { Provider } from 'react-redux'
