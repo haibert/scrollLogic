@@ -17,7 +17,7 @@ export const LOAD_PROFILE = 'LOAD_PROFILE '
 export const FOLLOW = 'FOLLOW'
 export const UNFOLLOW = 'UNFOLLOW'
 export const EMPTY_PROFILE = 'EMPTY_PROFILE'
-import { Search } from '../../models/Models'
+import { Search } from '../../models/SearchModel'
 
 const LINK = 'http://144.126.212.5/api.php?key=!thisIsARandomString1981111212&'
 
