@@ -586,13 +586,9 @@ const CameraScreen = ({ navigation, route }) => {
                             collapsable={false}
                             onLayout={(event) => {
                                 event.nativeEvent.layout.height
-                                console.log(
-                                    '🚀 ~ file: CameraScreen.js ~ line 525 ~ CameraScreen ~  event.nativeEvent.layout.height',
-                                    event.nativeEvent.layout.height
-                                )
                             }}
                         >
-                            <AnimatedCamera
+                            <Camera
                                 // style={{
                                 //     aspectRatio:
                                 //         Platform.OS === 'android'
@@ -618,7 +614,6 @@ const CameraScreen = ({ navigation, route }) => {
                                 zoom={zoom.value}
                                 onCameraReady={setCameraReady}
                                 ratio={cameraSettings.ratio}
-                                maxDuration={10000}
                                 autoFocus="on"
                                 onLayout={(event) => {
                                     setCamWidth(event.nativeEvent.layout.width)

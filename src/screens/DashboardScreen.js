@@ -287,7 +287,13 @@ const DashboardScreen = (props) => {
         return (
             <Thumbnail
                 images={item}
-                galleryPressedHandler={galleryPressedHandler.bind(this, item)}
+                galleryPressedHandler={() => {
+                    galleryPressedHandler(
+                        item.galleryID,
+                        item.thumbnail,
+                        item.galleryName
+                    )
+                }}
                 navigation={props.navigation}
                 galleryName={item.galleryName}
                 onActionsPressed={onActionsPressed.bind(this, item, index)}
@@ -297,11 +303,16 @@ const DashboardScreen = (props) => {
         )
     }, [])
 
-    const galleryPressedHandler = useCallback((gallery) => {
-        props.navigation.navigate('GalleryView', {
-            gallery,
-        })
-    }, [])
+    const galleryPressedHandler = useCallback(
+        (galleryID, thumbnail, galName) => {
+            props.navigation.navigate('GalleryView', {
+                galleryID,
+                thumbnail,
+                galName,
+            })
+        },
+        []
+    )
 
     const onActionsPressed = useCallback((item, index) => {
         bottomSheetRef.current?.handlePresentModalPress()

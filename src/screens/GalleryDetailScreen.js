@@ -65,6 +65,9 @@ import { BlurView } from 'expo-blur'
 //focus effect
 import { useFocusEffect } from '@react-navigation/native'
 
+//fast image
+import FastImage from 'react-native-fast-image'
+
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 
 const GalleryDetailScreen = ({ route, navigation }) => {
@@ -166,10 +169,6 @@ const GalleryDetailScreen = ({ route, navigation }) => {
 
     const onMomentumScrollEnd = useCallback((ev) => {
         const index = ev.nativeEvent.contentOffset.y / width
-        console.log(
-            '🚀 ~ file: GalleryDetailScreen.js ~ line 147 ~ onMomentumScrollEnd ~ index',
-            Math.round(index)
-        )
 
         scrollToActiveIndex(Math.round(index))
     }, [])
@@ -189,7 +188,6 @@ const GalleryDetailScreen = ({ route, navigation }) => {
     }, [])
 
     const scrollToActiveIndexSmall = useCallback((index) => {
-        console.log(index)
         setActiveIndex(index)
         bigListRef.current?.scrollToOffset({
             offset: index * width,
@@ -240,9 +238,6 @@ const GalleryDetailScreen = ({ route, navigation }) => {
 
     const render2 = useCallback(
         ({ item, index }) => {
-            console.log('activeIndex', activeIndex.toFixed(0))
-            console.log('index', index)
-
             return (
                 <TouchableOpacity
                     onPress={() => {
@@ -328,17 +323,7 @@ const GalleryDetailScreen = ({ route, navigation }) => {
                 }}
                 blurRadius={40}
                 fadeDuration={100}
-                loadingIndicatorSource={ActivityIndicator}
             />
-
-            {/* <CachedImageGalleryView
-                style={StyleSheet.absoluteFill}
-                source={{
-                    uri: `${image[activeIndex]?.thumbPath}`,
-                }}
-                resizeMode="cover"
-                cacheKey={`${image[activeIndex]?.galleryID}t`}
-            /> */}
 
             <View
                 style={{

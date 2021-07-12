@@ -28,6 +28,9 @@ import colors from '../constants/colors'
 //custom components
 import CachedImage from '../components/CachedImage'
 
+//fast image
+import FastImage from 'react-native-fast-image'
+
 const { width, height } = Dimensions.get('window')
 console.log('🚀 ~ file: ThumbnailSmall.js ~ line 20 ~ width', width)
 
@@ -66,14 +69,24 @@ const ThumbnailSmall = ({ images, picturePressedHandler, navigation }) => {
                     resizeMode="cover"
                     source={{ uri: images.thumbPath, cache: 'force-cache' }}
                 /> */}
-                <CachedImage
+                {/* <CachedImage
                     style={styles.image}
                     resizeMode="cover"
                     source={{
-                        uri: `${images.fullPath}`,
+                        uri: `${images.thumbPath}`,
                     }}
                     cacheKey={`${images.id}t`}
                     resizeMode="cover"
+                /> */}
+                <FastImage
+                    style={styles.image}
+                    resizeMode={FastImage.resizeMode.cover}
+                    source={{
+                        uri: `${images.thumbPath}`,
+                        // headers: { Authorization: 'someAuthToken' },
+                        priority: FastImage.priority.normal,
+                        cache: FastImage.cacheControl.immutable,
+                    }}
                 />
             </SharedElement>
         </TouchableCmp>

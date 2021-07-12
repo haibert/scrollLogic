@@ -242,7 +242,7 @@ const LoginScreen = (props) => {
             // start={{ x: 0.1, y: 0.3 }}
             // end={{ x: 0.1, y: 0.2 }}
         >
-            <Image
+            {/* <Image
                 source={require('../../assets/A.png')}
                 // source={require('../../assets/B.png')}
                 style={{
@@ -254,7 +254,7 @@ const LoginScreen = (props) => {
                     width: width,
                 }}
                 resizeMode="stretch"
-            />
+            /> */}
             {Platform.OS === 'android' ? null : (
                 <BlurView
                     style={{

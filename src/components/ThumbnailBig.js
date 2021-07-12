@@ -39,6 +39,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 //custom components
 import CachedImage from '../components/CachedImage'
 
+//fast image
+import FastImage from 'react-native-fast-image'
+
 const ThumbnailBig = (props) => {
     const insets = useSafeAreaInsets()
 
@@ -85,9 +88,7 @@ const ThumbnailBig = (props) => {
     })
 
     const startOpacityAnim = useCallback(() => {
-        console.log(animatedOpacity.value)
         if (animatedOpacity.value === 1) {
-            console.log('go here')
             animatedOpacity.value = withTiming(0, { duration: 200 })
         } else {
             animatedOpacity.value = withTiming(1, { duration: 200 })
@@ -138,7 +139,7 @@ const ThumbnailBig = (props) => {
                     onLoad={onLoad}
                 /> */}
 
-                <CachedImage
+                {/* <CachedImage
                     style={styles.image}
                     resizeMode="cover"
                     source={{
@@ -146,20 +147,31 @@ const ThumbnailBig = (props) => {
                     }}
                     cacheKey={`${props.images.id}t`}
                     onLoad={onLoad}
-                />
+                /> */}
 
-                <Animated.Image
-                    style={[
-                        styles.image,
-                        StyleSheet.absoluteFill,
-                        opacityStyle,
-                    ]}
+                <FastImage
+                    style={styles.image}
+                    resizeMode={FastImage.resizeMode.cover}
                     source={{
-                        uri: props.images.thumbPath,
+                        uri: `${props.images.fullPath}`,
+                        // headers: { Authorization: 'someAuthToken' },
+                        priority: FastImage.priority.normal,
+                        cache: FastImage.cacheControl.immutable,
                     }}
-                    resizeMode="cover"
-                    // blurRadius={1}
+                    onLoad={onLoad}
                 />
+                <Animated.View style={[StyleSheet.absoluteFill, opacityStyle]}>
+                    <FastImage
+                        style={[styles.image, StyleSheet.absoluteFill]}
+                        source={{
+                            uri: `${props.images.thumbPath}`,
+                            // headers: { Authorization: 'someAuthToken' },
+                            priority: FastImage.priority.normal,
+                            cache: FastImage.cacheControl.immutable,
+                        }}
+                        resizeMode="cover"
+                    />
+                </Animated.View>
                 <Animated.View style={[styles.wholeCont, bigContStyle]}>
                     <ImageBackground
                         style={styles.actionBar}
@@ -167,6 +179,7 @@ const ThumbnailBig = (props) => {
                         source={require('../../assets/AndroidTransparentPngBLUR.png')}
                         resizeMode="stretch"
                     />
+
                     <Ionicons
                         name="ellipsis-horizontal"
                         size={25}

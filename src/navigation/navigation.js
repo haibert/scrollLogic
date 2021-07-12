@@ -87,7 +87,7 @@ const iosTransitionSpec = {
     config: {
         stiffness: 1000,
         damping: 1000,
-        mass: 2,
+        mass: Platform.OS === 'android' ? 2 : 1.8,
         overshootClamping: true,
         restDisplacementThreshold: 10,
         restSpeedThreshold: 10,
@@ -143,7 +143,9 @@ const SignUpNavigation = () => {
     )
 }
 
-const DashStackShared = createSharedElementStackNavigator()
+const DashStackShared = createSharedElementStackNavigator({
+    debug: true,
+})
 const DashModalStack = () => {
     return (
         <DashStackShared.Navigator
@@ -181,13 +183,19 @@ const DashModalStack = () => {
                     cardStyleInterpolator: cardStyleInterpolatorFunc,
                 })}
                 sharedElementsConfig={(route) => {
-                    const { gallery } = route.params
+                    const { galleryID, galName } = route.params
                     return [
                         {
-                            id: gallery?.galleryID,
+                            id: [galleryID],
                             animation: 'move',
                             resize: 'auto',
-                            // align: 'left-top',
+                            align: 'auto',
+                        },
+                        {
+                            id: [galleryID + galName],
+                            animation: 'fade',
+                            resize: 'clip',
+                            align: 'auto',
                         },
                     ]
                 }}
@@ -209,7 +217,7 @@ const DashModalStack = () => {
                         {
                             id: Platform.OS === 'android' ? picID : picID,
                             animation: 'move',
-                            resize: 'stretch',
+                            resize: 'auto',
                         },
                     ]
                 }}

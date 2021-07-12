@@ -33,6 +33,8 @@ import { useFocusEffect } from '@react-navigation/native'
 
 const { width, height } = Dimensions.get('window')
 
+import FastImage from 'react-native-fast-image'
+
 const CELL_WIDTH = width / 2
 
 //ionicons
@@ -81,9 +83,9 @@ const ThumbNail = ({
     const onPress = useCallback(() => {
         animatedOpacity.value = withDelay(300, withTiming(0))
         galleryPressedHandler()
+        console.log(images.galleryID)
     }, [])
     //----------------------------------------------------------------OPTIMIZATION----------------------------------------------------------------
-    console.log(images.galleryID, images.thumbnail)
     const downloadRef = useRef()
     return (
         <ScaleButton
@@ -91,8 +93,8 @@ const ThumbNail = ({
             onPress={onPress}
             contentContainerStyle={[styles.contentContainerStyle, opacityStyle]}
         >
-            <SharedElement id={images.galleryID}>
-                {/* <ImageBackground
+            <SharedElement id={`${images.galleryID}`}>
+                {/* <Image
                     style={styles.image}
                     imageStyle={{
                         borderRadius: 9,
@@ -104,21 +106,32 @@ const ThumbNail = ({
                         cache: 'force-cache',
                     }}
                 /> */}
-                <CachedImage
+                {/* <CachedImage
                     style={styles.image}
                     resizeMode="cover"
                     source={{
                         uri: `${images.thumbnail}`,
                     }}
                     cacheKey={`${images.galleryID}t`}
+                /> */}
+                <FastImage
+                    style={styles.image}
+                    resizeMode={FastImage.resizeMode.cover}
+                    source={{
+                        uri: `${images.thumbnail}`,
+                        priority: FastImage.priority.normal,
+                    }}
                 />
             </SharedElement>
-            <Text
-                style={styles.eventTitle}
-                maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
-            >
-                {galleryName}
-            </Text>
+            <SharedElement id={`${images.galleryID}${images.galleryName}`}>
+                <Text
+                    style={styles.eventTitle}
+                    maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                >
+                    {galleryName}
+                </Text>
+            </SharedElement>
+
             <Ionicons
                 name="ellipsis-horizontal-circle-outline"
                 size={25}

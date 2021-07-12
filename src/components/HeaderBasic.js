@@ -47,6 +47,7 @@ const CustomHeaderBasic = (props) => {
                 >
                     {props.header}
                 </Text>
+                {props.transitionedHeader}
             </View>
             <View style={styles.xCont}>
                 <TouchableCmp onPress={props.goBack}>

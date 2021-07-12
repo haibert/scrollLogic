@@ -71,8 +71,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Camera } from 'expo-camera'
 import { Audio } from 'expo-av'
 
+//fast image
+import FastImage from 'react-native-fast-image'
+
 const GalleryView = ({ route, navigation }) => {
-    const { gallery } = route.params
+    const { galleryID, thumbnail, galName } = route.params
 
     // shouldRefresh
     const shouldRefresh = useSelector(
@@ -227,10 +230,6 @@ const GalleryView = ({ route, navigation }) => {
 
     //----------------------------------------------------------------LOAD PICS--------------------------------------------------------
     const pics = useSelector((state) => state.galleryReducer.pics)
-    console.log(
-        '🚀 ~ file: GalleryView.js ~ line 230 ~ GalleryView ~ pics',
-        pics
-    )
 
     const [loadingPics, setLoadingPics] = useState()
 
@@ -247,7 +246,8 @@ const GalleryView = ({ route, navigation }) => {
     const loadPics = useCallback(async () => {
         loadingOpacity.value = 1
         try {
-            await dispatch(setPics(gallery.galleryID))
+            console.log('loading pics')
+            await dispatch(setPics(galleryID))
         } catch (error) {}
         startOpacityAnim()
     }, [])
@@ -328,7 +328,7 @@ const GalleryView = ({ route, navigation }) => {
     const navFunction = useCallback(() => {
         navigation.navigate('CameraScreen', {
             checkMarkSet: 'checkMarkSet',
-            galleryID: gallery.galleryID,
+            galleryID,
         })
     }, [])
 
@@ -439,23 +439,42 @@ const GalleryView = ({ route, navigation }) => {
                     style={{ paddingBottom: 0 }}
                 >
                     <SharedElement
-                        id={gallery?.galleryID}
+                        id={`${galleryID}`}
                         style={styles.sharedElement}
                     >
-                        <CachedImageGalleryView
+                        <FastImage
                             style={styles.imageBg}
+                            resizeMode={FastImage.resizeMode.cover}
                             source={{
-                                uri: `${gallery?.thumbnail}`,
-                                cache: 'force-cache',
+                                uri: `${thumbnail}`,
+                                // headers: { Authorization: 'someAuthToken' },
+                                priority: FastImage.priority.normal,
                             }}
-                            resizeMode="cover"
-                            cacheKey={`${gallery.galleryID}t`}
                         />
+                    </SharedElement>
+                    <SharedElement
+                        id={`${galleryID}${galName}`}
+                        style={{
+                            ...styles.sharedElementText,
+                            marginTop: insets.top,
+                        }}
+                    >
+                        <Text
+                            style={{
+                                fontSize: 21,
+                                fontWeight: 'bold',
+                                textAlign: 'center',
+                                color: colors.darkestColorP1,
+                            }}
+                            maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                        >
+                            {galName}
+                        </Text>
                     </SharedElement>
                     <HeaderBasic
                         rightButton
                         goBack={goBack}
-                        header="Your Event"
+                        // header="Your Event"
                         headerColor={{ color: colors.darkestColorP1 }}
                         iconName="chevron-down-outline"
                         rightIcon="camera-outline"
@@ -528,6 +547,17 @@ const styles = StyleSheet.create({
         bottom: 0,
         height: height,
         width: width,
+    },
+    sharedElementText: {
+        position: 'absolute',
+        right: 0,
+        left: 0,
+        top: 0,
+        bottom: 0,
+        height: 40,
+        width: width,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     imageBg: {
         flex: 1,
