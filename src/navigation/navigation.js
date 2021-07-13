@@ -87,7 +87,7 @@ const iosTransitionSpec = {
     config: {
         stiffness: 1000,
         damping: 1000,
-        mass: Platform.OS === 'android' ? 2 : 1.8,
+        mass: Platform.OS === 'android' ? 2.5 : 1.9,
         overshootClamping: true,
         restDisplacementThreshold: 10,
         restSpeedThreshold: 10,
@@ -187,7 +187,8 @@ const DashModalStack = () => {
                     return [
                         {
                             id: [galleryID],
-                            animation: 'move',
+                            animation:
+                                Platform.OS === 'android' ? 'fade-out' : 'move',
                             resize: 'auto',
                             align: 'auto',
                         },
@@ -216,7 +217,8 @@ const DashModalStack = () => {
                     return [
                         {
                             id: Platform.OS === 'android' ? picID : picID,
-                            animation: 'move',
+                            animation:
+                                Platform.OS === 'android' ? 'fade' : 'move',
                             resize: 'auto',
                         },
                     ]

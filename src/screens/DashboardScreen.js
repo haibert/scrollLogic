@@ -135,26 +135,6 @@ const DashboardScreen = (props) => {
         []
     )
     //----------------------------------------------------------------PREVENT BACK BUTTON ANDROID----------------------------------------------------------------
-    // useFocusEffect(() => {
-    //     const prevent = BackHandler
-    //     if (props.navigation.isFocused()) {
-    //         prevent.addEventListener('hardwareBackPress', () => true)
-    //     }
-    //     return () => {
-    //         console.log('ran')
-    //         prevent.removeEventListener()
-    //     }
-    // })
-
-    // useEffect(() => {
-    //     const prevent = BackHandler.addEventListener(
-    //         'hardwareBackPress',
-    //         () => true
-    //     )
-    //     return () => {
-    //         prevent.removeEventListener()
-    //     }
-    // }, [])
 
     const cameraPressedHandler = async () => {
         if (greenLightOnPermissions === 'granted') {
@@ -298,7 +278,7 @@ const DashboardScreen = (props) => {
                 galleryName={item.galleryName}
                 onActionsPressed={onActionsPressed.bind(this, item, index)}
                 key={item.galleryID}
-                imageURI={item.thumbnail}
+                imageURI={`${item.thumbnail}`}
             />
         )
     }, [])

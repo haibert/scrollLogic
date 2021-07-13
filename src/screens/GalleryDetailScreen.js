@@ -327,25 +327,34 @@ const GalleryDetailScreen = ({ route, navigation }) => {
 
             <View
                 style={{
+                    ...styles.transitionImageCont,
                     top: insets.top + 40,
-                    left: 0,
-                    right: 0,
                     height: rowHeightAdjusted,
                     width: width,
-                    position: 'absolute',
-                    alignItems: 'center',
-                    justifyContent: 'center',
                 }}
             >
                 <SharedElement id={picID}>
-                    <Image
+                    {/* <Image
                         // source={{ uri: fullPathNav }}
                         style={{
                             height: rowHeightAdjusted,
-                            borderRadius: 17,
                             width: rowWidthAdjust,
+                            borderRadius: 8,
                         }}
                         blurRadius={20}
+                    /> */}
+                    <FastImage
+                        style={{
+                            height: rowHeightAdjusted,
+                            width: rowWidthAdjust,
+                            borderRadius: 17,
+                        }}
+                        resizeMode={FastImage.resizeMode.cover}
+                        // source={{
+                        //     uri: fullPathNav,
+                        //     // headers: { Authorization: 'someAuthToken' },
+                        //     priority: FastImage.priority.normal,
+                        // }}
                     />
                 </SharedElement>
             </View>
@@ -441,6 +450,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-end',
         paddingHorizontal: 10,
+    },
+    transitionImageCont: {
+        left: 0,
+        right: 0,
+        position: 'absolute',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     flatList2: {
         height: 60,

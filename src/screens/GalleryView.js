@@ -118,7 +118,7 @@ const GalleryView = ({ route, navigation }) => {
 
     //old way of handling gesture event
     const handleScroll = useCallback((event) => {
-        if (event.nativeEvent.contentOffset.y < 0) {
+        if (event.nativeEvent.contentOffset.y <= 0) {
             Platform.OS === 'android' ? navigation.goBack() : null
         }
     }, [])
@@ -246,7 +246,6 @@ const GalleryView = ({ route, navigation }) => {
     const loadPics = useCallback(async () => {
         loadingOpacity.value = 1
         try {
-            console.log('loading pics')
             await dispatch(setPics(galleryID))
         } catch (error) {}
         startOpacityAnim()
@@ -419,6 +418,20 @@ const GalleryView = ({ route, navigation }) => {
         )
     }, [])
     //----------------------------------------------------FLAT LIST OPTIMIZATION--------------------------------------------------------
+
+    //----------------------------------------------------------------have to normalize uri----------------------------------------------------------------
+    const normalizedSource = () => {
+        const imageString = `${thumbnail}`
+        const normalizedSource =
+            imageString &&
+            typeof imageString === 'string' &&
+            !imageString.split('http')[1]
+                ? null
+                : imageString
+        return normalizedSource
+    }
+    //----------------------------------------------------------------have to normalize uri----------------------------------------------------------------
+
     return (
         <PanGestureHandler
             ref={panViewRef}
@@ -446,7 +459,7 @@ const GalleryView = ({ route, navigation }) => {
                             style={styles.imageBg}
                             resizeMode={FastImage.resizeMode.cover}
                             source={{
-                                uri: `${thumbnail}`,
+                                uri: normalizedSource(),
                                 // headers: { Authorization: 'someAuthToken' },
                                 priority: FastImage.priority.normal,
                             }}
@@ -460,12 +473,7 @@ const GalleryView = ({ route, navigation }) => {
                         }}
                     >
                         <Text
-                            style={{
-                                fontSize: 21,
-                                fontWeight: 'bold',
-                                textAlign: 'center',
-                                color: colors.darkestColorP1,
-                            }}
+                            style={styles.animatedTitle}
                             maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
                         >
                             {galName}
@@ -558,6 +566,12 @@ const styles = StyleSheet.create({
         width: width,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    animatedTitle: {
+        fontSize: 21,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        color: colors.darkestColorP1,
     },
     imageBg: {
         flex: 1,

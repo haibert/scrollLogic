@@ -32,7 +32,6 @@ import CachedImage from '../components/CachedImage'
 import FastImage from 'react-native-fast-image'
 
 const { width, height } = Dimensions.get('window')
-console.log('🚀 ~ file: ThumbnailSmall.js ~ line 20 ~ width', width)
 
 const ThumbnailSmall = ({ images, picturePressedHandler, navigation }) => {
     let TouchableCmp = TouchableOpacity
@@ -61,6 +60,18 @@ const ThumbnailSmall = ({ images, picturePressedHandler, navigation }) => {
     }
     //----------------------------------------------------------------OPACITY ANIMATION----------------------------------------------------------------
 
+    //----------------------------------------------------------------have to normalize uri----------------------------------------------------------------
+    const normalizedSource = () => {
+        const imageString = `${images.thumbPath}`
+        const normalizedSource =
+            imageString &&
+            typeof imageString === 'string' &&
+            !imageString.split('http')[1]
+                ? null
+                : imageString
+        return normalizedSource
+    }
+    //----------------------------------------------------------------have to normalize uri----------------------------------------------------------------
     return (
         <TouchableCmp onPress={handlePicPressed} style={styles.cont}>
             <SharedElement id={images.id}>
@@ -82,7 +93,7 @@ const ThumbnailSmall = ({ images, picturePressedHandler, navigation }) => {
                     style={styles.image}
                     resizeMode={FastImage.resizeMode.cover}
                     source={{
-                        uri: `${images.thumbPath}`,
+                        uri: normalizedSource(),
                         // headers: { Authorization: 'someAuthToken' },
                         priority: FastImage.priority.normal,
                         cache: FastImage.cacheControl.immutable,

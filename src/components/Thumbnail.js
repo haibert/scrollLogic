@@ -83,10 +83,23 @@ const ThumbNail = ({
     const onPress = useCallback(() => {
         animatedOpacity.value = withDelay(300, withTiming(0))
         galleryPressedHandler()
-        console.log(images.galleryID)
     }, [])
     //----------------------------------------------------------------OPTIMIZATION----------------------------------------------------------------
     const downloadRef = useRef()
+
+    //----------------------------------------------------------------have to normalize uri----------------------------------------------------------------
+    const normalizedSource = () => {
+        const imageString = `${images.thumbnail}`
+        const normalizedSource =
+            imageString &&
+            typeof imageString === 'string' &&
+            !imageString.split('http')[1]
+                ? null
+                : imageString
+        return images.thumbnail ? normalizedSource : images.thumbnail
+    }
+    //----------------------------------------------------------------have to normalize uri----------------------------------------------------------------
+
     return (
         <ScaleButton
             activeScale={0.93}
@@ -118,7 +131,7 @@ const ThumbNail = ({
                     style={styles.image}
                     resizeMode={FastImage.resizeMode.cover}
                     source={{
-                        uri: `${images.thumbnail}`,
+                        uri: normalizedSource(),
                         priority: FastImage.priority.normal,
                     }}
                 />
