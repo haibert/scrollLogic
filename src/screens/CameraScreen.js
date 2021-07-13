@@ -87,13 +87,6 @@ const { height, width } = Dimensions.get('window')
 console.log('🚀 ~ file: CameraScreen.js ~ line 77 ~ height', height)
 console.log('🚀 ~ file: CameraScreen.js ~ line 77 ~ width', width)
 
-//----------------------------------------------------------------Camera Zoom Items----------------------------------------------------------------
-const AnimatedCamera = Reanimated.createAnimatedComponent(Camera)
-Reanimated.addWhitelistedNativeProps({
-    zoom: true,
-})
-//----------------------------------------------------------------Camera Zoom Items----------------------------------------------------------------
-
 const CameraScreen = ({ navigation, route }) => {
     const isFocused = useIsFocused()
     let checkMarkSet = useRef(route.params?.checkMarkSet).current

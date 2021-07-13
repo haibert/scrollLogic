@@ -51,6 +51,9 @@ export default function App() {
     useEffect(() => {
         cleanupCache({ size: 200 })
     }, [])
+
+    const isHermes = () => !!global.HermesInternal
+    console.log('🚀 ~ file: App.js ~ line 28 ~ isHermes', isHermes())
     return (
         <Provider store={store}>
             <AppNavigator />
