@@ -29,11 +29,12 @@
             "icon": "./assets/1024.png"
         },
         "android": {
+            "jsEngine": "hermes",
             "adaptiveIcon": {
                 "foregroundImage": "./assets/adaptive-icon.png",
                 "backgroundColor": "#FFFFFF"
             },
-            "jsEngine": "hermes",
+
             "userInterfaceStyle": "dark",
             "package": "com.simplyrem.GalleryShare"
         },

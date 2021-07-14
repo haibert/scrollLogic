@@ -12,6 +12,8 @@ import { Pic } from '../../models/PicModel'
 //navigation
 // import { CommonActions } from '@react-navigation/native'
 
+import { LINK } from '../../utilities/apiLink'
+
 export const addGallery = (eventName, eventType, thumbnail, allowedUsers) => {
     return async (dispatch, getState) => {
         const userID = getState().signupReducer.userInfo.userID
@@ -25,17 +27,14 @@ export const addGallery = (eventName, eventType, thumbnail, allowedUsers) => {
             })
             console.log('🚀 ~ file: action.js ~ line 24 ~ return ~ body', body)
 
-            const response = await fetch(
-                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&add-gallery=1',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        key: 'ThisIsASecretKey',
-                    },
-                    body: body,
-                }
-            )
+            const response = await fetch(`${LINK}&add-gallery=1`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+            })
 
             if (!response.ok) {
                 throw new Error('Something went wrong!')
@@ -71,18 +70,15 @@ export const setGalleries = () => {
             const body = JSON.stringify({
                 userID: userID,
             })
-            const response = await fetch(
-                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&get-user-galleries=1',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        key: 'ThisIsASecretKey',
-                    },
-                    body: body,
-                    cache: 'no-cache',
-                }
-            )
+            const response = await fetch(`${LINK}&get-user-galleries=1`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+                cache: 'no-cache',
+            })
 
             if (!response.ok) {
                 throw new Error('Something went wrong!')
@@ -126,17 +122,14 @@ export const setPics = (galleryID) => {
                 userID,
                 galleryID,
             })
-            const response = await fetch(
-                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&get-gallery-files=1',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        key: 'ThisIsASecretKey',
-                    },
-                    body: body,
-                }
-            )
+            const response = await fetch(`${LINK}&get-gallery-files=1`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+            })
 
             if (!response.ok) {
                 throw new Error('Something went wrong!')
@@ -180,17 +173,14 @@ export const deleteGallery = (galleryID) => {
                 id: galleryID.id,
             })
             console.log('🚀 ~ file: action.js ~ line 169 ~ return ~ body', body)
-            const response = await fetch(
-                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&delete-gallery=1',
-                {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        key: 'ThisIsASecretKey',
-                    },
-                    body: body,
-                }
-            )
+            const response = await fetch(`${LINK}&delete-gallery=1`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+            })
 
             if (!response.ok) {
                 throw new Error('Something went wrong!')
@@ -226,17 +216,14 @@ export const deletePhoto = (photoID) => {
             const body = JSON.stringify({
                 id: photoID,
             })
-            const response = await fetch(
-                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&delete-image=1',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        key: 'ThisIsASecretKey',
-                    },
-                    body: body,
-                }
-            )
+            const response = await fetch(`${LINK}&delete-image=1`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+            })
 
             if (!response.ok) {
                 throw new Error('Something went wrong!')

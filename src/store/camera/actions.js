@@ -2,6 +2,8 @@ export const TAKE_PICTURE = 'TAKE_PICTURE'
 export const ADD_TO_GALLERY = 'ADD_TO_GALLERY'
 export const SET_CAMERA_UP = 'SET_CAMERA_UP'
 
+import { LINK } from '../../utilities/apiLink'
+
 export const takePicture = (uri, base64) => {
     return {
         type: TAKE_PICTURE,
@@ -20,17 +22,14 @@ export const addToGallery = (photo, galleryID) => {
         })
         console.log('🚀 ~ file: actions.js ~ line 21 ~ return ~ body', body)
         try {
-            const response = await fetch(
-                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&file-upload=1',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        key: 'ThisIsASecretKey',
-                    },
-                    body: body,
-                }
-            )
+            const response = await fetch(`${LINK}&file-upload=1`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+            })
 
             if (!response.ok) {
                 throw new Error('Something went wrong!')

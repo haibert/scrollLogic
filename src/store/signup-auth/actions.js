@@ -19,7 +19,7 @@ export const UNFOLLOW = 'UNFOLLOW'
 export const EMPTY_PROFILE = 'EMPTY_PROFILE'
 import { Search } from '../../models/SearchModel'
 
-const LINK = 'http://144.126.212.5/api.php?key=!thisIsARandomString1981111212&'
+import { LINK } from '../../utilities/apiLink'
 
 export const addEmail = (email) => {
     return {
@@ -95,17 +95,14 @@ export const signupUser = () => {
         })
         console.log('🚀 ~ file: actions.js ~ line 82 ~ return ~ body', body)
         try {
-            const response = await fetch(
-                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&registeration=1',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        key: 'ThisIsASecretKey',
-                    },
-                    body: body,
-                }
-            )
+            const response = await fetch(`${LINK}&registeration=1`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+            })
             const responseData = await response.json()
             console.log(
                 '🚀 ~ file: actions.js ~ line 103 ~ return ~ responseData',
@@ -144,17 +141,14 @@ export const login = (username, password) => {
             password,
         })
         try {
-            const response = await fetch(
-                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&auth=1',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        key: 'ThisIsASecretKey',
-                    },
-                    body: body,
-                }
-            )
+            const response = await fetch(`${LINK}&auth=1`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+            })
 
             if (!response.ok) {
                 throw new Error('Something went wrong!')
@@ -214,17 +208,14 @@ export const sendEmailCode = (email) => {
             email,
         })
         try {
-            const response = await fetch(
-                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&validationEmail=1',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        key: 'ThisIsASecretKey',
-                    },
-                    body: body,
-                }
-            )
+            const response = await fetch(`${LINK}&validationEmail=1`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+            })
 
             if (!response.ok) {
                 throw new Error('Something went wrong!')
@@ -264,17 +255,14 @@ export const sendTextCode = (phone) => {
             phone,
         })
         try {
-            const response = await fetch(
-                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&validationSMS=1',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        key: 'ThisIsASecretKey',
-                    },
-                    body: body,
-                }
-            )
+            const response = await fetch(`${LINK}&validationSMS=1`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+            })
 
             if (!response.ok) {
                 throw new Error('Something went wrong!')
@@ -317,17 +305,14 @@ export const checkUserExistence = (userName) => {
             userName,
         })
         try {
-            const response = await fetch(
-                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&check-userName=1',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        key: 'ThisIsASecretKey',
-                    },
-                    body: body,
-                }
-            )
+            const response = await fetch(`${LINK}&check-userName=1`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+            })
 
             if (!response.ok) {
                 throw new Error('Something went wrong!')
@@ -365,17 +350,14 @@ export const checkEmailExistence = (email) => {
             email,
         })
         try {
-            const response = await fetch(
-                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&check-email=1',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        key: 'ThisIsASecretKey',
-                    },
-                    body: body,
-                }
-            )
+            const response = await fetch(`${LINK}&check-email=1`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+            })
 
             if (!response.ok) {
                 throw new Error('Something went wrong!')
@@ -412,17 +394,14 @@ export const changeAvatar = (avatar) => {
         })
         console.log('🚀 ~ file: actions.js ~ line 407 ~ return ~ body', body)
         try {
-            const response = await fetch(
-                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&change-avatar=1',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        key: 'ThisIsASecretKey',
-                    },
-                    body: body,
-                }
-            )
+            const response = await fetch(`${LINK}&change-avatar=1`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+            })
 
             if (!response.ok) {
                 throw new Error('Something went wrong!')
@@ -463,17 +442,14 @@ export const search = (text) => {
         })
         console.log('🚀 ~ file: actions.js ~ line 461 ~ return ~ body', body)
         try {
-            const response = await fetch(
-                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&search-profile=1',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        key: 'ThisIsASecretKey',
-                    },
-                    body: body,
-                }
-            )
+            const response = await fetch(`${LINK}&search-profile=1`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+            })
 
             if (!response.ok) {
                 throw new Error('Something went wrong!')
@@ -527,17 +503,14 @@ export const loadProfile = (userID) => {
         })
         console.log('🚀 ~ file: actions.js ~ line 461 ~ return ~ body', body)
         try {
-            const response = await fetch(
-                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&get-user=1',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        key: 'ThisIsASecretKey',
-                    },
-                    body: body,
-                }
-            )
+            const response = await fetch(`${LINK}&get-user=1`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+            })
 
             if (!response.ok) {
                 throw new Error('Something went wrong!')
@@ -592,19 +565,16 @@ export const followUnfollow = (followID, followType) => {
             userID
         )
 
-        let link =
-            'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&follow-user=1'
+        let link = `${LINK}&follow-user=1`
 
         if (followType === 'unFollow') {
-            link =
-                'http://164.90.246.1/api.php?key=!thisIsARandomString1981111212&unfollow-user=1'
+            link = `${LINK}&unfollow-user=1`
         }
 
         const body = JSON.stringify({
             userID: followID,
             followerID: userID,
         })
-        console.log('🚀 ~ file: actions.js ~ line 585 ~ return ~ body', body)
 
         try {
             const response = await fetch(link, {

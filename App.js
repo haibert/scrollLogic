@@ -48,9 +48,9 @@ const rootReducer = combineReducers({
 const store = createStore(rootReducer, applyMiddleware(ReduxThunk))
 
 export default function App() {
-    useEffect(() => {
-        cleanupCache({ size: 200 })
-    }, [])
+    // useEffect(() => {
+    //     cleanupCache({ size: 200 })
+    // }, [])
 
     const isHermes = () => !!global.HermesInternal
     console.log('🚀 ~ file: App.js ~ line 28 ~ isHermes', isHermes())
