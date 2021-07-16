@@ -8,6 +8,7 @@ import {
     Image,
     TouchableWithoutFeedback,
     ActivityIndicator,
+    Pressable,
 } from 'react-native'
 import Animated, {
     useSharedValue,
@@ -67,6 +68,10 @@ const OtherProfileScreen = (props) => {
     //profile info
     const profileInfo = useSelector(
         (state) => state.signupReducer.loadedProfile
+    )
+    console.log(
+        '🚀 ~ file: OtherProfileScreen.js ~ line 71 ~ OtherProfileScreen ~ profileInfo',
+        profileInfo
     )
 
     //tabBarBottomPosition
@@ -134,22 +139,31 @@ const OtherProfileScreen = (props) => {
 
     //----------------------------------------------------------------PROFILE PHOTO PRESSED----------------------------------------------------------------
     const handleProfilePhotoPressed = useCallback(() => {
-        props.navigation.navigate('PhotoEditScreen')
-    }, [])
+        props.navigation.navigate('OtherProfilePhotoScreen', {
+            profilePic: profileInfo.avatar,
+        })
+    }, [profileInfo])
     //----------------------------------------------------------------PROFILE PHOTO PRESSED----------------------------------------------------------------
 
-    //----------------------------------------------------------------EDIT PRESSED HANDLER----------------------------------------------------------------
-    const editPressedHandler = useCallback(() => {
-        props.navigation.navigate('ProfileEditScreen')
-    }, [])
-    //----------------------------------------------------------------EDIT PRESSED HANDLER----------------------------------------------------------------
-
+    //----------------------------------------------------------------FOLLOWERS PRESSED HANDLER----------------------------------------------------------------
+    const followersPressedHandler = useCallback(() => {
+        props.navigation.navigate('FollowersScreen', {
+            username: profileInfo.userName,
+        })
+    }, [profileInfo])
+    //----------------------------------------------------------------FOLLOWERS PRESSED HANDLER----------------------------------------------------------------
     //----------------------------------------------------------------FLAT LIST FUNCTIONS--------------------------------------------------------------
     const render = useCallback(({ item, index }) => {
         return (
             <Thumbnail
                 images={item}
-                galleryPressedHandler={galleryPressedHandler.bind(this, item)}
+                galleryPressedHandler={() => {
+                    galleryPressedHandler(
+                        item.galleryID,
+                        item.thumbnail,
+                        item.galleryName
+                    )
+                }}
                 navigation={props.navigation}
                 galleryName={item.galleryName}
                 onActionsPressed={onActionsPressed.bind(this, item, index)}
@@ -159,11 +173,16 @@ const OtherProfileScreen = (props) => {
         )
     }, [])
 
-    const galleryPressedHandler = useCallback((gallery) => {
-        props.navigation.navigate('GalleryView', {
-            gallery,
-        })
-    }, [])
+    const galleryPressedHandler = useCallback(
+        (galleryID, thumbnail, galName) => {
+            props.navigation.navigate('OtherGalleryView', {
+                galleryID,
+                thumbnail,
+                galName,
+            })
+        },
+        []
+    )
 
     const onActionsPressed = useCallback((item, index) => {
         bottomSheetRef.current?.handlePresentModalPress()
@@ -189,38 +208,31 @@ const OtherProfileScreen = (props) => {
     // states
     const galleries = useSelector((state) => state.galleryReducer.galleries)
 
+    console.log('Other Profile Screen Rendered')
+
     const shouldRefresh = useSelector(
         (state) => state.galleryReducer.shouldRefresh
     )
 
     const loadGalleries = useCallback(async () => {
-        setLoadingGalleries(true)
+        // setLoadingGalleries(true)
         // setError(null)
         try {
             await dispatch(setGalleries())
         } catch (error) {
             // setError(error.message)
         }
-        setLoadingGalleries(false)
+        // setLoadingGalleries(false)
     }, [setLoadingGalleries, dispatch])
 
     useEffect(() => {
         loadGalleries()
     }, [loadGalleries])
 
-    useFocusEffect(() => {
-        const refreshConditionally = async () => {
-            if (shouldRefresh) {
-                loadGalleries()
-                await dispatch(shouldRefreshSet(false))
-            }
-        }
-        refreshConditionally()
-    })
     //----------------------------------------------------------------LOAD GALLERIES----------------------------------------------------------------
 
     return (
-        <ScreenWrapper style={{ alignItems: 'center', paddingTop: 0 }}>
+        <ScreenWrapper style={{ paddingTop: 0 }}>
             <ImageBackground
                 style={{ ...styles.topCont, paddingTop: insets.top * 2 - 10 }}
                 source={{
@@ -229,7 +241,7 @@ const OtherProfileScreen = (props) => {
                 blurRadius={10}
             >
                 <TouchableWithoutFeedback onPress={handleProfilePhotoPressed}>
-                    <SharedElement id={1}>
+                    <SharedElement id={'2'}>
                         <Image
                             source={{
                                 uri: profileInfo?.avatar,
@@ -259,18 +271,24 @@ const OtherProfileScreen = (props) => {
                     source={require('../../assets/AndroidTransparentPng100by100.png')}
                     resizeMode="stretch"
                 >
-                    <View style={styles.statCubes1}>
+                    <Pressable
+                        style={styles.statCubes1}
+                        onPress={followersPressedHandler}
+                    >
                         <Text style={styles.numbers}>
                             {profileInfo?.followingCount}
                         </Text>
                         <Text style={{ color: 'white' }}>Following</Text>
-                    </View>
-                    <View style={styles.statCubes2}>
+                    </Pressable>
+                    <Pressable
+                        style={styles.statCubes2}
+                        onPress={followersPressedHandler}
+                    >
                         <Text style={styles.numbers}>
                             {profileInfo?.followersCount}
                         </Text>
                         <Text style={{ color: 'white' }}>Followers</Text>
-                    </View>
+                    </Pressable>
                     <View style={styles.statCubes3}>
                         <Text style={styles.numbers}>23,6k</Text>
                         <Text style={{ color: 'white' }}>Likes Received</Text>
@@ -413,8 +431,13 @@ const styles = StyleSheet.create({
         borderRightWidth: 1,
         borderColor: 'white',
     },
+
     statCubes3: {
         flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    statCubeInner: {
         justifyContent: 'center',
         alignItems: 'center',
     },

@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, StyleSheet, TouchableWithoutFeedback } from 'react-native'
+import { View, StyleSheet, Pressable } from 'react-native'
 import Animated, {
     useSharedValue,
     withTiming,
@@ -29,9 +29,9 @@ const Heart = (props) => {
         animatedOpacity.value = 0
     }
     return (
-        <View
+        <Pressable
             style={{ ...styles.cont, ...props.style }}
-            onTouchStart={changeOpacity}
+            onPress={changeOpacity}
         >
             <Ionicons
                 name="heart-outline"
@@ -46,7 +46,7 @@ const Heart = (props) => {
                     color={colors.darkestColorP1}
                 />
             </Animated.View>
-        </View>
+        </Pressable>
     )
 }
 

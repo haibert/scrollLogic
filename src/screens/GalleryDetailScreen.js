@@ -88,6 +88,11 @@ const GalleryDetailScreen = ({ route, navigation }) => {
 
     const bottomSheetModalRef = useRef()
 
+    //----------------------------------------------------------------COMMENT PRESSED-------------------------------------------------------------
+    const onCommentPressed = useCallback(() => {
+        navigation.navigate('CommentsScreen')
+    }, [])
+
     //----------------------------------------------------------------DELETE PHOTO----------------------------------------------------------------
     const [picToDelete, setPicToDelete] = useState()
     const [refreshFlatlist, setRefreshFlatList] = useState(false)
@@ -126,8 +131,28 @@ const GalleryDetailScreen = ({ route, navigation }) => {
             opacity: listOpacity.value,
         }
     })
+
+    const delayAmount = useMemo(() => {
+        if (Platform.OS === 'ios') {
+            return 300
+        } else {
+            return 400
+        }
+    }, [])
+
+    const fadeAmount = useMemo(() => {
+        if (Platform.OS === 'ios') {
+            return 200
+        } else {
+            return 200
+        }
+    }, [])
+
     const startOpacityAnim = useCallback(() => {
-        listOpacity.value = withDelay(300, withTiming(1, { duration: 200 }))
+        listOpacity.value = withDelay(
+            delayAmount,
+            withTiming(1, { duration: fadeAmount })
+        )
     }, [])
 
     useEffect(() => {
@@ -217,11 +242,6 @@ const GalleryDetailScreen = ({ route, navigation }) => {
         [picToDelete, refreshFlatlist]
     )
 
-    //------------------------------FLAT LIST ANIMATION-----------------------------------
-    const animatedScale = useSharedValue(1)
-
-    //------------------------------FLAT LIST ANIMATION-----------------------------------
-
     const render = useCallback(({ item, index }) => {
         return (
             <ThumbnailBig
@@ -232,6 +252,7 @@ const GalleryDetailScreen = ({ route, navigation }) => {
                     item.id,
                     index
                 )}
+                onCommentPressed={onCommentPressed}
             />
         )
     }, [])
@@ -304,25 +325,23 @@ const GalleryDetailScreen = ({ route, navigation }) => {
         }, 500)
     }, [])
 
-    const [reloadingPics, setReloadingPics] = useState(false)
-    const reloadPics = async () => {
-        setReloadingPics(true)
-        setReloadingPics(false)
-    }
     //----------------------------------------------------------------FLATlIST OPTIMIZATION----------------------------------------------------------------
 
     return (
         <ScreenWrapper style={{ paddingBottom: 0, paddingTop: 0 }}>
             <ImageBackground
-                style={StyleSheet.absoluteFill}
+                style={{
+                    ...StyleSheet.absoluteFill,
+                    ...styles.imageBackground,
+                }}
                 source={{
                     uri:
                         Platform.OS === 'android'
                             ? fullPathNav
                             : image[activeIndex]?.thumbPath,
                 }}
-                blurRadius={40}
-                fadeDuration={100}
+                blurRadius={20}
+                fadeDuration={50}
             />
 
             <View
@@ -333,16 +352,12 @@ const GalleryDetailScreen = ({ route, navigation }) => {
                     width: width,
                 }}
             >
-                <SharedElement id={picID}>
-                    {/* <Image
-                        // source={{ uri: fullPathNav }}
-                        style={{
-                            height: rowHeightAdjusted,
-                            width: rowWidthAdjust,
-                            borderRadius: 8,
-                        }}
-                        blurRadius={20}
-                    /> */}
+                <SharedElement
+                    id={picID}
+                    style={{
+                        borderRadius: 17,
+                    }}
+                >
                     <FastImage
                         style={{
                             height: rowHeightAdjusted,
@@ -450,6 +465,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-end',
         paddingHorizontal: 10,
+    },
+    imageBackground: {
+        backgroundColor: colors.backgroundBlurLight,
     },
     transitionImageCont: {
         left: 0,

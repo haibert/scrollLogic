@@ -8,8 +8,9 @@ import {
     Dimensions,
     ImageBackground,
     Platform,
+    TouchableWithoutFeedback,
+    TouchableOpacity,
 } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
 import Animated, {
     useSharedValue,
     withTiming,
@@ -21,9 +22,6 @@ import { SharedElement } from 'react-navigation-shared-element'
 
 //custom components
 import ScaleButton from './TouchableScale'
-import CachedImage from '../components/CachedImage'
-// import CachedImage2 from '../components/CachedImage2'
-import Comp from '../components/Comp'
 
 //colors
 import colors from '../constants/colors'
@@ -34,8 +32,6 @@ import { useFocusEffect } from '@react-navigation/native'
 const { width, height } = Dimensions.get('window')
 
 import FastImage from 'react-native-fast-image'
-
-const CELL_WIDTH = width / 2
 
 //ionicons
 import { Ionicons } from '@expo/vector-icons'
@@ -49,11 +45,6 @@ const ThumbNail = ({
     fakeImages,
     imageURI,
 }) => {
-    let TouchableCmp = TouchableOpacity
-
-    if (Platform.OS === 'android' && Platform.Version >= 21) {
-        TouchableCmp = TouchableNativeFeedback
-    }
     const animatedOpacity = useSharedValue(1)
 
     const opacityStyle = useAnimatedStyle(() => {
@@ -61,23 +52,12 @@ const ThumbNail = ({
             opacity: animatedOpacity.value,
         }
     })
+
     useFocusEffect(() => {
-        if (navigation.isFocused()) {
+        if (navigation.isFocused() && animatedOpacity.value === 0) {
             animatedOpacity.value = withDelay(200, withTiming(1))
         }
     })
-    //----------------------------------------------------------------RELOAD FAILED IMAGE----------------------------------------------------------------
-    const [downloadAgain, setDownloadAgain] = useState(null)
-    const [showDownload, setShowDownloadAgain] = useState()
-    const showDownloadButton = () => {
-        setShowDownloadAgain(true)
-    }
-
-    const downloadAgainHandler = () => {
-        downloadRef.current?.reDownload()
-        setShowDownloadAgain(false)
-    }
-    //----------------------------------------------------------------RELOAD FAILED IMAGE----------------------------------------------------------------
 
     //----------------------------------------------------------------OPTIMIZATION----------------------------------------------------------------
     const onPress = useCallback(() => {
@@ -85,7 +65,6 @@ const ThumbNail = ({
         galleryPressedHandler()
     }, [])
     //----------------------------------------------------------------OPTIMIZATION----------------------------------------------------------------
-    const downloadRef = useRef()
 
     //----------------------------------------------------------------have to normalize uri----------------------------------------------------------------
     const normalizedSource = () => {
@@ -104,8 +83,14 @@ const ThumbNail = ({
         <ScaleButton
             activeScale={0.93}
             onPress={onPress}
-            contentContainerStyle={[styles.contentContainerStyle, opacityStyle]}
+            contentContainerStyle={styles.contentContainerStyle}
+            animatedStyle={opacityStyle}
         >
+            {/* <TouchableOpacity
+            onPress={onPress}
+            style={styles.contentContainerStyle}
+        >
+            <View> */}
             <SharedElement id={`${images.galleryID}`}>
                 {/* <Image
                     style={styles.image}
@@ -152,6 +137,8 @@ const ThumbNail = ({
                 style={styles.actionsStyle}
                 onPress={onActionsPressed}
             />
+            {/* </View>
+        </TouchableOpacity> */}
         </ScaleButton>
     )
 }
@@ -167,9 +154,8 @@ const styles = StyleSheet.create({
         backgroundColor: 'transparent',
     },
     contentContainerStyle: {
-        marginRight: 10,
+        // marginRight: 10,
         marginTop: 10,
-
         width: width / 2 - 15,
         height: width / 2 - 15,
         borderRadius: 9,

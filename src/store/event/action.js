@@ -25,7 +25,6 @@ export const addGallery = (eventName, eventType, thumbnail, allowedUsers) => {
                 thumbnail,
                 allowedUsers,
             })
-            console.log('🚀 ~ file: action.js ~ line 24 ~ return ~ body', body)
 
             const response = await fetch(`${LINK}&add-gallery=1`, {
                 method: 'POST',
@@ -44,10 +43,7 @@ export const addGallery = (eventName, eventType, thumbnail, allowedUsers) => {
 
             try {
                 const data = await response.json()
-                console.log(
-                    '🚀 ~ file: action.js ~ line 46 ~ return ~ data',
-                    data
-                )
+
                 const createdGalleryID = data.message.galleryID
 
                 dispatch({
@@ -63,9 +59,10 @@ export const addGallery = (eventName, eventType, thumbnail, allowedUsers) => {
     }
 }
 
-export const setGalleries = () => {
+export const setGalleries = (
+    userID = getState().signupReducer.userInfo.userID
+) => {
     return async (dispatch, getState) => {
-        const userID = getState().signupReducer.userInfo.userID
         try {
             const body = JSON.stringify({
                 userID: userID,
@@ -88,6 +85,7 @@ export const setGalleries = () => {
 
             try {
                 const data = await response.json()
+
                 const galleries = data.message.galleries
                 const loadedGalleries = []
                 for (const key in galleries) {
@@ -109,6 +107,7 @@ export const setGalleries = () => {
                 throw error
             }
         } catch (error) {
+            console.log(error)
             throw error
         }
     }
@@ -122,6 +121,7 @@ export const setPics = (galleryID) => {
                 userID,
                 galleryID,
             })
+            console.log("🚀 ~ file: action.js ~ line 124 ~ return ~ body", body)
             const response = await fetch(`${LINK}&get-gallery-files=1`, {
                 method: 'POST',
                 headers: {
@@ -140,6 +140,10 @@ export const setPics = (galleryID) => {
             try {
                 const data = await response.json()
                 const pics = data.message.images
+                console.log(
+                    '🚀 ~ file: action.js ~ line 142 ~ return ~ pics',
+                    pics
+                )
 
                 const loadedPics = []
                 for (const key in pics) {
@@ -172,7 +176,6 @@ export const deleteGallery = (galleryID) => {
             const body = JSON.stringify({
                 id: galleryID.id,
             })
-            console.log('🚀 ~ file: action.js ~ line 169 ~ return ~ body', body)
             const response = await fetch(`${LINK}&delete-gallery=1`, {
                 method: 'DELETE',
                 headers: {

@@ -29,7 +29,6 @@ import { snapPoint } from 'react-native-redash'
 import ScreenWrapper from '../components/ScreenWrapper'
 import HeaderBasic from '../components/HeaderBasic'
 import ThumbnailSmall from '../components/ThumbnailSmall'
-import CachedImageGalleryView from '../components/CachedImageGalleryView'
 import GalDetailBottomSheet from '../screens/GalDetailBottomSheet'
 
 //hooks
@@ -74,7 +73,7 @@ import { Audio } from 'expo-av'
 //fast image
 import FastImage from 'react-native-fast-image'
 
-const GalleryView = ({ route, navigation }) => {
+const OtherGalleryView = ({ route, navigation }) => {
     const { galleryID, thumbnail, galName } = route.params
 
     // shouldRefresh
@@ -230,7 +229,12 @@ const GalleryView = ({ route, navigation }) => {
 
     //----------------------------------------------------------------LOAD PICS--------------------------------------------------------
     const pics = useSelector((state) => state.galleryReducer.pics)
+    console.log(
+        '🚀 ~ file: OtherGalleryView.js ~ line 232 ~ OtherGalleryView ~ pics',
+        pics
+    )
 
+    console.log('Other Gallery Screen Rendered')
     const [loadingPics, setLoadingPics] = useState()
 
     const loadingOpacity = useSharedValue(1)
@@ -482,6 +486,7 @@ const GalleryView = ({ route, navigation }) => {
                     <HeaderBasic
                         rightButton
                         goBack={goBack}
+                        // header="Your Event"
                         headerColor={{ color: colors.darkestColorP1 }}
                         iconName="chevron-down-outline"
                         rightIcon="camera-outline"
@@ -596,4 +601,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default GalleryView
+export default OtherGalleryView

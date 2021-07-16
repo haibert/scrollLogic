@@ -33,6 +33,10 @@ import GalleryDetailScreen from '../screens/GalleryDetailScreen'
 import StartUpScreen from '../screens/StartUpScreen'
 import SearchScreen from '../screens/SearchScreen'
 import OtherProfileScreen from '../screens/OtherProfileScreen'
+import OtherProfilePhotoScreen from '../screens/OtherProfilePhotoScreen'
+import OtherGalleryView from '../screens/OtherGalleryView'
+import FollowersScreen from '../screens/otherProfileScreen/FollowersScreen'
+import CommentsScreen from '../screens/CommentsScreen'
 
 // Profile / edit profile
 import ProfileScreen from '../screens/ProfileScreen'
@@ -76,6 +80,8 @@ function getDrawerState(route) {
         case 'GalleryView':
             return false
         case 'GalleryDetailScreen':
+            return false
+        case 'OtherProfileScreen':
             return false
     }
 }
@@ -168,7 +174,6 @@ const DashModalStack = () => {
                     animationEnabled: false,
                 }}
             />
-
             <DashStackShared.Screen
                 name="GalleryView"
                 component={GalleryView}
@@ -218,7 +223,7 @@ const DashModalStack = () => {
                         {
                             id: Platform.OS === 'android' ? picID : picID,
                             animation:
-                                Platform.OS === 'android' ? 'fade' : 'move',
+                                Platform.OS === 'android' ? 'fade-out' : 'move',
                             resize: 'auto',
                         },
                     ]
@@ -236,7 +241,7 @@ const DashModalStack = () => {
                     cardStyleInterpolator: cardStyleInterpolatorFunc,
                     gestureResponseDistance: gestureResponseVertical,
                     gestureDirection: gestureDirectionVertical,
-                    ...TransitionPresets.SlideFromRightIOS,
+                    // ...TransitionPresets.SlideFromRightIOS,
                 })}
                 sharedElementsConfig={(route) => {
                     return [
@@ -255,7 +260,7 @@ const DashModalStack = () => {
                 options={{
                     headerShown: false,
                     useNativeDriver: true,
-                    gestureEnabled: true,
+                    gestureEnabled: false,
                     cardStyle: {
                         backgroundColor: 'transparent',
                     },
@@ -287,7 +292,7 @@ const DashModalStack = () => {
                 options={{
                     headerShown: false,
                     animationEnabled: false,
-                    ...TransitionPresets.SlideFromRightIOS,
+                    // ...TransitionPresets.SlideFromRightIOS,
                 }}
             />
             <DashStackShared.Screen
@@ -300,9 +305,65 @@ const DashModalStack = () => {
                     gestureDirection: gestureDirectionHorizontal,
                 }}
             />
-
+            <DashStackShared.Screen
+                name="OtherProfilePhotoScreen"
+                component={OtherProfilePhotoScreen}
+                options={{
+                    headerShown: false,
+                    useNativeDriver: true,
+                    gestureEnabled: false,
+                    cardStyle: {
+                        backgroundColor: 'transparent',
+                    },
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                    cardStyleInterpolator: cardStyleInterpolatorFunc,
+                }}
+                sharedElementsConfig={(route) => {
+                    return [
+                        {
+                            id: '2',
+                            animation:
+                                Platform.OS === 'android' ? 'fade-out' : 'move',
+                            resize: 'auto',
+                        },
+                    ]
+                }}
+            />
+            <DashStackShared.Screen
+                name="OtherGalleryView"
+                component={OtherGalleryView}
+                options={() => ({
+                    headerShown: false,
+                    useNativeDriver: true,
+                    gestureEnabled: false,
+                    cardStyle: {
+                        backgroundColor: 'transparent',
+                    },
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                    cardStyleInterpolator: cardStyleInterpolatorFunc,
+                })}
+                sharedElementsConfig={(route) => {
+                    const { galleryID, galName } = route.params
+                    return [
+                        {
+                            id: [galleryID],
+                            animation:
+                                Platform.OS === 'android' ? 'fade-out' : 'move',
+                            resize: 'auto',
+                            align: 'auto',
+                        },
+                        {
+                            id: [galleryID + galName],
+                            animation: 'fade',
+                            resize: 'clip',
+                            align: 'auto',
+                        },
+                    ]
+                }}
+            />
             {/* ALL HORIZONTAL SCREENS BELLOW */}
-
             <DashStackShared.Screen
                 name="CreateEventScreen"
                 component={CreateEventScreen}
@@ -336,6 +397,26 @@ const DashModalStack = () => {
             <DashStackShared.Screen
                 name="CameraScreen"
                 component={CameraScreen}
+                options={{
+                    headerShown: false,
+                    ...TransitionPresets.SlideFromRightIOS,
+                    gestureResponseDistance: gestureResponseHorizontal,
+                    gestureDirection: gestureDirectionHorizontal,
+                }}
+            />
+            <DashStackShared.Screen
+                name="FollowersScreen"
+                component={FollowersScreen}
+                options={{
+                    headerShown: false,
+                    ...TransitionPresets.SlideFromRightIOS,
+                    gestureResponseDistance: gestureResponseHorizontal,
+                    gestureDirection: gestureDirectionHorizontal,
+                }}
+            />
+            <DashStackShared.Screen
+                name="CommentsScreen"
+                component={CommentsScreen}
                 options={{
                     headerShown: false,
                     ...TransitionPresets.SlideFromRightIOS,
@@ -488,6 +569,12 @@ function DrawerNav({ navigation, route }) {
                 activeBackgroundColor: colors.buttonPinkTransparent,
             }}
             detachInactiveScreens={true}
+            screenOptions={{
+                transitionSpec: {
+                    open: iosTransitionSpec,
+                    close: iosTransitionSpec,
+                },
+            }}
         >
             <Drawer.Screen
                 name="DashboardScreen"
@@ -502,8 +589,8 @@ function DrawerNav({ navigation, route }) {
                         />
                     ),
                     // unmountOnBlur: true
-                    /*Whether this screen should be unmounted when navigating away from it. 
-                    Unmounting a screen resets any local state in the screen as well as state 
+                    /*Whether this screen should be unmounted when navigating away from it.
+                    Unmounting a screen resets any local state in the screen as well as state
                     of nested navigators in the screen. Defaults to false.*/
                     swipeEnabled: getDrawerState(route),
                 })}
@@ -573,6 +660,7 @@ const AppNavigator = () => {
                     component={LoginScreen}
                     options={{
                         headerShown: false,
+                        animationEnabled: false,
                     }}
                     detachInactiveScreens={true}
                 />

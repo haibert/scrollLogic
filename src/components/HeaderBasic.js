@@ -36,7 +36,7 @@ const CustomHeaderBasic = (props) => {
 
     let defaultIcon = 'chevron-back-outline'
     if (Platform.OS === 'android') {
-        defaultIcon = 'chevron-down-outline'
+        defaultIcon = 'chevron-back-outline'
     }
     return (
         <View style={{ ...styles.outerCont, ...props.style }}>

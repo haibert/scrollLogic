@@ -1,11 +1,12 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import {
     View,
     StyleSheet,
     Dimensions,
-    TouchableWithoutFeedback,
+    // TouchableWithoutFeedback,
+    Pressable,
 } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 
 //custom components
 import ScaleButton from '../components/TouchableScale'
@@ -25,91 +26,139 @@ import { Icon } from 'react-native-elements'
 
 const { width } = Dimensions.get('screen')
 
+//floating Button
+import FloatingButton from './FloatingButton'
+
+//expo qr scanner
+import { BarCodeScanner } from 'expo-barcode-scanner'
+
 const BottomNavBar = (props) => {
+    //insets
     const insets = useSafeAreaInsets()
 
-    let tabBarBottomPosition = insets.bottom > 0 ? insets.bottom + 5 : 5
+    const tabBarBottomPosition = insets.bottom > 0 ? insets.bottom + 5 : 5
     console.log(
         '🚀 ~ file: BottomNavBar.js ~ line 32 ~ BottomNavBar ~ tabBarBottomPosition',
         tabBarBottomPosition
     )
 
+    //----------------------------------------------------------------JOIN EVENT PRESSED--------------------------------------------------------------
+    const askForQRScannerPermissions = async () => {
+        const { status } = await BarCodeScanner.requestPermissionsAsync()
+        // setShowModal(false)
+
+        if (status === 'granted') {
+            props.navigation.navigate('JoinEventScreen', {
+                permission: status,
+            })
+        } else {
+            props.navigation.navigate('JoinEventScreen', {
+                permission: status,
+            })
+        }
+    }
+
+    const joinEventHandler = useCallback(() => {
+        askForQRScannerPermissions()
+    }, [])
+    //----------------------------------------------------------------JOIN EVENT PRESSED--------------------------------------------------------------
+
+    //----------------------------------------------------------------CREATE EVENT PRESSED--------------------------------------------------------------
+    const createEventHandler = useCallback(() => {
+        props.navigation.navigate('CreateEventScreen')
+    }, [])
+
+    //----------------------------------------------------------------CREATE EVENT PRESSED--------------------------------------------------------------
+
     return (
-        <View>
-            <View
+        <View
+            style={{
+                ...styles.tabBarShadow,
+                width: width,
+                height: 50 + insets.bottom,
+            }}
+        >
+            <Ionicons
+                name="camera-outline"
+                color={'white'}
+                size={29}
                 style={{
-                    ...styles.tabBarShadow,
-                    width: width,
-                    bottom: 0,
-                    height: 50 + insets.bottom,
+                    position: 'absolute',
+                    top: 10,
+                    right: (width - 26) / 12,
                 }}
-            >
-                <TouchableWithoutFeedback onPress={props.onHomePressed}>
-                    <View style={styles.tabButton}></View>
-                </TouchableWithoutFeedback>
+                // onPress={props.onCameraPressed}
+            />
 
-                <TouchableWithoutFeedback onPress={props.onSearchPressed}>
-                    <View style={styles.tabButton}></View>
-                </TouchableWithoutFeedback>
+            <Ionicons
+                name="person-outline"
+                color={'white'}
+                size={25}
+                style={{
+                    position: 'absolute',
+                    top: 10,
+                    right: (width - 26) / 3.5,
+                }}
+                // onPress={props.onPersonPressed}
+            />
 
-                <View style={{ width: 50 }}></View>
-                <TouchableWithoutFeedback onPress={props.onPersonPressed}>
-                    <View style={styles.tabButton}></View>
-                </TouchableWithoutFeedback>
+            <Ionicons
+                name="search-outline"
+                size={28}
+                color={'white'}
+                style={{
+                    position: 'absolute',
+                    top: 11,
+                    left: (width - 26) / 3.5,
+                }}
+                // onPress={props.onSearchPressed}
+            />
 
-                <TouchableWithoutFeedback onPress={props.onCameraPressed}>
-                    <View style={styles.tabButton}></View>
-                </TouchableWithoutFeedback>
+            <Ionicons
+                name="home-outline"
+                size={28}
+                color={'white'}
+                style={{
+                    position: 'absolute',
+                    top: 11,
+                    left: (width - 26) / 12,
+                }}
+                // onPress={props.onHomePressed}
+            />
 
-                <Ionicons
-                    name="camera-outline"
-                    color={'white'}
-                    size={29}
-                    style={{
-                        position: 'absolute',
-                        top: 10,
-                        right: (width - 26) / 12,
-                    }}
-                    onPress={props.onCameraPressed}
-                />
-
-                <Ionicons
-                    name="person-outline"
-                    color={'white'}
-                    size={25}
-                    style={{
-                        position: 'absolute',
-                        top: 10,
-                        right: (width - 26) / 3.5,
-                    }}
-                    onPress={props.onPersonPressed}
-                />
-
-                <Ionicons
-                    name="search-outline"
-                    size={28}
-                    color={'white'}
-                    style={{
-                        position: 'absolute',
-                        top: 11,
-                        left: (width - 26) / 3.5,
-                    }}
-                    onPress={props.onSearchPressed}
-                />
-
-                <Ionicons
-                    name="home-outline"
-                    size={28}
-                    color={'white'}
-                    style={{
-                        position: 'absolute',
-                        top: 11,
-                        left: (width - 26) / 12,
-                    }}
-                    onPress={props.onHomePressed}
-                />
+            <View style={styles.tabButton}>
+                <Pressable onPress={props.onHomePressed}>
+                    <View style={styles.buttonPlaceHolder} />
+                </Pressable>
             </View>
-            <View
+
+            <View style={styles.tabButton}>
+                <Pressable onPress={props.onSearchPressed}>
+                    <View style={styles.buttonPlaceHolder} />
+                </Pressable>
+            </View>
+
+            {/* <View style={{ width: 50 }} /> */}
+
+            <FloatingButton
+                style={styles.animatedButton}
+                onJoinEventPressed={joinEventHandler}
+                onCreateEventPressed={createEventHandler}
+            />
+
+            <View style={styles.tabButton}>
+                <Pressable onPress={props.onPersonPressed}>
+                    <View style={styles.buttonPlaceHolder} />
+                </Pressable>
+            </View>
+
+            <View style={styles.tabButton}>
+                <Pressable onPress={props.onCameraPressed}>
+                    <View style={styles.buttonPlaceHolder} />
+                </Pressable>
+            </View>
+
+            {/* <View
                 style={{
                     ...styles.floatingPlusCont,
                     left: width / 2 - 20,
@@ -138,7 +187,7 @@ const BottomNavBar = (props) => {
                         </LinearGradient>
                     </View>
                 </ScaleButton>
-            </View>
+            </View> */}
         </View>
     )
 }
@@ -146,7 +195,6 @@ const BottomNavBar = (props) => {
 const styles = StyleSheet.create({
     tabBar: {
         height: 50,
-        // backgroundColor: 'rgba(255, 227, 255, 1)',
         justifyContent: 'space-evenly',
         flexDirection: 'row',
         marginHorizontal: 10,
@@ -165,13 +213,12 @@ const styles = StyleSheet.create({
     },
     tabBarGradient: {
         flex: 1,
-        // borderRadius: 15,
     },
     tabButton: {
-        alignItems: 'center',
-        justifyContent: 'center',
         flex: 1,
         minHeight: '100%',
+        // borderWidth: 2,
+        // borderColor: 'red',
     },
 
     tabLabel: {
@@ -183,19 +230,8 @@ const styles = StyleSheet.create({
         fontSize: 10,
     },
     tabBarShadow: {
-        position: 'absolute',
-        height: 50,
         backgroundColor: colors.darkColorP1,
         flexDirection: 'row',
-        // borderRadius: 15,
-        shadowColor: 'black',
-        shadowRadius: 3,
-        shadowOpacity: 0.3,
-        shadowOffset: {
-            width: 0,
-            height: 1,
-        },
-        elevation: 5,
     },
     bigPlusButton: {
         backgroundColor: colors.darkestColorP1,
@@ -217,13 +253,22 @@ const styles = StyleSheet.create({
         width: 40,
         height: 40,
         borderRadius: 20,
-        // overflow: Platform.OS === 'android' ? 'hidden' : 'visible',
         elevation: 10,
     },
     floatingTouchable: {
         width: 40,
         height: 40,
         borderRadius: 20,
+    },
+    buttonPlaceHolder: {
+        height: '100%',
+        width: '100%',
+    },
+    animatedButton: {
+        width: '100%',
+        height: 50,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 })
 

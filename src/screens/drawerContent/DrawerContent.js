@@ -127,6 +127,7 @@ const DrawerContent = (props) => {
                         )}
                         onPress={async () => {
                             deleteUserData()
+                            props.navigation.toggleDrawer()
                             props.navigation.navigate('LoginScreen')
                         }}
                     />

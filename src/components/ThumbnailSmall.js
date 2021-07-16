@@ -7,6 +7,7 @@ import {
     TouchableNativeFeedback,
     Image,
     Platform,
+    TouchableWithoutFeedback,
 } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import Animated, {
@@ -26,7 +27,7 @@ import { SharedElement } from 'react-navigation-shared-element'
 import colors from '../constants/colors'
 
 //custom components
-import CachedImage from '../components/CachedImage'
+// import CachedImage from '../components/CachedImage'
 
 //fast image
 import FastImage from 'react-native-fast-image'
@@ -73,7 +74,10 @@ const ThumbnailSmall = ({ images, picturePressedHandler, navigation }) => {
     }
     //----------------------------------------------------------------have to normalize uri----------------------------------------------------------------
     return (
-        <TouchableCmp onPress={handlePicPressed} style={styles.cont}>
+        <TouchableWithoutFeedback
+            onPress={handlePicPressed}
+            style={styles.cont}
+        >
             <SharedElement id={images.id}>
                 {/* <Animated.Image
                     style={[styles.image, opacityStyle]}
@@ -100,7 +104,7 @@ const ThumbnailSmall = ({ images, picturePressedHandler, navigation }) => {
                     }}
                 />
             </SharedElement>
-        </TouchableCmp>
+        </TouchableWithoutFeedback>
     )
 }
 
@@ -111,6 +115,7 @@ const styles = StyleSheet.create({
         width: width / 3,
         height: width / 2,
         borderColor: 'white',
+        overflow: 'hidden',
     },
     image: {
         width: width / 3,
@@ -118,6 +123,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: 'white',
         borderRadius: 8,
+        overflow: 'hidden',
     },
 })
 

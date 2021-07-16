@@ -193,7 +193,7 @@ const ThumbnailBig = (props) => {
                         name="comment"
                         size={41}
                         color={colors.darkestColorP1}
-                        onPress={props.oneEllipsisPressed}
+                        onPress={props.onCommentPressed}
                         style={styles.commentIcon}
                     />
                     <Text style={styles.comments}>12</Text>

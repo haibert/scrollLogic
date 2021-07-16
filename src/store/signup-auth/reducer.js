@@ -121,16 +121,11 @@ const signupReducer = (state = initialState, action) => {
             }
         }
         case LOGIN: {
-            console.log(
-                '🚀 ~ file: reducer.js ~ line 122 ~ signupReducer ~ action.userInfo',
-                action.fullInfo
-            )
-
             return {
                 ...state,
                 userInfo: {
                     ...state.userInfo,
-                    userID: action.userInfo,
+                    userID: action.userID,
                     firstName: action.fullInfo.basic.firstName,
                     lastName: action.fullInfo.basic.lastName,
                     username: action.fullInfo.basic.userName,
@@ -186,7 +181,6 @@ const signupReducer = (state = initialState, action) => {
                 loadedProfile: null,
             }
         }
-
         default:
             return state
     }

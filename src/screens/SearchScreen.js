@@ -16,6 +16,7 @@ import Animated, {
     withTiming,
     useAnimatedStyle,
     withDelay,
+    withSequence,
 } from 'react-native-reanimated'
 
 //custom components
@@ -55,7 +56,10 @@ import { InteractionManager } from 'react-native'
 import { useFocusEffect } from '@react-navigation/native'
 
 const SearchScreen = ({ route, ...props }) => {
-    //picture source
+    let isAndroid
+    if (Platform.OS === 'android') {
+        isAndroid = true
+    }
 
     //insets
     const insets = useSafeAreaInsets()
@@ -70,10 +74,66 @@ const SearchScreen = ({ route, ...props }) => {
     //     searches
     //)
 
+    useFocusEffect(() => {
+        if (props.navigation.isFocused()) {
+            startOpacityAnim2()
+        }
+    })
+
+    //----------------------------------------------------------------KEYBOARD STATUS~----------------------------------------------------------------
+    useEffect(() => {
+        const keyboardDidShowListener = Keyboard.addListener(
+            'keyboardDidShow',
+            () => {}
+        )
+        const keyboardDidHideListener = Keyboard.addListener(
+            'keyboardDidHide',
+            () => {
+                moveCancelButton()
+                expandSearchBar()
+            }
+        )
+
+        return () => {
+            keyboardDidHideListener.remove()
+            keyboardDidShowListener.remove()
+        }
+    }, [])
+    //----------------------------------------------------------------KEYBOARD STATUS~----------------------------------------------------------------
+
     //----------------------------------------------------------------EMPTY PROFILE----------------------------------------------------------------
     useEffect(() => {
         dispatch(emptyProfile())
     }, [])
+    //----------------------------------------------------------------EMPTY PROFILE----------------------------------------------------------------
+
+    //----------------------------------------------------------------HIDE NAVIGATION BAR ANIMATION----------------------------------------------------------------
+
+    const animatedOpacity = useSharedValue(1)
+
+    const bottomNavStyle = useAnimatedStyle(() => {
+        return {
+            opacity: animatedOpacity.value,
+        }
+    })
+
+    const startOpacityAnim = useCallback(() => {
+        if (animatedOpacity.value === 1) {
+            animatedOpacity.value = withDelay(
+                50,
+                withTiming(0, { duration: 0 })
+            )
+        } else {
+            animatedOpacity.value = withDelay(
+                200,
+                withTiming(1, { duration: 100 })
+            )
+        }
+    }, [])
+    const startOpacityAnim2 = useCallback(() => {
+        animatedOpacity.value = withTiming(1, { duration: 0 })
+    }, [])
+    //----------------------------------------------------------------HIDE NAVIGATION BAR ANIMATION----------------------------------------------------------------
 
     //----------------------------------------------------------------CANCEL BUTTON ANIMATION----------------------------------------------------------------
     const animatedWidth = useSharedValue(width - 20)
@@ -88,7 +148,6 @@ const SearchScreen = ({ route, ...props }) => {
         if (animatedWidth.value === width - 20) {
             console.log(animatedWidth.value)
             console.log('colaps')
-
             moveCancelButton()
             const newWidth = width - 80
             animatedWidth.value = withDelay(
@@ -96,9 +155,6 @@ const SearchScreen = ({ route, ...props }) => {
                 withTiming(newWidth, { duration: 100 })
             )
         }
-        // else {
-        //     animatedWidth.value = withTiming(width - 20, { duration: 100 })
-        // }
     }, [])
 
     const expandSearchBar = useCallback(() => {
@@ -120,23 +176,16 @@ const SearchScreen = ({ route, ...props }) => {
     const moveCancelButton = useCallback(() => {
         if (animatedWidth.value !== width - 20) {
             animatedRight.value = withTiming(-70, { duration: 100 })
+            isAndroid ? startOpacityAnim() : null
         } else {
             animatedRight.value = withDelay(
                 60,
                 withTiming(-5, { duration: 100 })
             )
+            isAndroid ? startOpacityAnim() : null
         }
-    }, [])
+    }, [isAndroid])
     //----------------------------------------------------------------CANCEL BUTTON ANIMATION----------------------------------------------------------------
-    const profileInfo = useSelector(
-        (state) => state.signupReducer.loadedProfile
-    )
-    useFocusEffect(() => {
-        console.log(
-            '🚀 ~ file: SearchScreen.js ~ line 125 ~ SearchScreen ~ profileInfo',
-            profileInfo
-        )
-    })
 
     //----------------------------------------------------------------LOADING ANIMATION----------------------------------------------------------------
     const loadingOpacity = useSharedValue(0)
@@ -157,6 +206,7 @@ const SearchScreen = ({ route, ...props }) => {
     const [searchTerm, setSearchTerm] = useState('')
 
     useEffect(() => {
+        if (searchTerm.length === 0) return
         const delayDebounceFn = setTimeout(async () => {
             showLoader()
             await dispatch(search(searchTerm))
@@ -279,8 +329,18 @@ const SearchScreen = ({ route, ...props }) => {
     //----------------------------------------------------------------CAMERA PRESSED HANDLER----------------------------------------------------------------
 
     //----------------------------------------------------------------FLATlIST OPTIMIZATION----------------------------------------------------------------
+    const onSearchPressed = useCallback(() => {
+        isAndroid && animatedOpacity.value === 0 ? startOpacityAnim() : null
+    }, [isAndroid])
+
     const render = useCallback(({ item, index }) => {
-        return <SearchCell searchResults={item} navigation={props.navigation} />
+        return (
+            <SearchCell
+                searchResults={item}
+                navigation={props.navigation}
+                onPress={onSearchPressed}
+            />
+        )
     }, [])
 
     const layOut = useCallback(
@@ -294,9 +354,25 @@ const SearchScreen = ({ route, ...props }) => {
 
     const keyExtractor = useCallback((item) => item.id, [])
 
+    const onScroll = useCallback(() => {
+        isAndroid && animatedOpacity.value === 0 ? startOpacityAnim() : null
+        Keyboard.dismiss()
+    }, [isAndroid])
+
+    const onTouchStart = useCallback(() => {
+        if (searches.length === 0) {
+            moveCancelButton()
+            expandSearchBar()
+        }
+    }, [searches])
+
     //----------------------------------------------------------------FLATlIST OPTIMIZATION----------------------------------------------------------------
     return (
-        <ScreenWrapper>
+        <ScreenWrapper
+            style={{
+                paddingBottom: Platform.OS === 'android' ? insets.bottom : null,
+            }}
+        >
             <View style={styles.searchCont}>
                 <View style={styles.cancelButtonCont}>
                     <Animated.View style={[cancelStyle]}>
@@ -336,11 +412,9 @@ const SearchScreen = ({ route, ...props }) => {
                     ></TextInput>
                 </Animated.View>
             </View>
-            {/* <TouchableWithoutFeedback onPress={expandSearchBar}>
-                <View style={{ flex: 1 }}></View>
-            </TouchableWithoutFeedback> */}
 
             <BigList
+                onTouchStart={onTouchStart}
                 data={searches}
                 renderItem={render}
                 keyExtractor={keyExtractor}
@@ -348,9 +422,7 @@ const SearchScreen = ({ route, ...props }) => {
                 getItemLayout={layOut}
                 style={styles.bigList}
                 showsVerticalScrollIndicator={true}
-                onScroll={() => {
-                    Keyboard.dismiss()
-                }}
+                onScroll={onScroll}
                 contentContainerStyle={{ paddingBottom: insets.bottom + 50 }}
             />
             <Animated.View
@@ -366,18 +438,21 @@ const SearchScreen = ({ route, ...props }) => {
             >
                 <ActivityIndicator />
             </Animated.View>
-            <BottomNavBar
-                onHomePressed={() => {
-                    props.navigation.navigate('DashboardScreen')
-                }}
-                onPlusPressed={() => {
-                    setShowModal(true)
-                }}
-                onCameraPressed={cameraPressedHandler}
-                onPersonPressed={() => {
-                    props.navigation.navigate('ProfileScreenTwo')
-                }}
-            />
+            <Animated.View style={bottomNavStyle}>
+                <BottomNavBar
+                    onHomePressed={() => {
+                        props.navigation.navigate('DashboardScreen')
+                    }}
+                    onPlusPressed={() => {
+                        setShowModal(true)
+                    }}
+                    onCameraPressed={cameraPressedHandler}
+                    onPersonPressed={() => {
+                        props.navigation.navigate('ProfileScreenTwo')
+                    }}
+                    navigation={props.navigation}
+                />
+            </Animated.View>
         </ScreenWrapper>
     )
 }

@@ -18,6 +18,7 @@ const ScaleButton = ({
         stiffness: 500,
     },
     contentContainerStyle,
+    animatedStyle,
 }) => {
     const scale = useSharedValue(1)
     const sz = useAnimatedStyle(() => {
@@ -31,7 +32,6 @@ const ScaleButton = ({
     })
     function runOnJSPlease() {
         'worklet'
-
         runOnJS(onPress)()
     }
     const animateIn = () => {
@@ -51,7 +51,7 @@ const ScaleButton = ({
             onPressIn={animateIn}
             onPressOut={animateOut}
         >
-            <Animated.View style={[sz, contentContainerStyle]}>
+            <Animated.View style={[sz, contentContainerStyle, animatedStyle]}>
                 {children}
             </Animated.View>
         </TouchableWithoutFeedback>

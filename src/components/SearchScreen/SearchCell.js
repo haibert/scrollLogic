@@ -19,6 +19,7 @@ const SearchCell = (props) => {
 
     //----------------------------------------------------------------Load Profile----------------------------------------------------------------
     const onPress = useCallback(async () => {
+        props.onPress()
         try {
             dispatch(loadProfile(props.searchResults.uniqueID))
             props.navigation.navigate('OtherProfileScreen', {
@@ -32,12 +33,7 @@ const SearchCell = (props) => {
 
     return (
         <TouchableWithoutFeedback onPress={onPress}>
-            <View
-                onPress={() => {
-                    setChecked((prevState) => !prevState)
-                }}
-                style={styles.cellOuter}
-            >
+            <View style={styles.cellOuter}>
                 <Image
                     source={{ uri: props.searchResults.avatar }}
                     style={styles.imageCont}

@@ -19,7 +19,7 @@ import GalRequestCell from '../components/ProfileScreen/GalRequestCell'
 import BottomNavBar from '../components/BottomNavBar'
 
 //paper
-import { Avatar, Title, Caption, Paragraph, Drawer } from 'react-native-paper'
+// import { Avatar, Title, Caption, Paragraph, Drawer } from 'react-native-paper'
 
 //redux
 // import { deletePhoto } from '../store/event/action'
@@ -31,12 +31,9 @@ import { fonts } from 'react-native-elements/dist/config'
 
 //reanimated
 import Animated, {
-    Extrapolate,
-    interpolate,
     useAnimatedStyle,
     useSharedValue,
     withTiming,
-    useAnimatedScrollHandler,
 } from 'react-native-reanimated'
 
 // expo blurview
@@ -224,6 +221,14 @@ const ProfileScreenTwo = (props) => {
     const editPressedHandler = useCallback(() => {
         props.navigation.navigate('ProfileEditScreen')
     }, [])
+    //----------------------------------------------------------------EDIT PRESSED HANDLER----------------------------------------------------------------
+
+    //----------------------------------------------------------------FOLLOWERS PRESSED HANDLER----------------------------------------------------------------
+    const followersPressedHandler = useCallback(() => {
+        props.navigation.navigate('FollowersScreen')
+    }, [])
+    //----------------------------------------------------------------FOLLOWERS PRESSED HANDLER----------------------------------------------------------------
+
     return (
         <ScreenWrapper style={{ paddingTop: 0 }}>
             <ImageBackground
@@ -269,8 +274,16 @@ const ProfileScreenTwo = (props) => {
                         <Text style={{ color: 'white' }}>Following</Text>
                     </View>
                     <View style={styles.statCubes2}>
-                        <Text style={styles.numbers}>120</Text>
-                        <Text style={{ color: 'white' }}>Followers</Text>
+                        <TouchableWithoutFeedback
+                            onPress={followersPressedHandler}
+                        >
+                            <View style={styles.statCubeInner}>
+                                <Text style={styles.numbers}>120</Text>
+                                <Text style={{ color: 'white' }}>
+                                    Followers
+                                </Text>
+                            </View>
+                        </TouchableWithoutFeedback>
                     </View>
                     <View style={styles.statCubes3}>
                         <Text style={styles.numbers}>23,6k</Text>
@@ -328,9 +341,9 @@ const ProfileScreenTwo = (props) => {
                 showsVerticalScrollIndicator={true}
             />
             <BottomNavBar
-                onPlusPressed={() => {
-                    setShowModal(true)
-                }}
+                // onPlusPressed={() => {
+                //     setShowModal(true)
+                // }}
                 onCameraPressed={cameraPressedHandler}
                 onSearchPressed={() => {
                     props.navigation.navigate('SearchScreen')
@@ -338,6 +351,7 @@ const ProfileScreenTwo = (props) => {
                 onHomePressed={() => {
                     props.navigation.navigate('DashboardScreen')
                 }}
+                navigation={props.navigation}
             />
         </ScreenWrapper>
     )
@@ -409,6 +423,10 @@ const styles = StyleSheet.create({
     },
     statCubes3: {
         flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    statCubeInner: {
         justifyContent: 'center',
         alignItems: 'center',
     },

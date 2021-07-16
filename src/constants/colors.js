@@ -35,6 +35,7 @@ export default {
     darkColorP1: 'rgba(42,44,58,1)',
     lightestColorP1: 'rgba(146, 136, 153, 1)',
     backgroundBlurLight: 'rgba(145, 145, 145, 0.6)',
+    inputBorderColor: 'rgba(235,235,235,1)',
 
     // new pallet 2
     mainColorP2: 'rgba(107,126,225,1)',

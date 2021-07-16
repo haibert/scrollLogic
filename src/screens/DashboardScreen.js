@@ -94,25 +94,25 @@ const DashboardScreen = (props) => {
     const [loadingGalleries, setLoadingGalleries] = useState(false)
     // states
     const galleries = useSelector((state) => state.galleryReducer.galleries)
-
+    console.log('Dash Screen Loaded')
     const shouldRefresh = useSelector(
         (state) => state.galleryReducer.shouldRefresh
     )
 
     const loadGalleries = useCallback(async () => {
-        setLoadingGalleries(true)
+        // setLoadingGalleries(true)
         // setError(null)
         try {
-            await dispatch(setGalleries())
+            await dispatch(setGalleries(userID))
         } catch (error) {
             // setError(error.message)
         }
-        setLoadingGalleries(false)
+        // setLoadingGalleries(false)
     }, [setLoadingGalleries, dispatch])
 
-    useEffect(() => {
-        loadGalleries()
-    }, [loadGalleries])
+    // useEffect(() => {
+    //     loadGalleries()
+    // }, [loadGalleries])
 
     useFocusEffect(() => {
         const refreshConditionally = async () => {
@@ -171,9 +171,8 @@ const DashboardScreen = (props) => {
 
     const askForQRScannerPermissions = async () => {
         const { status } = await BarCodeScanner.requestPermissionsAsync()
-        setShowModal(false)
+        // setShowModal(false)
 
-        setHasCameraPermission(status === 'granted')
         if (status === 'granted') {
             props.navigation.navigate('JoinEventScreen', {
                 permission: status,
@@ -336,25 +335,26 @@ const DashboardScreen = (props) => {
                     paddingBottom: tabBarBottomPosition + 80,
                 }}
                 numColumns={2}
-                style={styles.flatList}
                 onRefresh={loadGalleries}
                 refreshing={loadingGalleries}
+                removeClippedSubviews={Platform.OS === 'android' ? true : false}
                 // ListEmptyComponent={}
             />
 
             {/* <FlatList
+                data={galleries}
+                renderItem={render}
                 style={styles.flatList}
                 onRefresh={loadGalleries}
                 refreshing={loadingGalleries}
-                data={galleries}
                 keyExtractor={keyExtractor}
-                renderItem={render}
                 showsVerticalScrollIndicator={false}
                 numColumns={2}
-                columnWrapperStyle={{
-                    marginLeft: 10,
-                }}
+                // columnWrapperStyle={{
+                //     marginLeft: 10,
+                // }}
                 contentContainerStyle={{
+                    ...styles.bigListContentCont,
                     paddingBottom: tabBarBottomPosition + 80,
                 }}
                 initialNumToRender={6}
@@ -363,9 +363,9 @@ const DashboardScreen = (props) => {
             /> */}
 
             <BottomNavBar
-                onPlusPressed={() => {
-                    setShowModal(true)
-                }}
+                // onPlusPressed={() => {
+                //     setShowModal(true)
+                // }}
                 onCameraPressed={cameraPressedHandler}
                 onSearchPressed={() => {
                     props.navigation.navigate('SearchScreen')
@@ -373,6 +373,7 @@ const DashboardScreen = (props) => {
                 onPersonPressed={() => {
                     props.navigation.navigate('ProfileScreenTwo')
                 }}
+                navigation={props.navigation}
             />
             <Modal visible={showModal} transparent animationType="slide">
                 <View style={styles.modal}>

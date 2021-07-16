@@ -17,7 +17,14 @@ export const LOAD_PROFILE = 'LOAD_PROFILE '
 export const FOLLOW = 'FOLLOW'
 export const UNFOLLOW = 'UNFOLLOW'
 export const EMPTY_PROFILE = 'EMPTY_PROFILE'
+
+//models
 import { Search } from '../../models/SearchModel'
+
+import { Gallery } from '../../models/GalleryModel'
+
+//Gallery Actions
+import { setGalleries } from '../event/action'
 
 import { LINK } from '../../utilities/apiLink'
 
@@ -158,29 +165,26 @@ export const login = (username, password) => {
 
             try {
                 const data = await response.json()
-                console.log(
-                    '🚀 ~ file: actions.js ~ line 160 ~ return ~ data',
-                    data
-                )
 
                 const userID = data.message?.userData?.basic?.uniqueID
                 const userInfo = data.message?.userData
                 const credentials = data.message?.userData?.body
-                console.log(
-                    '🚀 ~ file: actions.js ~ line 163 ~ return ~ credentials',
-                    credentials
-                )
+
                 // await storeData(userID)
+
+                dispatch({
+                    type: LOGIN,
+                    userID: userID,
+                    fullInfo: userInfo,
+                })
+
+                dispatch(setGalleries(userID))
+
                 await storeCredentials(
                     credentials.userName,
                     credentials.password,
                     userID
                 )
-                dispatch({
-                    type: LOGIN,
-                    userInfo: userID,
-                    fullInfo: userInfo,
-                })
 
                 const error = data?.message?.user?.authCheck
                 if (error === 'ERROR') {
@@ -225,10 +229,7 @@ export const sendEmailCode = (email) => {
 
             try {
                 const data = await response.json()
-                console.log(
-                    '🚀 ~ file: actions.js ~ line 210 ~ return ~ data',
-                    data
-                )
+
                 code = data?.message?.code
 
                 const errorCode = data.message?.error
@@ -272,15 +273,9 @@ export const sendTextCode = (phone) => {
 
             try {
                 const data = await response.json()
-                console.log(
-                    '🚀 ~ file: actions.js ~ line 245 ~ return ~ data',
-                    data
-                )
+
                 code = data.message.code
-                console.log(
-                    '🚀 ~ file: actions.js ~ line 197 ~ return ~ code',
-                    code
-                )
+
                 const errorCode = data.message.error
                 if (errorCode) {
                     throw new Error('The entered phone number is not valid.')
@@ -322,10 +317,7 @@ export const checkUserExistence = (userName) => {
 
             try {
                 const data = await response.json()
-                console.log(
-                    '🚀 ~ file: actions.js ~ line 245 ~ return ~ data',
-                    data
-                )
+
                 const userExists = data.message?.userNameCheck?.error
                 if (userExists) {
                     throw new Error('This username is unavailable.')
@@ -411,10 +403,6 @@ export const changeAvatar = (avatar) => {
 
             try {
                 const data = await response.json()
-                console.log(
-                    '🚀 ~ file: actions.js ~ line 428 ~ return ~ data',
-                    data
-                )
 
                 const newAvatarThumb = data?.message?.avatarThumb
                 const newAvatar = data?.message?.fullPath
@@ -440,7 +428,6 @@ export const search = (text) => {
         const body = JSON.stringify({
             userName: text,
         })
-        console.log('🚀 ~ file: actions.js ~ line 461 ~ return ~ body', body)
         try {
             const response = await fetch(`${LINK}&search-profile=1`, {
                 method: 'POST',
@@ -460,10 +447,7 @@ export const search = (text) => {
             try {
                 const data = await response.json()
                 const searches = data.message.data
-                console.log(
-                    '🚀 ~ file: actions.js ~ line 483 ~ return ~ searches',
-                    searches
-                )
+
                 const loadedSearches = []
                 for (const key in searches) {
                     loadedSearches.push(
@@ -476,10 +460,6 @@ export const search = (text) => {
                         )
                     )
                 }
-                console.log(
-                    '🚀 ~ file: actions.js ~ line 485 ~ return ~ loadedSearches',
-                    loadedSearches
-                )
 
                 dispatch({
                     type: SEARCH,
@@ -501,7 +481,6 @@ export const loadProfile = (userID) => {
         const body = JSON.stringify({
             userID,
         })
-        console.log('🚀 ~ file: actions.js ~ line 461 ~ return ~ body', body)
         try {
             const response = await fetch(`${LINK}&get-user=1`, {
                 method: 'POST',
@@ -521,10 +500,6 @@ export const loadProfile = (userID) => {
             try {
                 const data = await response.json()
                 const loadedProfile = data.message.data
-                console.log(
-                    '🚀 ~ file: actions.js ~ line 549 ~ return ~ loadedProfile',
-                    loadedProfile
-                )
 
                 dispatch({
                     type: LOAD_PROFILE,
@@ -540,7 +515,6 @@ export const loadProfile = (userID) => {
 }
 
 export const emptyProfile = () => {
-    console.log('emptyProfile RAN')
     return async (dispatch, getState) => {
         try {
             dispatch({
@@ -554,16 +528,8 @@ export const emptyProfile = () => {
 }
 
 export const followUnfollow = (followID, followType) => {
-    console.log(
-        '🚀 ~ file: actions.js ~ line 570 ~ followUnfollow ~ followID',
-        followID
-    )
     return async (dispatch, getState) => {
         const userID = getState().signupReducer.userInfo.userID
-        console.log(
-            '🚀 ~ file: actions.js ~ line 572 ~ return ~ userID',
-            userID
-        )
 
         let link = `${LINK}&follow-user=1`
 
@@ -594,16 +560,12 @@ export const followUnfollow = (followID, followType) => {
 
             try {
                 const data = await response.json()
-                console.log(
-                    '🚀 ~ file: actions.js ~ line 604 ~ return ~ data',
-                    data
-                )
+
                 const results = data.message.response
 
                 if (results === 'success') {
                     dispatch({
                         type: UNFOLLOW,
-                        // loadedProfile: loadedProfile,
                     })
                 }
             } catch (error) {
@@ -614,6 +576,7 @@ export const followUnfollow = (followID, followType) => {
         }
     }
 }
+
 // helpers
 const storeData = async (value) => {
     try {
@@ -630,8 +593,8 @@ const storeCredentials = async (username, password, userID) => {
         await AsyncStorage.setItem('username', username)
         await AsyncStorage.setItem('password', password)
         await AsyncStorage.setItem('userID', userID)
-    } catch (e) {
-        console.log(e)
-        // throw error
+    } catch (error) {
+        console.log(error)
+        throw error
     }
 }

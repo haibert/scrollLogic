@@ -40,10 +40,7 @@ const galleryReducer = (state = initialState, action) => {
             const myArray = state.galleries.filter(function (obj) {
                 return obj.id !== action.deletedGallery.id
             })
-            console.log(
-                '🚀 ~ file: reducer.js ~ line 52 ~ myArray ~ myArray',
-                myArray
-            )
+
             return {
                 ...state,
                 galleries: myArray,
@@ -53,10 +50,7 @@ const galleryReducer = (state = initialState, action) => {
             const myArray = state.pics.filter(function (obj) {
                 return obj.id !== action.deletedPhoto
             })
-            console.log(
-                '🚀 ~ file: reducer.js ~ line 52 ~ myArray ~ myArray',
-                myArray
-            )
+
             return {
                 ...state,
                 pics: myArray,
