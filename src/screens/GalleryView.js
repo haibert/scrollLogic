@@ -246,7 +246,7 @@ const GalleryView = ({ route, navigation }) => {
     const loadPics = useCallback(async () => {
         loadingOpacity.value = 1
         try {
-            await dispatch(setPics(galleryID))
+            await dispatch(setPics(null, galleryID))
         } catch (error) {}
         startOpacityAnim()
     }, [])
@@ -275,19 +275,21 @@ const GalleryView = ({ route, navigation }) => {
         (state) => state.permissionsReducer.permissions.camera
     )
 
-    function openSettings() {
-        Platform.OS === 'android'
-            ? Linking.openSettings()
-            : Linking.canOpenURL('app-settings:')
-                  .then((supported) => {
-                      if (!supported) {
-                          console.log("Can't handle settings url")
-                      } else {
-                          return Linking.openURL('app-settings:')
-                      }
-                  })
-                  .catch((err) => console.error('An error occurred', err))
-    }
+    const openSettings = useCallback(async () => {
+        Platform.OS === 'android' ? Linking.openSettings() : null
+        if (Platform.OS === 'ios') {
+            const supported = await Linking.canOpenURL('app-settings:')
+            try {
+                if (!supported) {
+                    console.log("Can't handle settings url")
+                } else {
+                    return Linking.openURL('app-settings:')
+                }
+            } catch (err) {
+                console.error('An error occurred', err)
+            }
+        }
+    }, [])
 
     const sendUserToSettingsHandler = useCallback(() => {
         const alertMessage =
@@ -532,16 +534,9 @@ const GalleryView = ({ route, navigation }) => {
                             },
                         ]}
                     >
-                        <ActivityIndicator />
+                        <ActivityIndicator color={colors.nPButton} />
                     </Animated.View>
                 </ScreenWrapper>
-
-                {/* <GalDetailBottomSheet
-                    ref={bottomSheetRef}
-                    data={pics}
-                    navigation={navigation}
-                    index={scrollIndex}
-                /> */}
             </Animated.View>
         </PanGestureHandler>
     )
@@ -589,7 +584,7 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'white',
+        backgroundColor: colors.overallBackground,
         position: 'absolute',
         width: '100%',
         bottom: 0,

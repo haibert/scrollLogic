@@ -13,30 +13,49 @@ import colors from '../../constants/colors'
 import { loadProfile } from '../../store/signup-auth/actions'
 import { useDispatch, useSelector } from 'react-redux'
 
+//fast image
+import FastImage from 'react-native-fast-image'
+
 const SearchCell = (props) => {
     //dispatch
     const dispatch = useDispatch()
 
     //----------------------------------------------------------------Load Profile----------------------------------------------------------------
     const onPress = useCallback(async () => {
-        props.onPress()
+        // console.log(props.searchResults.firstName)
         try {
-            dispatch(loadProfile(props.searchResults.uniqueID))
+            // await dispatch(loadProfile(props.searchResults.uniqueID))
             props.navigation.navigate('OtherProfileScreen', {
                 uniqueID: props.searchResults.uniqueID,
             })
         } catch (err) {
             console.log(err)
         }
-    }, [])
+    }, [props.searchResults])
     //----------------------------------------------------------------Load Profile----------------------------------------------------------------
 
+    //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
+    const normalizedSource = () => {
+        const imageString = `${props.searchResults.avatar}`
+        const normalizedSource =
+            imageString &&
+            typeof imageString === 'string' &&
+            !imageString.split('http')[1]
+                ? null
+                : imageString
+        return normalizedSource
+    }
+    //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
     return (
         <TouchableWithoutFeedback onPress={onPress}>
             <View style={styles.cellOuter}>
-                <Image
-                    source={{ uri: props.searchResults.avatar }}
+                <FastImage
                     style={styles.imageCont}
+                    resizeMode={FastImage.resizeMode.cover}
+                    source={{
+                        uri: normalizedSource(),
+                        priority: FastImage.priority.normal,
+                    }}
                 />
                 <View style={styles.namesCont}>
                     <Text

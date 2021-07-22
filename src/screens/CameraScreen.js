@@ -294,7 +294,7 @@ const CameraScreen = ({ navigation, route }) => {
         })
 
         await dispatch(takePicture(photoURI, base64))
-        setPic(base64)
+        setPic(photoURI)
         setShowPicture(true)
     }
 

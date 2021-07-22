@@ -11,7 +11,13 @@ import {
     Platform,
     BackHandler,
 } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import Reanimated, {
+    useSharedValue,
+    withTiming,
+    useAnimatedStyle,
+    interpolate,
+    withSequence,
+} from 'react-native-reanimated'
 
 import { StatusBar } from 'expo-status-bar'
 
@@ -27,13 +33,17 @@ import Thumbnail from '../components/Thumbnail'
 import CustomHeaderBasic from '../components/HeaderBasic'
 import ScreenWrapper from '../components/ScreenWrapper'
 import BottomNavBar from '../components/BottomNavBar'
+import NuemorphicNavBar from '../components/NuemorphicNavBar'
+
 import ActionBottomSheet from '../components/ActionBottomSheet'
 
 //customHooks
 import useAppState from '../hooks/useAppState'
 
 //useFocusEffect
+import { InteractionManager } from 'react-native'
 import { useFocusEffect } from '@react-navigation/native'
+import { useIsFocused } from '@react-navigation/native'
 
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -70,6 +80,8 @@ const { height, width } = Dimensions.get('screen')
 
 const DashboardScreen = (props) => {
     const insets = useSafeAreaInsets()
+
+    const isFocused = useIsFocused()
 
     let tabBarBottomPosition = insets.bottom > 0 ? insets.bottom / 2 + 2 : 10
     const [deleteID, setDeleteID] = useState({ id: '', index: '' })
@@ -212,19 +224,21 @@ const DashboardScreen = (props) => {
     // const { appStateVisible } = useAppState(checkPermissionsAppState)
 
     // opening app settings
-    function openSettings() {
-        Platform.OS === 'android'
-            ? Linking.openSettings()
-            : Linking.canOpenURL('app-settings:')
-                  .then((supported) => {
-                      if (!supported) {
-                          console.log("Can't handle settings url")
-                      } else {
-                          return Linking.openURL('app-settings:')
-                      }
-                  })
-                  .catch((err) => console.error('An error occurred', err))
-    }
+    const openSettings = useCallback(async () => {
+        Platform.OS === 'android' ? Linking.openSettings() : null
+        if (Platform.OS === 'ios') {
+            const supported = await Linking.canOpenURL('app-settings:')
+            try {
+                if (!supported) {
+                    console.log("Can't handle settings url")
+                } else {
+                    return Linking.openURL('app-settings:')
+                }
+            } catch (err) {
+                console.error('An error occurred', err)
+            }
+        }
+    }, [])
 
     function sendUserToSettingsHandler() {
         const alertMessage =
@@ -260,6 +274,47 @@ const DashboardScreen = (props) => {
             ])
         }
     }
+
+    //----------------------------------------------------------------PRESENTATION ANIMATION---------------------------------------------------------------
+    // const reanimatedValue = useSharedValue(0)
+
+    // const reToggleOpen = () => {
+    //     reanimatedValue.value = withSequence(
+    //         withTiming(1, {
+    //             duration: 400,
+    //         }),
+    //         withTiming(0, {
+    //             duration: 400,
+    //         })
+    //     )
+    // }
+
+    // const reReloadStyle = useAnimatedStyle(() => {
+    //     return {
+    //         transform: [
+    //             {
+    //                 scale: reanimatedValue.value,
+    //             },
+    //             {
+    //                 translateY: interpolate(
+    //                     reanimatedValue.value,
+    //                     [0, 1],
+    //                     [0, -70]
+    //                 ),
+    //             },
+    //             {
+    //                 rotate: interpolate(reanimatedValue.value, [0, 1], [0, 1]),
+    //             },
+    //         ],
+    //     }
+    // })
+    // useFocusEffect(() => {
+    //     const task = InteractionManager.runAfterInteractions(() => {
+    //         setTimeout(() => reToggleOpen(), 200)
+    //     })
+    //     return () => task.cancel()
+    // })
+    //----------------------------------------------------------------PRESENTATION ANIMATION---------------------------------------------------------------
 
     //-----------------------------------------------------FLAT LIST FUNCTIONS--------------------------------------------------------------
     const render = useCallback(({ item, index }) => {
@@ -361,21 +416,35 @@ const DashboardScreen = (props) => {
                 maxToRenderPerBatch={6}
                 getItemLayout={layOut}
             /> */}
-
-            <BottomNavBar
-                // onPlusPressed={() => {
-                //     setShowModal(true)
-                // }}
+            {/* <Reanimated.View
+                style={[
+                    styles.animation,
+                    reReloadStyle,
+                    {
+                        position: 'absolute',
+                        bottom: insets.bottom + 5,
+                        left: (width - 50) / 28,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    },
+                ]}
+            >
+                <Ionicons name="home" size={20} color="#555"></Ionicons>
+            </Reanimated.View> */}
+            <NuemorphicNavBar
                 onCameraPressed={cameraPressedHandler}
                 onSearchPressed={() => {
                     props.navigation.navigate('SearchScreen')
                 }}
                 onPersonPressed={() => {
-                    props.navigation.navigate('ProfileScreenTwo')
+                    props.navigation.navigate('ProfileScreen')
                 }}
+                onFeedPressed={() => {}}
                 navigation={props.navigation}
+                feedFocused={isFocused ? true : false}
             />
-            <Modal visible={showModal} transparent animationType="slide">
+
+            {/* <Modal visible={showModal} transparent animationType="slide">
                 <View style={styles.modal}>
                     <View>
                         <View style={styles.modalActions}>
@@ -403,7 +472,7 @@ const DashboardScreen = (props) => {
                         />
                     </View>
                 </View>
-            </Modal>
+            </Modal> */}
 
             <ActionBottomSheet
                 ref={bottomSheetRef}
@@ -545,6 +614,25 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: 'black',
         backgroundColor: 'red',
+    },
+
+    //animation
+    animation: {
+        width: 54,
+        height: 54,
+        borderRadius: 27,
+        alignItems: 'center',
+        justifyContent: 'center',
+        // position: 'absolute',
+        shadowColor: 'black',
+        shadowRadius: 10,
+        shadowOpacity: 0.2,
+        backgroundColor: 'white',
+        shadowOffset: {
+            width: 3,
+            height: 3,
+        },
+        elevation: 5,
     },
 })
 

@@ -10,27 +10,21 @@ import ButtonFlatlist2 from '../components/ButtonFlatlist2'
 import { Ionicons } from '@expo/vector-icons'
 
 const FollowCell = (props) => {
-    const [checked, setChecked] = useState()
     return (
-        <View
-            onPress={() => {
-                setChecked((prevState) => !prevState)
-            }}
-            style={styles.cellOuter}
-        >
+        <View onPress={() => {}} style={styles.cellOuter}>
             <View style={styles.imageCont}></View>
             <View style={styles.namesCont}>
                 <Text
                     maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
                     style={styles.galleryName}
                 >
-                    Gallery Name
+                    {props.data.userName}
                 </Text>
                 <Text
                     maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
                     style={styles.username}
                 >
-                    @username
+                    {`${props.data.firstName} ` + `${props.data.lastName}`}
                 </Text>
             </View>
 

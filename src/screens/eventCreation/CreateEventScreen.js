@@ -27,6 +27,7 @@ import colors from '../../constants/colors'
 import Button from '../../components/Button'
 import CustomHeaderBasic from '../../components/HeaderBasic'
 import ScreenWrapper from '../../components/ScreenWrapper'
+import NeumorphicButton from '../../components/NeumorphicButton'
 
 const { height, width } = Dimensions.get('screen')
 
@@ -241,6 +242,20 @@ const CreateEventScreen = (props) => {
                                                     handleSubmit()
                                                 }}
                                             />
+                                            {/* <NeumorphicButton
+                                                text="Create Gallery"
+                                                style={styles.button}
+                                                onPress={() => {
+                                                    Keyboard.dismiss()
+                                                    httpError
+                                                        ? setHttpError(null)
+                                                        : null
+                                                    handleSubmit()
+                                                }}
+                                                contentPadding={15}
+                                                shadowOffset={3}
+                                                shadowRadius={3}
+                                            /> */}
                                         </View>
                                     </View>
                                 )}
@@ -287,10 +302,12 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         paddingBottom: 80,
+        width: '100%',
     },
     button: {
         marginTop: 40,
         width: '100%',
+        height: 50,
     },
     formikCont: {
         width: '100%',

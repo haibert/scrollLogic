@@ -23,8 +23,18 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { Icon } from 'react-native-elements'
 
+//custom components
+import NeumorphicButton from './NeumorphicButton'
+import ScaleButton from './TouchableScale'
+
+//Linear Gradient
+import { LinearGradient } from 'expo-linear-gradient'
+
 //colors
 import colors from '../constants/colors'
+
+//expo qr scanner
+import { BarCodeScanner } from 'expo-barcode-scanner'
 
 const { width } = Dimensions.get('screen')
 
@@ -34,22 +44,9 @@ const FloatingButton = (props) => {
 
     const tabBarBottomPosition = insets.bottom > 0 ? insets.bottom + 5 : 5
 
-    const AnimatedValue = useState(new Animated.Value(0))[0]
     const reanimatedValue = useSharedValue(0)
 
-    let open = useRef(false).current
     const reOpen = useSharedValue(false)
-
-    const toggleOpen = () => {
-        const toValue = open ? 0 : 1
-        Animated.timing(AnimatedValue, {
-            toValue,
-            duration: 200,
-            useNativeDriver: false,
-        }).start()
-
-        open = !open
-    }
 
     const reToggleOpen = () => {
         const toValue = reOpen.value ? 0 : 1
@@ -127,7 +124,7 @@ const FloatingButton = (props) => {
         return {
             transform: [
                 {
-                    scale: interpolate(reanimatedValue.value, [0, 1], [0, 50]),
+                    scale: interpolate(reanimatedValue.value, [0, 1], [0, 35]),
                 },
             ],
         }
@@ -139,7 +136,12 @@ const FloatingButton = (props) => {
                 style={[styles.background, reBgStyle]}
                 onTouchStart={reToggleOpen}
             ></Reanimated.View>
-            <TouchableWithoutFeedback onPress={props.onCreateEventPressed}>
+            <TouchableWithoutFeedback
+                onPress={() => {
+                    reToggleOpen()
+                    props.onCreateEventPressed()
+                }}
+            >
                 <Reanimated.View
                     style={[styles.button, styles.other, reReloadStyle]}
                 >
@@ -149,11 +151,16 @@ const FloatingButton = (props) => {
                     <Ionicons
                         name="images-outline"
                         size={20}
-                        color="#555"
+                        color={colors.nPButton}
                     ></Ionicons>
                 </Reanimated.View>
             </TouchableWithoutFeedback>
-            <TouchableWithoutFeedback onPress={props.onJoinEventPressed}>
+            <TouchableWithoutFeedback
+                onPress={() => {
+                    reToggleOpen()
+                    props.onJoinEventPressed()
+                }}
+            >
                 <Reanimated.View
                     style={[styles.button, styles.other, reOrderStyle]}
                 >
@@ -164,54 +171,79 @@ const FloatingButton = (props) => {
                     <Ionicons
                         name="qr-code-outline"
                         size={20}
-                        color="#555"
+                        color={colors.nPButton}
                     ></Ionicons>
                 </Reanimated.View>
             </TouchableWithoutFeedback>
 
-            <View style={[styles.button, styles.pay]}>
-                <TouchableWithoutFeedback onPress={reToggleOpen}>
-                    <View>
-                        {/* <Animated.Text style={[styles.label, labelStyle]}>
-                            Pay
-                        </Animated.Text> */}
-
+            <ScaleButton
+                activeScale={0.8}
+                onPress={reToggleOpen}
+                contentContainerStyle={[styles.button, styles.pay]}
+            >
+                <LinearGradient
+                    colors={[colors.mainColorP3, colors.nPButton]}
+                    style={styles.buttonBorder}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0.3, y: 0.3 }}
+                >
+                    <LinearGradient
+                        colors={[colors.mainColorP3, colors.nPButton]}
+                        style={styles.button}
+                        start={{ x: 1, y: 1 }}
+                        end={{ x: 0.3, y: 0.3 }}
+                    >
                         <Icon
                             name="plus"
                             type="material-community"
                             size={38}
-                            // color={colors.textColor}
                             color={'white'}
                         />
-                    </View>
-                </TouchableWithoutFeedback>
-            </View>
+                    </LinearGradient>
+                </LinearGradient>
+            </ScaleButton>
         </View>
     )
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1 },
+    container: {
+        //uncomment this for the old nav bar to work
+    },
     background: {
         backgroundColor: 'rgba(0,0,0,.5)',
-        position: 'absolute',
         width: 60,
         height: 60,
-        bottom: 20,
-        right: 20,
         borderRadius: 30,
     },
     button: {
+        width: 54,
+        height: 54,
+        borderRadius: 27,
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'absolute',
+        shadowColor: 'black',
+        shadowRadius: 5,
+        shadowOpacity: 1,
+        backgroundColor: 'white',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        elevation: 5,
+    },
+    buttonBorder: {
         width: 60,
         height: 60,
+        borderRadius: 30,
         alignItems: 'center',
         justifyContent: 'center',
         shadowColor: '#333',
-        shadowOpacity: 0.1,
+        shadowOpacity: 1,
         shadowOffset: { x: 2, y: 0 },
         shadowRadius: 2,
-        borderRadius: 30,
-        position: 'absolute',
+        // position: 'absolute',
     },
     other: {
         backgroundColor: '#FFF',
@@ -221,6 +253,14 @@ const styles = StyleSheet.create({
     },
     pay: {
         backgroundColor: colors.nPButton,
+        shadowColor: 'black',
+        shadowRadius: 14,
+        shadowOpacity: 0.26,
+        shadowOffset: {
+            width: 14,
+            height: 14,
+        },
+        elevation: 14,
     },
     label: {
         color: 'white',

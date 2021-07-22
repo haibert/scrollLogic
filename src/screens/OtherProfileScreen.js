@@ -53,11 +53,18 @@ import BigList from 'react-native-big-list'
 // fakeData
 import { fakeArray as listData } from '../data/images'
 
+//fast image
+import FastImage from 'react-native-fast-image'
+
 const { width, height } = Dimensions.get('window')
 
 const OtherProfileScreen = (props) => {
     //uniqueID
     const uniqueID = props.route.params?.uniqueID
+    console.log(
+        '🚀 ~ file: OtherProfileScreen.js ~ line 64 ~ OtherProfileScreen ~ uniqueID',
+        uniqueID
+    )
 
     //insets
     const insets = useSafeAreaInsets()
@@ -80,21 +87,38 @@ const OtherProfileScreen = (props) => {
         []
     )
 
-    useEffect(() => {
-        const task = InteractionManager.runAfterInteractions(() => {
-            if (profileInfo === 'undefined') {
-                dispatch(loadProfile(uniqueID))
-            }
-        })
+    // useEffect(() => {
+    //     const task = InteractionManager.runAfterInteractions(() => {
+    //         dispatch(loadProfile(uniqueID))
+    //     })
 
-        return () => task.cancel()
+    //     return () => task.cancel()
+    // }, [])
+
+    //----------------------------------------------------------------LOAD PROFILE----------------------------------------------------------------
+
+    const loadProfileInfo = useCallback(async () => {
+        // setLoadingGalleries(true)
+        // setError(null)
+        try {
+            await dispatch(loadProfile(uniqueID))
+        } catch (error) {
+            // setError(error.message)
+        }
+        // setLoadingGalleries(false)
     }, [])
+
+    useEffect(() => {
+        loadProfileInfo()
+    }, [loadProfileInfo, uniqueID])
+    //----------------------------------------------------------------LOAD PROFILE----------------------------------------------------------------
 
     //----------------------------------------------------------------FOLLOW PRESSED----------------------------------------------------------------
     const followPressedHandler = useCallback(async () => {
         try {
             await dispatch(followUnfollow(profileInfo.uniqueID, 'Follow'))
-        } catch (error) {
+        } catch (err) {
+            console.log('🚨  Error in followPressedHandler', err)
             // setError(error.message)
         }
     }, [])
@@ -146,11 +170,13 @@ const OtherProfileScreen = (props) => {
     //----------------------------------------------------------------PROFILE PHOTO PRESSED----------------------------------------------------------------
 
     //----------------------------------------------------------------FOLLOWERS PRESSED HANDLER----------------------------------------------------------------
-    const followersPressedHandler = useCallback(() => {
+    const followingsPressedHandler = useCallback((followType) => {
         props.navigation.navigate('FollowersScreen', {
             username: profileInfo.userName,
+            userID: profileInfo.uniqueID,
+            followType: followType,
         })
-    }, [profileInfo])
+    }, [])
     //----------------------------------------------------------------FOLLOWERS PRESSED HANDLER----------------------------------------------------------------
     //----------------------------------------------------------------FLAT LIST FUNCTIONS--------------------------------------------------------------
     const render = useCallback(({ item, index }) => {
@@ -161,7 +187,8 @@ const OtherProfileScreen = (props) => {
                     galleryPressedHandler(
                         item.galleryID,
                         item.thumbnail,
-                        item.galleryName
+                        item.galleryName,
+                        uniqueID
                     )
                 }}
                 navigation={props.navigation}
@@ -174,11 +201,12 @@ const OtherProfileScreen = (props) => {
     }, [])
 
     const galleryPressedHandler = useCallback(
-        (galleryID, thumbnail, galName) => {
+        (galleryID, thumbnail, galName, userID) => {
             props.navigation.navigate('OtherGalleryView', {
                 galleryID,
                 thumbnail,
                 galName,
+                userID,
             })
         },
         []
@@ -206,7 +234,9 @@ const OtherProfileScreen = (props) => {
     //----------------------------------------------------------------LOAD GALLERIES----------------------------------------------------------------
     const [loadingGalleries, setLoadingGalleries] = useState(false)
     // states
-    const galleries = useSelector((state) => state.galleryReducer.galleries)
+    const galleries = useSelector(
+        (state) => state.galleryReducer.otherGalleries
+    )
 
     console.log('Other Profile Screen Rendered')
 
@@ -218,18 +248,31 @@ const OtherProfileScreen = (props) => {
         // setLoadingGalleries(true)
         // setError(null)
         try {
-            await dispatch(setGalleries())
+            await dispatch(setGalleries(uniqueID))
         } catch (error) {
             // setError(error.message)
         }
         // setLoadingGalleries(false)
-    }, [setLoadingGalleries, dispatch])
+    }, [setLoadingGalleries, dispatch, uniqueID])
 
     useEffect(() => {
         loadGalleries()
     }, [loadGalleries])
 
     //----------------------------------------------------------------LOAD GALLERIES----------------------------------------------------------------
+
+    //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
+    const normalizedSource = () => {
+        const imageString = `${profileInfo?.avatarThumb}`
+        const normalizedSource =
+            imageString &&
+            typeof imageString === 'string' &&
+            !imageString.split('http')[1]
+                ? null
+                : imageString
+        return normalizedSource
+    }
+    //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
 
     return (
         <ScreenWrapper style={{ paddingTop: 0 }}>
@@ -242,11 +285,13 @@ const OtherProfileScreen = (props) => {
             >
                 <TouchableWithoutFeedback onPress={handleProfilePhotoPressed}>
                     <SharedElement id={'2'}>
-                        <Image
-                            source={{
-                                uri: profileInfo?.avatar,
-                            }}
+                        <FastImage
                             style={styles.avatar}
+                            resizeMode={FastImage.resizeMode.cover}
+                            source={{
+                                uri: normalizedSource(),
+                                priority: FastImage.priority.normal,
+                            }}
                         />
                     </SharedElement>
                 </TouchableWithoutFeedback>
@@ -265,15 +310,12 @@ const OtherProfileScreen = (props) => {
                     style={styles.button}
                     onPress={followPressedHandler}
                 />
-                <ImageBackground
-                    style={styles.stats}
-                    blurRadius={100}
-                    source={require('../../assets/AndroidTransparentPng100by100.png')}
-                    resizeMode="stretch"
-                >
+                <View style={styles.stats}>
                     <Pressable
                         style={styles.statCubes1}
-                        onPress={followersPressedHandler}
+                        onPress={() => {
+                            followingsPressedHandler('following')
+                        }}
                     >
                         <Text style={styles.numbers}>
                             {profileInfo?.followingCount}
@@ -282,7 +324,9 @@ const OtherProfileScreen = (props) => {
                     </Pressable>
                     <Pressable
                         style={styles.statCubes2}
-                        onPress={followersPressedHandler}
+                        onPress={() => {
+                            followingsPressedHandler('followers')
+                        }}
                     >
                         <Text style={styles.numbers}>
                             {profileInfo?.followersCount}
@@ -293,7 +337,7 @@ const OtherProfileScreen = (props) => {
                         <Text style={styles.numbers}>23,6k</Text>
                         <Text style={{ color: 'white' }}>Likes Received</Text>
                     </View>
-                </ImageBackground>
+                </View>
                 <View height={20}></View>
             </ImageBackground>
             <HeaderBasic
@@ -411,7 +455,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         // borderColor: colors.separatorLine,
         borderRadius: colors.borderRadius,
-        backgroundColor: 'rgba(145,145,145,0.85)',
+        backgroundColor: 'rgba(145,145,145,0.6)',
         overflow: 'hidden',
         alignItems: 'center',
         marginBottom: 10,

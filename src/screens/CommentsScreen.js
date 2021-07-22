@@ -45,26 +45,6 @@ const CommentsScreen = (props) => {
     //insets
     const insets = useSafeAreaInsets()
 
-    const [keyboardHeight, setKeyboardHeight] = useState(0)
-
-    function onKeyboardDidShow(e) {
-        setKeyboardHeight(e.endCoordinates.height)
-        startHeightAnim(e.endCoordinates.height)
-    }
-
-    function onKeyboardDidHide() {
-        setKeyboardHeight(0)
-        startHeightAnim()
-    }
-
-    useEffect(() => {
-        Keyboard.addListener('keyboardDidShow', onKeyboardDidShow)
-        Keyboard.addListener('keyboardDidHide', onKeyboardDidHide)
-        return () => {
-            Keyboard.removeListener('keyboardDidShow', onKeyboardDidShow)
-            Keyboard.removeListener('keyboardDidHide', onKeyboardDidHide)
-        }
-    }, [])
     //----------------------------------------------------------------ANIMATION LOGIC----------------------------------------------------------------
     const animatedHeight = useSharedValue(0)
     const growingStyle = useAnimatedStyle(() => {
@@ -105,11 +85,16 @@ const CommentsScreen = (props) => {
     const inputRef = useRef()
 
     const onScrollBeginDrag = useCallback(() => {
-        inputRef.current.blur()
-        Keyboard.dismiss()
-    }, [inputRef])
+        setTimeout(() => {
+            Keyboard.dismiss()
+        }, 20)
+    }, [])
 
     //----------------------------------------------------------------FLATlIST OPTIMIZATION----------------------------------------------------------------
+    {
+        /* <Animated.View style={growingStyle} /> */
+    }
+
     return (
         <ScreenWrapper paddingBottom>
             <HeaderBasic
@@ -127,9 +112,8 @@ const CommentsScreen = (props) => {
                 style={styles.bigList}
                 showsVerticalScrollIndicator={true}
                 onScrollBeginDrag={onScrollBeginDrag}
+                scrollEventThrottle={16}
             />
-            {/* <Animated.View style={growingStyle} /> */}
-
             <KeyboardAvoidingView
                 behavior="padding"
                 enabled={isIOS ? true : false}
@@ -140,9 +124,13 @@ const CommentsScreen = (props) => {
                         <TextInput
                             ref={inputRef}
                             maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                            placeholderTextColor={'rgba(124,124,124,1)'}
+                            underlineColorAndroid="rgba(255,255,255,0)"
                             style={styles.input}
                             multiline
                             blurOnSubmit={true}
+                            autoFocus={false}
+                            underlineColorAndroid="transparent"
                             // onBlur={() => inputRef.current.blur()}
                         />
                         <Text style={styles.postFaker}>Post</Text>

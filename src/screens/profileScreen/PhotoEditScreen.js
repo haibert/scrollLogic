@@ -3,7 +3,6 @@ import {
     View,
     Text,
     StyleSheet,
-    Image,
     Dimensions,
     TouchableOpacity,
     Alert,
@@ -40,17 +39,20 @@ import { SharedElement } from 'react-navigation-shared-element'
 //image picker
 import * as ImagePicker from 'expo-image-picker'
 
+// expo image manipulator
+import * as ImageManipulator from 'expo-image-manipulator'
+
 //redux
 import { changeAvatar } from '../../store/signup-auth/actions'
 import { useDispatch, useSelector } from 'react-redux'
 
-// expo image manipulator
-import * as ImageManipulator from 'expo-image-manipulator'
+//fast image
+import FastImage from 'react-native-fast-image'
 
 const PhotoEditScreen = ({ route, ...props }) => {
     //picture source
     const picSource = useSelector(
-        (state) => state.signupReducer.userInfo.avatar
+        (state) => state.signupReducer.userInfo.avatarFullPath
     )
 
     //insets
@@ -154,17 +156,21 @@ const PhotoEditScreen = ({ route, ...props }) => {
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
                 aspect: [1, 1],
-                quality: 0,
+                quality: Platform.OS === 'ios' ? 0 : 1,
                 base64: true,
             })
-            //then create compressed version to save.
-            const compressedPhoto = await ImageManipulator.manipulateAsync(
-                result.uri,
-                [{ resize: { height: 500 } }],
-                { compress: 1, format: 'jpeg', base64: true }
-            )
 
             if (!result.cancelled) {
+                //then create compressed version to save.
+                const compressedPhoto = await ImageManipulator.manipulateAsync(
+                    result.uri,
+                    [{ resize: { height: 500 } }],
+                    {
+                        compress: Platform.OS === 'ios' ? 0.2 : 0.5,
+                        format: 'jpeg',
+                        base64: true,
+                    }
+                )
                 await dispatch(
                     changeAvatar(`data:image/jpeg;base64,${result.base64}`)
                 )
@@ -236,6 +242,19 @@ const PhotoEditScreen = ({ route, ...props }) => {
         }
     })
     //--------------------------------------------------------------PAN ANIMATION LOGIC----------------------------------------------------------------
+
+    //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
+    const normalizedSource = () => {
+        const imageString = chosenImage ? `${chosenImage}` : `${picSource}`
+        const normalizedSource =
+            imageString &&
+            typeof imageString === 'string' &&
+            !imageString.split('http')[1]
+                ? null
+                : imageString
+        return normalizedSource
+    }
+    //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
     return (
         <PanGestureHandler
             onGestureEvent={onGestureEvent}
@@ -256,15 +275,15 @@ const PhotoEditScreen = ({ route, ...props }) => {
                             props.navigation.goBack()
                         }}
                     />
-                    <View
-                        style={{
-                            ...styles.screenCont,
-                        }}
-                    >
-                        <SharedElement id={1}>
-                            <Image
+                    <View style={styles.screenCont}>
+                        <SharedElement id={'1'}>
+                            <FastImage
+                                resizeMode={FastImage.resizeMode.cover}
                                 source={{
-                                    uri: chosenImage ? chosenImage : picSource,
+                                    uri: chosenImage
+                                        ? chosenImage
+                                        : normalizedSource(),
+                                    priority: FastImage.priority.normal,
                                 }}
                                 style={styles.image}
                             />

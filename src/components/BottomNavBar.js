@@ -5,6 +5,7 @@ import {
     Dimensions,
     // TouchableWithoutFeedback,
     Pressable,
+    Text,
 } from 'react-native'
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 
@@ -75,56 +76,122 @@ const BottomNavBar = (props) => {
             style={{
                 ...styles.tabBarShadow,
                 width: width,
-                height: 50 + insets.bottom,
+                height: 60 + insets.bottom,
             }}
         >
-            <Ionicons
-                name="camera-outline"
-                color={'white'}
-                size={29}
+            <View
                 style={{
                     position: 'absolute',
-                    top: 10,
+                    top: 3,
                     right: (width - 26) / 12,
+                    alignItems: 'center',
+                    justifyContent: 'center',
                 }}
-                // onPress={props.onCameraPressed}
-            />
+            >
+                <Ionicons
+                    name="camera"
+                    color={colors.lightestColorP1}
+                    size={28}
+                />
+                <Text
+                    maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                    style={{
+                        color: colors.lightestColorP1,
+                        fontSize: 13,
+                        textAlign: 'center',
+                    }}
+                >
+                    Camera
+                </Text>
+            </View>
 
-            <Ionicons
-                name="person-outline"
-                color={'white'}
-                size={25}
+            <View
                 style={{
                     position: 'absolute',
-                    top: 10,
+                    top: 3,
                     right: (width - 26) / 3.5,
+                    alignItems: 'center',
+                    justifyContent: 'center',
                 }}
-                // onPress={props.onPersonPressed}
-            />
+            >
+                <Ionicons
+                    name="person"
+                    color={
+                        props.profileActive ? 'white' : colors.lightestColorP1
+                    }
+                    size={27}
+                />
+                <Text
+                    maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                    style={{
+                        color: props.profileActive
+                            ? 'white'
+                            : colors.lightestColorP1,
+                        fontSize: 13,
+                        textAlign: 'center',
+                    }}
+                >
+                    Profile
+                </Text>
+            </View>
 
-            <Ionicons
-                name="search-outline"
-                size={28}
-                color={'white'}
+            <View
                 style={{
                     position: 'absolute',
-                    top: 11,
+                    top: 3,
                     left: (width - 26) / 3.5,
+                    alignItems: 'center',
+                    justifyContent: 'center',
                 }}
-                // onPress={props.onSearchPressed}
-            />
+            >
+                <Ionicons
+                    name="search"
+                    size={28}
+                    color={
+                        props.searchActive ? 'white' : colors.lightestColorP1
+                    }
+                />
+                <Text
+                    maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                    style={{
+                        color: props.searchActive
+                            ? 'white'
+                            : colors.lightestColorP1,
+                        fontSize: 13,
+                        textAlign: 'center',
+                    }}
+                >
+                    Search
+                </Text>
+            </View>
 
-            <Ionicons
-                name="home-outline"
-                size={28}
-                color={'white'}
+            <View
                 style={{
                     position: 'absolute',
-                    top: 11,
+                    top: 3,
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     left: (width - 26) / 12,
                 }}
-                // onPress={props.onHomePressed}
-            />
+            >
+                <Ionicons
+                    name="home"
+                    size={28}
+                    color={props.homeActive ? 'white' : colors.lightestColorP1}
+                />
+                <Text
+                    maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                    style={{
+                        color: props.homeActive
+                            ? 'white'
+                            : colors.lightestColorP1,
+                        fontSize: 13,
+                        textAlign: 'center',
+                    }}
+                >
+                    Feed
+                </Text>
+            </View>
 
             <View style={styles.tabButton}>
                 <Pressable onPress={props.onHomePressed}>
@@ -194,7 +261,7 @@ const BottomNavBar = (props) => {
 
 const styles = StyleSheet.create({
     tabBar: {
-        height: 50,
+        height: 60,
         justifyContent: 'space-evenly',
         flexDirection: 'row',
         marginHorizontal: 10,
@@ -234,7 +301,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
     bigPlusButton: {
-        backgroundColor: colors.darkestColorP1,
         width: 40,
         height: 40,
         borderRadius: 20,
@@ -268,7 +334,7 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 50,
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'flex-end',
     },
 })
 

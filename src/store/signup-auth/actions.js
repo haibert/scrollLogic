@@ -17,11 +17,13 @@ export const LOAD_PROFILE = 'LOAD_PROFILE '
 export const FOLLOW = 'FOLLOW'
 export const UNFOLLOW = 'UNFOLLOW'
 export const EMPTY_PROFILE = 'EMPTY_PROFILE'
+export const LOAD_FOLLOWINGS = 'LOAD_FOLLOWINGS'
+export const EDIT_PROFILE = 'EDIT_PROFILE'
 
 //models
 import { Search } from '../../models/SearchModel'
-
 import { Gallery } from '../../models/GalleryModel'
+import { Follows } from '../../models/FollowsModel'
 
 //Gallery Actions
 import { setGalleries } from '../event/action'
@@ -168,9 +170,11 @@ export const login = (username, password) => {
 
                 const userID = data.message?.userData?.basic?.uniqueID
                 const userInfo = data.message?.userData
+                console.log(
+                    '🚀 ~ file: actions.js ~ line 171 ~ return ~ userInfo',
+                    userInfo
+                )
                 const credentials = data.message?.userData?.body
-
-                // await storeData(userID)
 
                 dispatch({
                     type: LOGIN,
@@ -403,15 +407,24 @@ export const changeAvatar = (avatar) => {
 
             try {
                 const data = await response.json()
+                console.log(
+                    '🚀 ~ file: actions.js ~ line 408 ~ return ~ data',
+                    data
+                )
 
-                const newAvatarThumb = data?.message?.avatarThumb
-                const newAvatar = data?.message?.fullPath
+                if (data.message?.response === 'success') {
+                    const avatarThumbPath = data.message.avatarThumb
+                    const avatarFullPath = data.message.avatar
 
-                dispatch({
-                    type: CHANGE_AVATAR,
-                    newAvatarThumb,
-                    newAvatar,
-                })
+                    dispatch({
+                        type: CHANGE_AVATAR,
+                        avatarThumbPath,
+                        avatarFullPath,
+                    })
+                    return
+                } else {
+                    throw new Error('Something went wrong!')
+                }
             } catch (error) {
                 throw error
             }
@@ -481,6 +494,7 @@ export const loadProfile = (userID) => {
         const body = JSON.stringify({
             userID,
         })
+        // console.log('🚀 ~ file: actions.js ~ line 496 ~ return ~ body', body)
         try {
             const response = await fetch(`${LINK}&get-user=1`, {
                 method: 'POST',
@@ -500,6 +514,10 @@ export const loadProfile = (userID) => {
             try {
                 const data = await response.json()
                 const loadedProfile = data.message.data
+                // console.log(
+                //     '🚀 ~ file: actions.js ~ line 509 ~ return ~ loadedProfile',
+                //     loadedProfile
+                // )
 
                 dispatch({
                     type: LOAD_PROFILE,
@@ -541,6 +559,7 @@ export const followUnfollow = (followID, followType) => {
             userID: followID,
             followerID: userID,
         })
+        console.log('🚀 ~ file: actions.js ~ line 561 ~ return ~ body', body)
 
         try {
             const response = await fetch(link, {
@@ -568,6 +587,137 @@ export const followUnfollow = (followID, followType) => {
                         type: UNFOLLOW,
                     })
                 }
+            } catch (error) {
+                throw error
+            }
+        } catch (error) {
+            throw error
+        }
+    }
+}
+
+export const loadFollowersFollowing = (userID, followType) => {
+    return async (dispatch, getState) => {
+        let link = `${LINK}&get-user-followings=1`
+
+        if (followType === 'followers') {
+            link = `${LINK}&get-user-followers=1`
+        }
+
+        const body = JSON.stringify({
+            userID: userID,
+        })
+
+        try {
+            const response = await fetch(link, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+            })
+
+            if (!response.ok) {
+                throw new Error('Something went wrong!')
+                // OR below you can pass the error status.
+                throw new Error(response.status.toString())
+            }
+
+            try {
+                const data = await response.json()
+                const follows = data.message?.data
+
+                const loadedFollows = []
+                for (const key in follows) {
+                    loadedFollows.push(
+                        new Follows(
+                            follows[key].avatarFullPath,
+                            follows[key].avatarThumbPath,
+                            follows[key].firstName,
+                            follows[key].lastName,
+                            follows[key].userID,
+                            follows[key].userName
+                        )
+                    )
+                }
+
+                dispatch({
+                    type: LOAD_FOLLOWINGS,
+                    followings: loadedFollows,
+                })
+            } catch (error) {
+                throw error
+            }
+        } catch (error) {
+            throw error
+        }
+    }
+}
+
+export const editProfile = (firstName, lastName, birthDate, phone) => {
+    return async (dispatch, getState) => {
+        const userID = getState().signupReducer.userInfo.userID
+        const firstNamePassed =
+            firstName === null
+                ? getState().signupReducer.userInfo.firstName
+                : firstName
+        const lastNamePassed =
+            lastName === null
+                ? getState().signupReducer.userInfo.lastName
+                : lastName
+        // const birthDatePassed =
+        //     birthDate === null
+        //         ? getState().signupReducer.userInfo.birthDate
+        //         : birthDate
+        const birthDatePassed = birthDate === null ? '12/12/12' : birthDate
+        const phonePassed =
+            phone === null ? getState().signupReducer.userInfo.phone : phone
+
+        const link = `${LINK}&edit-profile=1`
+
+        const body = JSON.stringify({
+            userID: userID,
+            firstName: firstNamePassed,
+            lastName: lastNamePassed,
+            birthDate: birthDatePassed,
+            phone: phonePassed,
+        })
+        console.log('🚀 ~ file: actions.js ~ line 685 ~ return ~ body', body)
+
+        try {
+            const response = await fetch(link, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+            })
+
+            if (!response.ok) {
+                throw new Error('Something went wrong!')
+                // OR below you can pass the error status.
+                throw new Error(response.status.toString())
+            }
+
+            try {
+                const data = await response.json()
+                console.log(
+                    '🚀 ~ file: actions.js ~ line 704 ~ return ~ data',
+                    data
+                )
+                const userProfileData = data.message?.userProfileData
+                const errorMessage = data.message?.response === 'error'
+
+                if (!userProfileData || errorMessage) {
+                    throw new Error('Something went wrong!')
+                }
+
+                dispatch({
+                    type: EDIT_PROFILE,
+                    userProfileData: userProfileData,
+                })
             } catch (error) {
                 throw error
             }

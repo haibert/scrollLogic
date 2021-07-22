@@ -31,6 +31,7 @@ import { useFocusEffect } from '@react-navigation/native'
 
 const { width, height } = Dimensions.get('window')
 
+//fast image
 import FastImage from 'react-native-fast-image'
 
 //ionicons

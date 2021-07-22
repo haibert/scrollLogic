@@ -337,8 +337,10 @@ const LoginScreen = (props) => {
                                             )
                                             setIsLoading(false)
                                             props.navigation.navigate(
-                                                'DrawerNav'
+                                                'DashModalStack',
+                                                { screen: 'DashboardScreen' }
                                             )
+                                            console.log('pressed ')
                                         } catch (error) {
                                             setHttpError(error.message)
                                             setIsLoading(false)

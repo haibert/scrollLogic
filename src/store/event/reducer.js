@@ -6,11 +6,13 @@ import {
     SHOULD_REFRESH,
     DELETE_PHOTO,
     EMPTY_PICS_ARRAY,
+    SET_OTHER_GALLERIES,
 } from './action'
 
 const initialState = {
     events: [],
     galleries: [],
+    otherGalleries: [],
     pics: [],
     newGalleryID: '',
     shouldRefresh: false,
@@ -28,6 +30,12 @@ const galleryReducer = (state = initialState, action) => {
             return {
                 ...state,
                 galleries: action.galleries,
+            }
+        }
+        case SET_OTHER_GALLERIES: {
+            return {
+                ...state,
+                otherGalleries: action.otherGalleries,
             }
         }
         case SET_PICS: {

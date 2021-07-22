@@ -5,6 +5,7 @@ export const DELETE_GALLERY = 'DELETE_GALLERY'
 export const SHOULD_REFRESH = 'SHOULD_REFRESH'
 export const DELETE_PHOTO = 'DELETE_PHOTO'
 export const EMPTY_PICS_ARRAY = 'EMPTY_PICS_ARRAY'
+export const SET_OTHER_GALLERIES = 'SET_OTHER_GALLERIES'
 //models
 import { Gallery } from '../../models/GalleryModel'
 import { Pic } from '../../models/PicModel'
@@ -67,6 +68,7 @@ export const setGalleries = (
             const body = JSON.stringify({
                 userID: userID,
             })
+            console.log('🚀 ~ file: action.js ~ line 71 ~ return ~ body', body)
             const response = await fetch(`${LINK}&get-user-galleries=1`, {
                 method: 'POST',
                 headers: {
@@ -87,6 +89,10 @@ export const setGalleries = (
                 const data = await response.json()
 
                 const galleries = data.message.galleries
+                console.log(
+                    '🚀 ~ file: action.js ~ line 92 ~ return ~ galleries',
+                    galleries
+                )
                 const loadedGalleries = []
                 for (const key in galleries) {
                     loadedGalleries.push(
@@ -98,11 +104,17 @@ export const setGalleries = (
                         )
                     )
                 }
-
-                dispatch({
-                    type: SET_GALLERIES,
-                    galleries: loadedGalleries,
-                })
+                if (userID !== getState().signupReducer.userInfo.userID) {
+                    dispatch({
+                        type: SET_OTHER_GALLERIES,
+                        otherGalleries: loadedGalleries,
+                    })
+                } else {
+                    dispatch({
+                        type: SET_GALLERIES,
+                        galleries: loadedGalleries,
+                    })
+                }
             } catch (error) {
                 throw error
             }
@@ -113,15 +125,16 @@ export const setGalleries = (
     }
 }
 
-export const setPics = (galleryID) => {
+export const setPics = (userID, galleryID) => {
     return async (dispatch, getState) => {
-        const userID = getState().signupReducer.userInfo.userID
+        const userPassed =
+            userID === null ? getState().signupReducer.userInfo.userID : userID
         try {
             const body = JSON.stringify({
-                userID,
+                userID: userPassed,
                 galleryID,
             })
-            console.log("🚀 ~ file: action.js ~ line 124 ~ return ~ body", body)
+            console.log('🚀 ~ file: action.js ~ line 124 ~ return ~ body', body)
             const response = await fetch(`${LINK}&get-gallery-files=1`, {
                 method: 'POST',
                 headers: {
@@ -140,10 +153,10 @@ export const setPics = (galleryID) => {
             try {
                 const data = await response.json()
                 const pics = data.message.images
-                console.log(
-                    '🚀 ~ file: action.js ~ line 142 ~ return ~ pics',
-                    pics
-                )
+                // console.log(
+                //     '🚀 ~ file: action.js ~ line 142 ~ return ~ pics',
+                //     pics
+                // )
 
                 const loadedPics = []
                 for (const key in pics) {

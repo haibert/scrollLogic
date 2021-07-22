@@ -74,7 +74,11 @@ import { Audio } from 'expo-av'
 import FastImage from 'react-native-fast-image'
 
 const OtherGalleryView = ({ route, navigation }) => {
-    const { galleryID, thumbnail, galName } = route.params
+    const { galleryID, thumbnail, galName, userID } = route.params
+    console.log(
+        '🚀 ~ file: OtherGalleryView.js ~ line 78 ~ OtherGalleryView ~ galleryID',
+        galleryID
+    )
 
     // shouldRefresh
     const shouldRefresh = useSelector(
@@ -250,10 +254,10 @@ const OtherGalleryView = ({ route, navigation }) => {
     const loadPics = useCallback(async () => {
         loadingOpacity.value = 1
         try {
-            await dispatch(setPics(galleryID))
+            await dispatch(setPics(userID, galleryID))
         } catch (error) {}
         startOpacityAnim()
-    }, [])
+    }, [setPics, galleryID, userID])
 
     useFocusEffect(() => {
         const refreshConditionally = async () => {

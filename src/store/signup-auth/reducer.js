@@ -15,6 +15,8 @@ import {
     SEARCH,
     LOAD_PROFILE,
     EMPTY_PROFILE,
+    LOAD_FOLLOWINGS,
+    EDIT_PROFILE,
 } from './actions'
 
 //async storage
@@ -38,11 +40,17 @@ const initialState = {
         firstName: '',
         lastName: '',
         username: '',
-        avatarThumb: '',
-        avatar: '',
+        phone: '',
+        birthday: '',
+        avatarThumbPath: '',
+        avatarFullPath: '',
+        followersCount: '',
+        followingCount: '',
     },
     searches: [],
     loadedProfile: {},
+    followings: [],
+    followers: [],
 }
 
 const signupReducer = (state = initialState, action) => {
@@ -108,10 +116,6 @@ const signupReducer = (state = initialState, action) => {
             }
         }
         case SIGN_UP: {
-            console.log(
-                '🚀 ~ file: reducer.js ~ line 102 ~ signupReducer ~ action.newUserID',
-                action.newUserID
-            )
             return {
                 ...state,
                 userInfo: {
@@ -129,6 +133,12 @@ const signupReducer = (state = initialState, action) => {
                     firstName: action.fullInfo.basic.firstName,
                     lastName: action.fullInfo.basic.lastName,
                     username: action.fullInfo.basic.userName,
+                    phone: action.fullInfo.basic.phone,
+                    birthday: action.fullInfo.basic.birthDate,
+                    avatarThumbPath: action.fullInfo.basic.avatarThumb,
+                    avatarFullPath: action.fullInfo.basic.avatar,
+                    followersCount: action.fullInfo.basic.followersCount,
+                    followingCount: action.fullInfo.basic.followingCount,
                 },
             }
         }
@@ -158,8 +168,8 @@ const signupReducer = (state = initialState, action) => {
                 ...state,
                 userInfo: {
                     ...state.userInfo,
-                    avatarThumb: action.newAvatarThumb,
-                    avatar: action.newAvatar,
+                    avatarThumbPath: action.avatarThumbPath,
+                    avatarFullPath: action.avatarFullPath,
                 },
             }
         }
@@ -179,6 +189,25 @@ const signupReducer = (state = initialState, action) => {
             return {
                 ...state,
                 loadedProfile: null,
+            }
+        }
+        case LOAD_FOLLOWINGS: {
+            return {
+                ...state,
+                followings: action.followings,
+            }
+        }
+        case EDIT_PROFILE: {
+            return {
+                ...state,
+                userInfo: {
+                    ...state.userInfo,
+                    firstName: action.userProfileData.firstName,
+                    lastName: action.userProfileData.lastName,
+                    // username: action.fullInfo.basic.userName,
+                    phone: action.userProfileData.phone,
+                    birthday: action.userProfileData.birthday,
+                },
             }
         }
         default:

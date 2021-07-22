@@ -43,6 +43,9 @@ import * as ImagePicker from 'expo-image-picker'
 // expo image manipulator
 import * as ImageManipulator from 'expo-image-manipulator'
 
+//fast image
+import FastImage from 'react-native-fast-image'
+
 const OtherProfilePhotoScreen = ({ route, ...props }) => {
     //picture source
     const profilePic = route.params?.profilePic
@@ -112,6 +115,19 @@ const OtherProfilePhotoScreen = ({ route, ...props }) => {
         }
     })
     //--------------------------------------------------------------PAN ANIMATION LOGIC----------------------------------------------------------------
+
+    //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
+    const normalizedSource = () => {
+        const imageString = `${profilePic}`
+        const normalizedSource =
+            imageString &&
+            typeof imageString === 'string' &&
+            !imageString.split('http')[1]
+                ? null
+                : imageString
+        return normalizedSource
+    }
+    //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
     return (
         <PanGestureHandler onGestureEvent={onGestureEvent}>
             <Animated.View
@@ -134,11 +150,13 @@ const OtherProfilePhotoScreen = ({ route, ...props }) => {
                         }}
                     >
                         <SharedElement id={'2'}>
-                            <Image
-                                source={{
-                                    uri: profilePic,
-                                }}
+                            <FastImage
                                 style={styles.image}
+                                resizeMode={FastImage.resizeMode.cover}
+                                source={{
+                                    uri: normalizedSource(),
+                                    priority: FastImage.priority.normal,
+                                }}
                             />
                         </SharedElement>
                     </View>

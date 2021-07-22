@@ -30,15 +30,18 @@ export default {
     biyouraPurple: 'rgba(67, 0, 138, 1)',
 
     // new pallet
-    nPButton: 'rgba(245, 97, 139, 1)',
+    nPButton: 'rgba(107,126,225,1)',
+    nPButtonOld: 'rgba(245, 97, 139, 1)',
     darkestColorP1: '#1A1B1E',
     darkColorP1: 'rgba(42,44,58,1)',
     lightestColorP1: 'rgba(146, 136, 153, 1)',
     backgroundBlurLight: 'rgba(145, 145, 145, 0.6)',
     inputBorderColor: 'rgba(235,235,235,1)',
+    overallBackground: '#e0e0e0',
 
     // new pallet 2
     mainColorP2: 'rgba(107,126,225,1)',
+    mainColorP3: '#7300ff',
     borderRadius: 16,
     maxFontSizeMultiplier: 1.2,
     screenHeight: height,

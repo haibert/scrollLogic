@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import {
     View,
     StyleSheet,
@@ -16,13 +16,13 @@ import Animated, {
     withTiming,
     useAnimatedStyle,
     withDelay,
-    withSequence,
 } from 'react-native-reanimated'
 
 //custom components
 import ScreenWrapper from '../components/ScreenWrapper'
 import SearchCell from '../components/SearchScreen/SearchCell'
 import BottomNavBar from '../components/BottomNavBar'
+import NuemorphicNavBar from '../components/NuemorphicNavBar'
 import useDidMountEffect from '../hooks/useDidMountEffect'
 
 //colors
@@ -41,6 +41,7 @@ import * as ImagePicker from 'expo-image-picker'
 import { Ionicons } from '@expo/vector-icons'
 
 //redux
+import { loadPermissions } from '../store/permissions/actions'
 import { search, emptyProfile } from '../store/signup-auth/actions'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -55,17 +56,26 @@ import { Audio } from 'expo-av'
 import { InteractionManager } from 'react-native'
 import { useFocusEffect } from '@react-navigation/native'
 
+//isFocused
+import { useIsFocused } from '@react-navigation/native'
+
 const SearchScreen = ({ route, ...props }) => {
-    let isAndroid
-    if (Platform.OS === 'android') {
-        isAndroid = true
-    }
+    const isAndroid = useMemo(() => {
+        if (Platform.OS === 'android') {
+            return true
+        } else {
+            return false
+        }
+    }, [])
 
     //insets
     const insets = useSafeAreaInsets()
 
     //dispatch
     const dispatch = useDispatch()
+
+    //isfocused
+    const isFocused = useIsFocused()
 
     //searches
     const searches = useSelector((state) => state.signupReducer.searches)
@@ -74,11 +84,11 @@ const SearchScreen = ({ route, ...props }) => {
     //     searches
     //)
 
-    useFocusEffect(() => {
-        if (props.navigation.isFocused()) {
+    useFocusEffect(
+        useCallback(() => {
             startOpacityAnim2()
-        }
-    })
+        }, [])
+    )
 
     //----------------------------------------------------------------KEYBOARD STATUS~----------------------------------------------------------------
     useEffect(() => {
@@ -135,6 +145,16 @@ const SearchScreen = ({ route, ...props }) => {
     }, [])
     //----------------------------------------------------------------HIDE NAVIGATION BAR ANIMATION----------------------------------------------------------------
 
+    //----------------------------------------------------------------REVEAL NAV BAR AFTER BLUR----------------------------------------------------------------
+    useEffect(() => {
+        const unsubscribe = props.navigation.addListener('blur', () => {
+            isAndroid && animatedOpacity.value === 0 ? startOpacityAnim() : null
+        })
+
+        return unsubscribe
+    }, [props.navigation])
+    //----------------------------------------------------------------REVEAL NAV BAR AFTER BLUR----------------------------------------------------------------
+
     //----------------------------------------------------------------CANCEL BUTTON ANIMATION----------------------------------------------------------------
     const animatedWidth = useSharedValue(width - 20)
 
@@ -156,7 +176,7 @@ const SearchScreen = ({ route, ...props }) => {
             )
         }
     }, [])
-
+    console.log('rerendered')
     const expandSearchBar = useCallback(() => {
         if (animatedWidth.value !== width - 20) {
             Keyboard.dismiss()
@@ -177,12 +197,14 @@ const SearchScreen = ({ route, ...props }) => {
         if (animatedWidth.value !== width - 20) {
             animatedRight.value = withTiming(-70, { duration: 100 })
             isAndroid ? startOpacityAnim() : null
+            console.log('moveCancelButton Ran')
         } else {
             animatedRight.value = withDelay(
                 60,
                 withTiming(-5, { duration: 100 })
             )
             isAndroid ? startOpacityAnim() : null
+            console.log('moveCancelButton Ran')
         }
     }, [isAndroid])
     //----------------------------------------------------------------CANCEL BUTTON ANIMATION----------------------------------------------------------------
@@ -211,7 +233,7 @@ const SearchScreen = ({ route, ...props }) => {
             showLoader()
             await dispatch(search(searchTerm))
             hideLoader()
-        }, 100)
+        }, 200)
 
         return () => clearTimeout(delayDebounceFn)
     }, [searchTerm])
@@ -222,6 +244,7 @@ const SearchScreen = ({ route, ...props }) => {
             setSearchTerm(text)
         }
     }, [])
+
     //----------------------------------------------------------------SEARCH HTTP CALL--------------------------------------------------------
 
     //----------------------------------------------------------------CAMERA PRESSED HANDLER----------------------------------------------------------------
@@ -259,22 +282,6 @@ const SearchScreen = ({ route, ...props }) => {
                     return
                 }
             }
-        }
-    }
-
-    const askForQRScannerPermissions = async () => {
-        const { status } = await BarCodeScanner.requestPermissionsAsync()
-        setShowModal(false)
-
-        setHasCameraPermission(status === 'granted')
-        if (status === 'granted') {
-            props.navigation.navigate('JoinEventScreen', {
-                permission: status,
-            })
-        } else {
-            props.navigation.navigate('JoinEventScreen', {
-                permission: status,
-            })
         }
     }
 
@@ -329,18 +336,9 @@ const SearchScreen = ({ route, ...props }) => {
     //----------------------------------------------------------------CAMERA PRESSED HANDLER----------------------------------------------------------------
 
     //----------------------------------------------------------------FLATlIST OPTIMIZATION----------------------------------------------------------------
-    const onSearchPressed = useCallback(() => {
-        isAndroid && animatedOpacity.value === 0 ? startOpacityAnim() : null
-    }, [isAndroid])
 
     const render = useCallback(({ item, index }) => {
-        return (
-            <SearchCell
-                searchResults={item}
-                navigation={props.navigation}
-                onPress={onSearchPressed}
-            />
-        )
+        return <SearchCell searchResults={item} navigation={props.navigation} />
     }, [])
 
     const layOut = useCallback(
@@ -355,14 +353,15 @@ const SearchScreen = ({ route, ...props }) => {
     const keyExtractor = useCallback((item) => item.id, [])
 
     const onScroll = useCallback(() => {
+        console.log('onScroll Ran')
         isAndroid && animatedOpacity.value === 0 ? startOpacityAnim() : null
         Keyboard.dismiss()
     }, [isAndroid])
 
     const onTouchStart = useCallback(() => {
         if (searches.length === 0) {
-            moveCancelButton()
-            expandSearchBar()
+            // moveCancelButton()
+            // expandSearchBar()
         }
     }, [searches])
 
@@ -422,7 +421,7 @@ const SearchScreen = ({ route, ...props }) => {
                 getItemLayout={layOut}
                 style={styles.bigList}
                 showsVerticalScrollIndicator={true}
-                onScroll={onScroll}
+                onScrollBeginDrag={onScroll}
                 contentContainerStyle={{ paddingBottom: insets.bottom + 50 }}
             />
             <Animated.View
@@ -436,11 +435,11 @@ const SearchScreen = ({ route, ...props }) => {
                     },
                 ]}
             >
-                <ActivityIndicator />
+                <ActivityIndicator color={colors.nPButton} />
             </Animated.View>
             <Animated.View style={bottomNavStyle}>
-                <BottomNavBar
-                    onHomePressed={() => {
+                <NuemorphicNavBar
+                    onFeedPressed={() => {
                         props.navigation.navigate('DashboardScreen')
                     }}
                     onPlusPressed={() => {
@@ -448,9 +447,10 @@ const SearchScreen = ({ route, ...props }) => {
                     }}
                     onCameraPressed={cameraPressedHandler}
                     onPersonPressed={() => {
-                        props.navigation.navigate('ProfileScreenTwo')
+                        props.navigation.navigate('ProfileScreen')
                     }}
                     navigation={props.navigation}
+                    searchFocused={isFocused ? true : false}
                 />
             </Animated.View>
         </ScreenWrapper>
@@ -495,11 +495,11 @@ const styles = StyleSheet.create({
     loadingView: {
         flex: 1,
         alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'white',
+        paddingTop: 30,
         position: 'absolute',
         width: '100%',
         bottom: 0,
+        backgroundColor: colors.overallBackground,
     },
 })
 

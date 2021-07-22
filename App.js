@@ -3,7 +3,8 @@ import 'expo-dev-client'
 //redux
 import { createStore, combineReducers, applyMiddleware } from 'redux'
 import { Provider } from 'react-redux'
-
+import AppLoading from 'expo-app-loading'
+import { useFonts, Inter_900Black } from '@expo-google-fonts/inter'
 //redux-thunk
 import ReduxThunk from 'redux-thunk'
 
@@ -20,13 +21,13 @@ import * as FileSystem from 'expo-file-system'
 //utilities
 import { cleanupCache } from './src/utilities/cleanUpCash'
 
-init()
-    .then(() => {
-        console.log('Initialized DB')
-    })
-    .catch((err) => {
-        console.log(`Initializing DB failed. Error: ${err}`)
-    })
+// init()
+//     .then(() => {
+//         console.log('Initialized DB')
+//     })
+//     .catch((err) => {
+//         console.log(`Initializing DB failed. Error: ${err}`)
+//     })
 
 import signupReducer from './src/store/signup-auth/reducer'
 import cameraReducer from './src/store/camera/reducer'
@@ -52,8 +53,17 @@ export default function App() {
     //     cleanupCache({ size: 200 })
     // }, [])
 
-    const isHermes = () => !!global.HermesInternal
-    console.log('🚀 ~ file: App.js ~ line 28 ~ isHermes', isHermes())
+    // const isHermes = () => !!global.HermesInternal
+    // console.log('🚀 ~ file: App.js ~ line 28 ~ isHermes', isHermes())
+
+    let [fontsLoaded] = useFonts({
+        Inter_900Black,
+    })
+
+    if (!fontsLoaded) {
+        return <AppLoading />
+    }
+
     return (
         <Provider store={store}>
             <AppNavigator />

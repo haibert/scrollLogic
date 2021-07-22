@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     },
     headerText: {
         color: 'white',
-        fontSize: 21,
+        fontSize: 18,
         fontWeight: 'bold',
         textAlign: 'center',
     },

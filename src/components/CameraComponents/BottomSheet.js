@@ -91,6 +91,9 @@ const BottomSheet = forwardRef((props, ref) => {
         handlePresentModalPress: () => {
             bottomSheetModalRef.current?.present()
         },
+        handleDismissModalPress: () => {
+            bottomSheetModalRef.current?.dismiss()
+        },
     }))
     const handleSheetChangesModal = useCallback((index) => {}, [])
 

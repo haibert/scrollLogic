@@ -73,19 +73,6 @@ const DAddYourBirthday = (props) => {
     console.log('rerender')
     console.log(openAndroidDate)
 
-    // const showMode = (currentMode) => {
-    //     setShow(true)
-    //     setMode(currentMode)
-    // }
-
-    // const showDatepicker = () => {
-    //     showMode('date')
-    // }
-
-    // const showTimepicker = () => {
-    //     showMode('time')
-    // }
-
     function nextPressedHandler() {
         // console.log(dateError)
         // if (dateError !== ' ') {
