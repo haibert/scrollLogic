@@ -22,7 +22,6 @@ const SearchCell = (props) => {
 
     //----------------------------------------------------------------Load Profile----------------------------------------------------------------
     const onPress = useCallback(async () => {
-        // console.log(props.searchResults.firstName)
         try {
             // await dispatch(loadProfile(props.searchResults.uniqueID))
             props.navigation.navigate('OtherProfileScreen', {
