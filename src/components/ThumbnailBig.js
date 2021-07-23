@@ -173,11 +173,9 @@ const ThumbnailBig = (props) => {
                     />
                 </Animated.View>
                 <Animated.View style={[styles.wholeCont, bigContStyle]}>
-                    <ImageBackground
+                    <View
                         style={styles.actionBar}
-                        blurRadius={100}
-                        source={require('../../assets/AndroidTransparentPngBLUR.png')}
-                        resizeMode="stretch"
+                        // source={require('../../assets/AndroidTransparentPngBLUR.png')}
                     />
 
                     <Ionicons

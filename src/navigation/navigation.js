@@ -45,6 +45,7 @@ import PhotoEditScreen from '../screens/profileScreen/PhotoEditScreen'
 import ProfileEditScreen from '../screens/profileScreen/ProfileEditScreen'
 import EditNameScreen from '../screens/profileScreen/EditNameScreen'
 import EditBirthdayScreen from '../screens/profileScreen/EditBirthdayScreen'
+import EditPhoneScreen from '../screens/profileScreen/EditPhoneScreen'
 
 //event creation
 import CreateEventScreen from '../screens/eventCreation/CreateEventScreen'
@@ -97,7 +98,7 @@ const iosTransitionSpec = {
     config: {
         stiffness: 1000,
         damping: 1000,
-        mass: Platform.OS === 'android' ? 2.5 : 1.9,
+        mass: Platform.OS === 'android' ? 3 : 1.9,
         overshootClamping: true,
         restDisplacementThreshold: 10,
         restSpeedThreshold: 10,
@@ -135,6 +136,17 @@ const gestureDirectionVertical = 'vertical'
 const gestureDirectionHorizontal = 'horizontal'
 //----------------------------------------------------------------CHANGING NAV OPTIONS----------------------------------------------------------------
 
+//----------------------------------------------------------------NULL ANIMATION CONFIG----------------------------------------------------------------
+const nullAnimationConfig = (route) => {
+    return [
+        {
+            id: null,
+        },
+    ]
+}
+
+//----------------------------------------------------------------NULL ANIMATION CONFIG----------------------------------------------------------------
+
 const SignUpNavigation = () => {
     return (
         <MainStack.Navigator
@@ -162,9 +174,7 @@ const SignUpNavigation = () => {
     )
 }
 
-const DashStackShared = createSharedElementStackNavigator({
-    debug: true,
-})
+const DashStackShared = createSharedElementStackNavigator()
 const DashModalStack = () => {
     return (
         <DashStackShared.Navigator
@@ -272,13 +282,19 @@ const DashModalStack = () => {
                 component={ProfileEditScreen}
                 options={{
                     headerShown: false,
+                    useNativeDriver: true,
                     gestureResponseDistance: gestureResponseVertical,
                     gestureDirection: gestureDirectionVertical,
                 }}
                 sharedElementsConfig={(route) => {
+                    const routeName = route.name
+                    console.log(
+                        '🚀 ~ file: navigation.js ~ line 280 ~ DashModalStack ~ routeName',
+                        routeName
+                    )
                     return [
                         {
-                            id: '1',
+                            id: routeName === 'EditNameScreen' ? null : '1',
                             animation:
                                 Platform.OS === 'android' ? 'fade-out' : null,
                             resize: 'auto',
@@ -460,6 +476,7 @@ const DashModalStack = () => {
                     gestureResponseDistance: gestureResponseHorizontal,
                     gestureDirection: gestureDirectionHorizontal,
                 }}
+                sharedElementsConfig={nullAnimationConfig}
             />
             <DashStackShared.Screen
                 name="EditBirthdayScreen"
@@ -467,9 +484,22 @@ const DashModalStack = () => {
                 options={{
                     headerShown: false,
                     ...TransitionPresets.SlideFromRightIOS,
+                    gestureResponseDistance: { horizontal: 1000 },
+                    gestureDirection: gestureDirectionHorizontal,
+                }}
+                sharedElementsConfig={nullAnimationConfig}
+            />
+
+            <DashStackShared.Screen
+                name="EditPhoneScreen"
+                component={EditPhoneScreen}
+                options={{
+                    headerShown: false,
+                    ...TransitionPresets.SlideFromRightIOS,
                     gestureResponseDistance: gestureResponseHorizontal,
                     gestureDirection: gestureDirectionHorizontal,
                 }}
+                sharedElementsConfig={nullAnimationConfig}
             />
         </DashStackShared.Navigator>
     )

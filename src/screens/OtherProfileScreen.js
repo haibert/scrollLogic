@@ -256,7 +256,10 @@ const OtherProfileScreen = (props) => {
     }, [setLoadingGalleries, dispatch, uniqueID])
 
     useEffect(() => {
-        loadGalleries()
+        const task = InteractionManager.runAfterInteractions(() => {
+            loadGalleries()
+        })
+        return () => task.cancel()
     }, [loadGalleries])
 
     //----------------------------------------------------------------LOAD GALLERIES----------------------------------------------------------------

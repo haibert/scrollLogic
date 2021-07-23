@@ -57,4 +57,4 @@ const ScreenWrapper = (props) => {
 
 const styles = StyleSheet.create({})
 
-export default ScreenWrapper
+export default React.memo(ScreenWrapper)

@@ -1,5 +1,12 @@
-import React, { useState, useCallback } from 'react'
-import { View, Text, StyleSheet, Keyboard, Platform } from 'react-native'
+import React, { useState, useCallback, useMemo } from 'react'
+import {
+    View,
+    Text,
+    StyleSheet,
+    Keyboard,
+    Platform,
+    Dimensions,
+} from 'react-native'
 import {
     TouchableOpacity,
     TouchableWithoutFeedback,
@@ -8,14 +15,8 @@ import {
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-// to calculate safe area dimensions
-import StaticSafeAreaInsets from 'react-native-static-safe-area-insets'
-
 //ionicons
 import { Ionicons } from '@expo/vector-icons'
-
-//Linear Gradient
-import { LinearGradient } from 'expo-linear-gradient'
 
 //colors
 import colors from '../../constants/colors'
@@ -25,109 +26,75 @@ import Button from '../../components/Button'
 import ScreenWrapper from '../../components/ScreenWrapper'
 import HeaderBasic from '../../components/HeaderBasic'
 
-//picker
-import DateTimePicker from '@react-native-community/datetimepicker'
+//date picker
+import DatePicker from 'react-native-date-picker'
 
 //redux
-import { addBirthday } from '../../store/signup-auth/actions'
+import { editProfile } from '../../store/signup-auth/actions'
 import { useDispatch, useSelector } from 'react-redux'
 
-function hideKeyboard() {
-    Keyboard.dismiss()
-}
+//dimensions
+const { width, height } = Dimensions.get('window')
+
+//moment
+import moment from 'moment'
 
 const EditBirthdayScreen = ({ route, ...props }) => {
-    const insets = useSafeAreaInsets()
+    //date passed from nav
+    const { birthdayNavPassed } = route.params
 
+    //dispatch
     const dispatch = useDispatch()
 
-    const [dateError, setDateError] = useState(' ')
+    //----------------------------------------------------------------DATE CHANGE LOGIC----------------------------------------------------------------
+    const [dateError, setDateError] = useState(null)
+    const dateNavPassedFormatted = new Date(birthdayNavPassed)
+    const [date, setDate] = useState(
+        Platform.OS === 'android' ? new Date() : dateNavPassedFormatted
+    )
 
-    const [date, setDate] = useState(new Date())
-    const [mode, setMode] = useState('date')
-    const [show, setShow] = useState(false)
-    const [openAndroidDate, setOpenAndroidDate] = useState(false)
+    //formatted date
+    const formattedDate = useMemo(
+        () =>
+            date.toLocaleDateString('en-EN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+            }),
+        [date]
+    )
 
-    const onDateChange = (event, selectedDate) => {
-        const currentDate = selectedDate || date
-        // event.type === 'set' ? setOpenAndroidDate(false) : null
+    const onDateChange = useCallback(
+        (selectedDate) => {
+            var todayDate = new Date()
+
+            if (todayDate < selectedDate) {
+                setDate(todayDate)
+                setDateError('Please select a valid date.')
+                return
+            }
+
+            setDate(selectedDate)
+            setDateError(null)
+        },
+        [date]
+    )
+    //----------------------------------------------------------------DATE CHANGE LOGIC----------------------------------------------------------------
+
+    //----------------------------------------------------------------SAVE HANDLER----------------------------------------------------------------
+    const savePressedHandler = useCallback(async () => {
         var todayDate = new Date()
+        const momentDate = moment(date).format('YYYY-MM-DD')
 
-        if (todayDate < selectedDate) {
-            setDate(todayDate)
+        if (todayDate < date) {
             setDateError('Please select a valid date.')
             return
         }
 
-        setDate(currentDate)
-        Platform.OS === 'android' ? setOpenAndroidDate(false) : null
-        // setDateError(' ')
-    }
-
-    console.log('rerender')
-    console.log(openAndroidDate)
-
-    function nextPressedHandler() {
-        // console.log(dateError)
-        // if (dateError !== ' ') {
-        //     return
-        // }
-        dispatch(addBirthday(date))
-        props.navigation.navigate('FUserName')
-    }
-    //----------------------------------------------------------------ANDROID DATE COMPONENT----------------------------------------------------------------
-    const AndroidDatePicker = useCallback(() => {
-        return openAndroidDate ? (
-            <View
-                style={{
-                    backgroundColor: 'rgba(0,0,0,0.54)',
-                }}
-            >
-                <DateTimePicker
-                    style={{
-                        minWidth: '100%',
-                        height: 200,
-                    }}
-                    testID="dateTimePicker"
-                    value={date}
-                    mode={mode}
-                    // is24Hour={true}
-                    display="spinner"
-                    onChange={onDateChange}
-                />
-            </View>
-        ) : null
-    }, [setOpenAndroidDate, openAndroidDate])
-    //----------------------------------------------------------------ANDROID DATE COMPONENT----------------------------------------------------------------
-
-    //----------------------------------------------------------------IOS DATE COMPONENT----------------------------------------------------------------
-    const IOSDatePicker = () => {
-        return (
-            <View
-                style={{
-                    backgroundColor: 'rgba(0,0,0,0)',
-                }}
-            >
-                <DateTimePicker
-                    style={{
-                        minWidth: '100%',
-                        height: 200,
-                    }}
-                    testID="dateTimePicker"
-                    value={date}
-                    mode={mode}
-                    // is24Hour={true}
-                    display="spinner"
-                    onChange={onDateChange}
-                />
-            </View>
-        )
-    }
-    //----------------------------------------------------------------IOS DATE COMPONENT----------------------------------------------------------------
-
-    const androidDatePressedHandler = useCallback(() => {
-        Platform.OS === 'android' ? setOpenAndroidDate(true) : null
-    }, [setOpenAndroidDate, openAndroidDate])
+        await dispatch(editProfile(null, null, momentDate, null))
+        props.navigation.goBack()
+    }, [dateError, date])
+    //----------------------------------------------------------------SAVE HANDLER----------------------------------------------------------------
 
     return (
         <ScreenWrapper paddingBottom>
@@ -136,6 +103,8 @@ const EditBirthdayScreen = ({ route, ...props }) => {
                     props.navigation.goBack()
                 }}
                 iconName="chevron-back-outline"
+                header="Birthday"
+                headerColor={{ color: colors.darkestColorP1 }}
             />
             <View style={styles.midCont}>
                 <View>
@@ -145,29 +114,28 @@ const EditBirthdayScreen = ({ route, ...props }) => {
                             selectionColor={colors.lightTint}
                             underlineColorAndroid="rgba(255,255,255,0)"
                             maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
-                            onPress={androidDatePressedHandler}
                         >
-                            {`${date.toLocaleDateString('en-EN', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                            })}`}
+                            {formattedDate}
                         </Text>
                     </View>
                     <Text style={styles.errorText}>{dateError}</Text>
                 </View>
 
-                <View style={styles.dateCont}>
+                <View>
                     <Button
                         style={styles.button}
-                        onPress={nextPressedHandler}
-                        text="Next"
+                        onPress={savePressedHandler}
+                        text="Save"
                     />
-                    {Platform.OS === 'android' ? (
-                        <AndroidDatePicker />
-                    ) : (
-                        <IOSDatePicker />
-                    )}
+                    <DatePicker
+                        date={date}
+                        onDateChange={(date) => {
+                            onDateChange(date)
+                        }}
+                        mode="date"
+                        fadeToColor={'none'}
+                        style={styles.datePicker}
+                    />
                 </View>
             </View>
         </ScreenWrapper>
@@ -180,8 +148,14 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         flex: 1,
     },
-    dateCont: {
-        // alignItems: 'center',
+    image: {
+        width: 90,
+        height: 90,
+        borderRadius: 45,
+    },
+    datePicker: {
+        width: width,
+        height: 200,
     },
     textInputCont: {
         flexDirection: 'row',

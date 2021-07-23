@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo, useState, useEffect } from 'react'
 import {
     View,
     Text,
@@ -19,31 +19,18 @@ import Button from '../components/Button'
 import GalRequestCell from '../components/ProfileScreen/GalRequestCell'
 import BottomNavBar from '../components/BottomNavBar'
 import NuemorphicNavBar from '../components/NuemorphicNavBar'
-
-//paper
-// import { Avatar, Title, Caption, Paragraph, Drawer } from 'react-native-paper'
+import StatsContainer from '../components/ProfileScreen/StatsContainer'
+import AnimatedTabBAr from '../components/ProfileScreen/AnimatedTabBAr'
+import ProfileTopElements from '../components/ProfileScreen/ProfileTopElements'
+import Thumbnail from '../components/Thumbnail'
 
 //redux
-// import { deletePhoto } from '../store/event/action'
-import {
-    savePermissionsStatus,
-    loadPermissions,
-} from '../store/permissions/actions'
+import { loadPermissions } from '../store/permissions/actions'
+import { setGalleries, shouldRefreshSet } from '../store/event/action'
 import { useDispatch, useSelector } from 'react-redux'
 
 //colors
 import colors from '../constants/colors'
-import { fonts } from 'react-native-elements/dist/config'
-
-//reanimated
-import Animated, {
-    useAnimatedStyle,
-    useSharedValue,
-    withTiming,
-} from 'react-native-reanimated'
-
-// expo blurview
-import { BlurView } from 'expo-blur'
 
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -56,18 +43,13 @@ import { fakeArray as listData } from '../data/images'
 
 const { width, height } = Dimensions.get('window')
 
-//shared elements
-import { SharedElement } from 'react-navigation-shared-element'
-
 //expo camera
 import { Camera } from 'expo-camera'
 import { Audio } from 'expo-av'
 
-//isFocused
-import { useIsFocused } from '@react-navigation/native'
-
-//fast image
-import FastImage from 'react-native-fast-image'
+//useFocus InteractionManager
+import { InteractionManager } from 'react-native'
+import { useIsFocused, useFocusEffect } from '@react-navigation/native'
 
 const ProfileScreen = (props) => {
     //personal info
@@ -76,11 +58,52 @@ const ProfileScreen = (props) => {
     //insets
     const insets = useSafeAreaInsets()
 
-    //isfocused
+    //isFocused
     const isFocused = useIsFocused()
 
     //dispatch
     const dispatch = useDispatch()
+
+    //tab bar position
+    let tabBarBottomPosition = insets.bottom > 0 ? insets.bottom / 2 + 2 : 10
+
+    //----------------------------------------------------------------LOAD GALLERIES----------------------------------------------------------------
+    const [loadingGalleries, setLoadingGalleries] = useState(false)
+
+    const galleries = useSelector((state) => state.galleryReducer.galleries)
+
+    const shouldRefresh = useSelector(
+        (state) => state.galleryReducer.shouldRefresh
+    )
+
+    const loadGalleries = useCallback(async () => {
+        // setLoadingGalleries(true)
+        // setError(null)
+        try {
+            await dispatch(setGalleries(userID))
+        } catch (error) {
+            // setError(error.message)
+        }
+        // setLoadingGalleries(false)
+    }, [setLoadingGalleries, dispatch])
+
+    useEffect(() => {
+        const task = InteractionManager.runAfterInteractions(() => {
+            loadGalleries()
+        })
+        return () => task.cancel()
+    }, [])
+
+    useFocusEffect(() => {
+        const refreshConditionally = async () => {
+            if (shouldRefresh) {
+                loadGalleries()
+                await dispatch(shouldRefreshSet(false))
+            }
+        }
+        refreshConditionally()
+    })
+    //----------------------------------------------------------------LOAD GALLERIES----------------------------------------------------------------
 
     //----------------------------------------------------------------CAMERA PRESSED HANDLER----------------------------------------------------------------
     const greenLightOnPermissions = useSelector(
@@ -94,7 +117,6 @@ const ProfileScreen = (props) => {
             const { status } = await Camera.getPermissionsAsync()
             const audioStatus = await Audio.getPermissionsAsync()
 
-            // setHasCameraPermission(status === 'granted')
             if (status && audioStatus.status === 'granted') {
                 dispatch(loadPermissions('granted'))
                 props.navigation.navigate('CameraScreen')
@@ -120,34 +142,20 @@ const ProfileScreen = (props) => {
         }
     }
 
-    const askForQRScannerPermissions = async () => {
-        const { status } = await BarCodeScanner.requestPermissionsAsync()
-        setShowModal(false)
-
-        setHasCameraPermission(status === 'granted')
-        if (status === 'granted') {
-            props.navigation.navigate('JoinEventScreen', {
-                permission: status,
-            })
-        } else {
-            props.navigation.navigate('JoinEventScreen', {
-                permission: status,
-            })
+    const openSettings = useCallback(async () => {
+        Platform.OS === 'android' ? Linking.openSettings() : null
+        if (Platform.OS === 'ios') {
+            const supported = await Linking.canOpenURL('app-settings:')
+            try {
+                if (!supported) {
+                    console.log("Can't handle settings url")
+                } else {
+                    return Linking.openURL('app-settings:')
+                }
+            } catch (err) {
+                console.error('An error occurred', err)
+            }
         }
-    }
-
-    const openSettings = useCallback(() => {
-        Platform.OS === 'android'
-            ? Linking.openSettings()
-            : Linking.canOpenURL('app-settings:')
-                  .then((supported) => {
-                      if (!supported) {
-                          console.log("Can't handle settings url")
-                      } else {
-                          return Linking.openURL('app-settings:')
-                      }
-                  })
-                  .catch((err) => console.error('An error occurred', err))
     }, [])
 
     const sendUserToSettingsHandler = useCallback(() => {
@@ -186,48 +194,58 @@ const ProfileScreen = (props) => {
     }, [])
     //----------------------------------------------------------------CAMERA PRESSED HANDLER----------------------------------------------------------------
 
-    //----------------------------------------------------------------ANIMATION LOGIC----------------------------------------------------------------
-    const animatedValue = useSharedValue(0)
-    const animatedStyle = useAnimatedStyle(() => {
-        return {
-            right: animatedValue.value,
-            backgroundColor: colors.nPButton,
-            width: '33%',
-            height: 5,
-        }
-    })
-    const startAnimationRight = () => {
-        animatedValue.value = withTiming(-(width - width / 3), {
-            duration: 100,
-        })
-    }
-    const startAnimationMiddle = () => {
-        animatedValue.value = withTiming(-(width - width / 3 - width / 3), {
-            duration: 100,
-        })
-    }
-    const startAnimationLeft = () => {
-        animatedValue.value = withTiming(0, { duration: 100 })
-    }
-    //----------------------------------------------------------------ANIMATION LOGIC----------------------------------------------------------------
+    //----------------------------------------------------------------FLAT LIST FUNCTIONS--------------------------------------------------------------
 
-    //----------------------------------------------------------------FLATlIST OPTIMIZATION----------------------------------------------------------------
     const render = useCallback(({ item, index }) => {
-        return <GalRequestCell />
+        return (
+            <Thumbnail
+                images={item}
+                galleryPressedHandler={() => {
+                    galleryPressedHandler(
+                        item.galleryID,
+                        item.thumbnail,
+                        item.galleryName
+                    )
+                }}
+                navigation={props.navigation}
+                galleryName={item.galleryName}
+                onActionsPressed={onActionsPressed.bind(this, item, index)}
+                key={item.galleryID}
+                imageURI={`${item.thumbnail}`}
+            />
+        )
     }, [])
+
+    const galleryPressedHandler = useCallback(
+        (galleryID, thumbnail, galName) => {
+            props.navigation.navigate('GalleryView', {
+                galleryID,
+                thumbnail,
+                galName,
+            })
+        },
+        []
+    )
+
+    const onActionsPressed = useCallback((item, index) => {
+        bottomSheetRef.current?.handlePresentModalPress()
+        setDeleteID({ id: item.galleryID, index: index })
+    }, [])
+
+    const itemHeight = useMemo(() => width / 2 - 5)
 
     const layOut = useCallback(
         (data, index) => ({
-            length: 60,
-            offset: 60 * index,
+            length: itemHeight,
+            offset: itemHeight * index,
             index,
         }),
         []
     )
 
-    const keyExtractor = useCallback((item) => item.id, [])
+    const keyExtractor = useCallback((item) => `${item.galleryID}`, [])
 
-    //----------------------------------------------------------------FLATlIST OPTIMIZATION----------------------------------------------------------------
+    //----------------------------------------------------------------FLAT LIST FUNCTIONS--------------------------------------------------------------
 
     //----------------------------------------------------------------PROFILE PHOTO PRESSED----------------------------------------------------------------
     const handleProfilePhotoPressed = useCallback(() => {
@@ -252,7 +270,7 @@ const ProfileScreen = (props) => {
     //----------------------------------------------------------------FOLLOWINGS PRESSED HANDLER----------------------------------------------------------------
 
     //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
-    const normalizedSource = () => {
+    const normalizedSource = useCallback(() => {
         const imageString = `${personalInfo.avatarThumbPath}`
         const normalizedSource =
             imageString &&
@@ -261,75 +279,32 @@ const ProfileScreen = (props) => {
                 ? null
                 : imageString
         return normalizedSource
-    }
+    }, [personalInfo])
     //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
 
     return (
         <ScreenWrapper style={{ paddingTop: 0 }}>
-            <ImageBackground
-                style={{ ...styles.topCont, paddingTop: insets.top * 2 - 10 }}
-                source={{
-                    uri: personalInfo.avatarFullPath,
-                }}
-                blurRadius={10}
+            <ProfileTopElements
+                normalizedSource={normalizedSource}
+                handleProfilePhotoPressed={handleProfilePhotoPressed}
+                personalInfo={personalInfo}
             >
-                <TouchableWithoutFeedback onPress={handleProfilePhotoPressed}>
-                    <SharedElement id={'1'}>
-                        <FastImage
-                            resizeMode={FastImage.resizeMode.cover}
-                            source={{
-                                uri: normalizedSource(),
-                                priority: FastImage.priority.normal,
-                            }}
-                            style={styles.avatar}
-                        />
-                    </SharedElement>
-                </TouchableWithoutFeedback>
-                <Text
-                    style={styles.name}
-                    maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
-                >
-                    {personalInfo.firstName} {personalInfo.lastName}
-                </Text>
-                <Text
-                    style={{ color: 'white', fontSize: 15 }}
-                    maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
-                >{`@${personalInfo.username}`}</Text>
                 <Button
                     text="Edit"
                     style={styles.button}
                     onPress={editPressedHandler}
                 />
-                <View style={styles.stats}>
-                    <Pressable
-                        style={styles.statCubes1}
-                        onPress={() => {
-                            followingsPressedHandler('following')
-                        }}
-                    >
-                        <Text style={styles.numbers}>
-                            {personalInfo?.followingCount}
-                        </Text>
-                        <Text style={{ color: 'white' }}>Following</Text>
-                    </Pressable>
-                    <Pressable
-                        style={styles.statCubes2}
-                        onPress={() => {
-                            followingsPressedHandler('followers')
-                        }}
-                    >
-                        <Text style={styles.numbers}>
-                            {personalInfo?.followersCount}
-                        </Text>
-                        <Text style={{ color: 'white' }}>Followers</Text>
-                    </Pressable>
-                    <View style={styles.statCubes3}>
-                        <Text style={styles.numbers}>23,6k</Text>
-                        <Text style={{ color: 'white' }}>Likes Received</Text>
-                    </View>
-                </View>
-                <View height={20}></View>
-            </ImageBackground>
+                <StatsContainer
+                    followingCount={personalInfo?.followingCount}
+                    followersCount={personalInfo?.followersCount}
+                    followingsPressedHandler={() => {
+                        followingsPressedHandler('following')
+                    }}
+                    followersPressedHandler={() => {
+                        followingsPressedHandler('followers')
+                    }}
+                />
+            </ProfileTopElements>
             <HeaderBasic
                 iconName="menu-outline"
                 goBack={() => {
@@ -340,43 +315,22 @@ const ProfileScreen = (props) => {
             >
                 <Text style={styles.signOut}>Sign Out</Text>
             </HeaderBasic>
-            <View style={styles.requestsColumCont}>
-                <View
-                    style={styles.requestsColumButtons}
-                    onTouchStart={() => {
-                        startAnimationLeft()
-                    }}
-                >
-                    <Text style={styles.requestsText}>Requests</Text>
-                </View>
-                <View
-                    style={styles.requestsColumButtons}
-                    onTouchStart={() => {
-                        startAnimationMiddle()
-                    }}
-                >
-                    <Text style={styles.requestsText}>Invites</Text>
-                </View>
-                <View
-                    style={styles.requestsColumButtons}
-                    onTouchStart={() => {
-                        startAnimationRight()
-                    }}
-                >
-                    <Text style={styles.requestsText}>Friends</Text>
-                </View>
-                <View style={styles.animatingBar}>
-                    <Animated.View style={animatedStyle}></Animated.View>
-                </View>
-            </View>
+            <AnimatedTabBAr />
             <BigList
-                data={listData}
+                data={galleries}
                 renderItem={render}
+                itemHeight={itemHeight}
+                layOut={layOut}
                 keyExtractor={keyExtractor}
-                itemHeight={width}
-                getItemLayout={layOut}
-                style={styles.bigList}
-                showsVerticalScrollIndicator={true}
+                contentContainerStyle={{
+                    ...styles.bigListContentCont,
+                    paddingBottom: tabBarBottomPosition + 80,
+                }}
+                numColumns={2}
+                onRefresh={loadGalleries}
+                refreshing={loadingGalleries}
+                removeClippedSubviews={Platform.OS === 'android' ? true : false}
+                // ListEmptyComponent={}
             />
             <NuemorphicNavBar
                 onCameraPressed={cameraPressedHandler}
@@ -399,31 +353,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: colors.placeHolder,
-        // position: 'absolute',
-        // top: 0,
     },
     header: {
         position: 'absolute',
         top: 0,
-    },
-    signOut: {
-        color: colors.darkColorP1,
-        fontWeight: 'bold',
-        fontSize: 17,
-        position: 'absolute',
-        top: 10,
-        right: 10,
-    },
-    avatar: {
-        marginTop: 10,
-        borderRadius: 30,
-        height: 60,
-        width: 60,
-    },
-    name: {
-        color: 'white',
-        fontSize: 17,
-        margin: 5,
     },
     button: {
         width: 100,
@@ -431,47 +364,7 @@ const styles = StyleSheet.create({
         height: 30,
         borderRadius: 8,
     },
-    stats: {
-        height: 60,
-        marginHorizontal: 10,
-        flexDirection: 'row',
-        // borderColor: colors.separatorLine,
-        borderRadius: colors.borderRadius,
-        backgroundColor: 'rgba(145,145,145,0.6)',
-        overflow: 'hidden',
-        alignItems: 'center',
-        marginBottom: 10,
-        marginTop: 10,
-    },
-    statCubes1: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRightWidth: 1,
-        borderColor: 'white',
-    },
-    statCubes2: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRightWidth: 1,
-        borderColor: 'white',
-    },
-    statCubes3: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    statCubeInner: {
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    numbers: {
-        fontWeight: 'bold',
-        fontSize: 18,
-        color: 'white',
-    },
-    requestsColumCont: {
+    columCont: {
         height: 50,
         borderBottomWidth: 1,
         borderColor: colors.separatorLine,
@@ -481,23 +374,19 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 20,
         marginTop: -20,
     },
-    requestsText: {
-        color: colors.darkColorP1,
-        fontSize: 17,
-    },
-    requestsColumButtons: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    animatingBar: {
-        height: 5,
-        position: 'absolute',
-        bottom: 0,
-        width: '100%',
-    },
     bigList: {
         flex: 1,
+    },
+    bigListContentCont: {
+        marginLeft: 10,
+    },
+    signOut: {
+        color: colors.darkColorP1,
+        fontWeight: 'bold',
+        fontSize: 17,
+        position: 'absolute',
+        top: 10,
+        right: 10,
     },
 })
 

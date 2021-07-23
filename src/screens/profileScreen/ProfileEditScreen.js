@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useMemo, useEffect } from 'react'
 import {
     View,
     Text,
@@ -53,8 +53,18 @@ const ProfileEditScreen = ({ route, ...props }) => {
     //dispatch
     const dispatch = useDispatch()
 
-    //----------------------------------------------------------------PERMISSION LOGIC----------------------------------------------------------------
+    //formatted date
+    const formattedDate = useMemo(
+        () =>
+            new Date(userInfo.birthday).toLocaleDateString('en-EN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+            }),
+        [userInfo]
+    )
 
+    //----------------------------------------------------------------PERMISSION LOGIC----------------------------------------------------------------
     const openSettings = useCallback(async () => {
         Platform.OS === 'android' ? Linking.openSettings() : null
         if (Platform.OS === 'ios') {
@@ -71,7 +81,7 @@ const ProfileEditScreen = ({ route, ...props }) => {
         }
     }, [])
 
-    function sendUserToSettingsHandler() {
+    const sendUserToSettingsHandler = useCallback(() => {
         const alertMessage =
             'We need access to your photos to be able to upload a profile picture'
         Platform.OS === 'android' ? androidAlert() : IOSAlert()
@@ -104,7 +114,7 @@ const ProfileEditScreen = ({ route, ...props }) => {
                 },
             ])
         }
-    }
+    }, [])
 
     const askForPermission = async () => {
         const { status } = await ImagePicker.getMediaLibraryPermissionsAsync()
@@ -187,7 +197,7 @@ const ProfileEditScreen = ({ route, ...props }) => {
                 header="Edit Profile"
                 headerColor={{ color: colors.darkestColorP1 }}
             />
-            <View style={styles.imageCont}>
+            <Pressable style={styles.imageCont} onPress={editPressedHandler}>
                 <SharedElement id={'1'}>
                     <FastImage
                         resizeMode={FastImage.resizeMode.cover}
@@ -201,7 +211,7 @@ const ProfileEditScreen = ({ route, ...props }) => {
                 <Pressable onPress={editPressedHandler}>
                     <Text style={styles.changeButton}>Change Photo</Text>
                 </Pressable>
-            </View>
+            </Pressable>
             <View style={styles.changesCont}>
                 <Pressable
                     android_ripple={{
@@ -210,7 +220,11 @@ const ProfileEditScreen = ({ route, ...props }) => {
                     }}
                     style={styles.changeButtons}
                     onPress={() => {
-                        props.navigation.navigate('EditNameScreen')
+                        props.navigation.navigate('EditNameScreen', {
+                            namNavPassed:
+                                `${userInfo.firstName} ` +
+                                `${userInfo.lastName}`,
+                        })
                     }}
                 >
                     <Text style={styles.text}>Name</Text>
@@ -253,12 +267,14 @@ const ProfileEditScreen = ({ route, ...props }) => {
                     }}
                     style={styles.changeButtons}
                     onPress={() => {
-                        props.navigation.navigate('EditBirthdayScreen')
+                        props.navigation.navigate('EditBirthdayScreen', {
+                            birthdayNavPassed: formattedDate,
+                        })
                     }}
                 >
                     <Text style={styles.text}>Birthday</Text>
                     <View style={styles.arrowAndTextCont}>
-                        <Text style={styles.text}>{userInfo.birthday}</Text>
+                        <Text style={styles.text}>{formattedDate}</Text>
                         <Ionicons
                             name="chevron-forward-outline"
                             size={20}
@@ -274,6 +290,12 @@ const ProfileEditScreen = ({ route, ...props }) => {
                         color: colors.placeHolder,
                     }}
                     style={styles.changeButtons}
+                    onPress={() => {
+                        props.navigation.navigate('EditPhoneScreen', {
+                            birthdayNavPassed: formattedDate,
+                            phoneNavPassed: userInfo.phone,
+                        })
+                    }}
                 >
                     <Text style={styles.text}>Phone Number</Text>
                     <View style={styles.arrowAndTextCont}>

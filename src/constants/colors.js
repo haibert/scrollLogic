@@ -35,7 +35,7 @@ export default {
     darkestColorP1: '#1A1B1E',
     darkColorP1: 'rgba(42,44,58,1)',
     lightestColorP1: 'rgba(146, 136, 153, 1)',
-    backgroundBlurLight: 'rgba(145, 145, 145, 0.6)',
+    backgroundBlurLight: 'rgba(235,235,235, 0.75)',
     inputBorderColor: 'rgba(235,235,235,1)',
     overallBackground: '#e0e0e0',
 

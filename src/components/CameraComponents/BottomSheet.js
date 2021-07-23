@@ -13,6 +13,7 @@ import {
     BottomSheetScrollView,
     BottomSheetFlatList,
     BottomSheetView,
+    useBottomSheetTimingConfigs,
 } from '@gorhom/bottom-sheet'
 // import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 
@@ -103,7 +104,7 @@ const BottomSheet = forwardRef((props, ref) => {
     const galleries = useSelector((state) => state.galleryReducer.galleries)
 
     const renderItem = useCallback(
-        (item, index) => (
+        ({ item, index }) => (
             <SelectionCellItem
                 key={item.galleryID}
                 navigation={props.navigation}
@@ -111,6 +112,7 @@ const BottomSheet = forwardRef((props, ref) => {
                 galleryID={item.galleryID}
                 onSelect={() => {
                     const exists = selectedGalleries.includes(item.galleryID)
+
                     if (exists) {
                         const index = selectedGalleries.indexOf(item.galleryID)
                         if (index > -1) {
@@ -119,6 +121,10 @@ const BottomSheet = forwardRef((props, ref) => {
                     } else {
                         selectedGalleries.push(item.galleryID)
                     }
+                    console.log(
+                        '🚀 ~ file: BottomSheet.js ~ line 102 ~ BottomSheet ~ selectedGalleries',
+                        selectedGalleries
+                    )
                 }}
             />
         ),
@@ -175,6 +181,10 @@ const BottomSheet = forwardRef((props, ref) => {
     }, [])
     //----------------------------------------------------------------NO GALLERIES CONTENT----------------------------------------------------------------
 
+    const animationConfig = useBottomSheetTimingConfigs({
+        duration: 1000,
+        // easing: 'easeInOut',
+    })
     return (
         <BottomSheetModalProvider>
             <BottomSheetModal
@@ -186,6 +196,7 @@ const BottomSheet = forwardRef((props, ref) => {
                 // dismissOnPanDown={true}
                 handleComponent={CustomHandleComponent}
                 dismissOnPanDown={true}
+                animationConfigs={animationConfig}
             >
                 <View
                     style={{
@@ -199,22 +210,7 @@ const BottomSheet = forwardRef((props, ref) => {
                         style={styles.flatList}
                         data={galleries}
                         keyExtractor={(item) => `${item.galleryID}`}
-                        renderItem={({ item, index }) => {
-                            return (
-                                <SelectionCellItem
-                                    navigation={props.navigation}
-                                    galleryName={item.galleryName}
-                                    galleryID={item.galleryID}
-                                    onSelect={() => {
-                                        selectedGalleries.push(item.galleryID)
-                                        console.log(
-                                            '🚀 ~ file: BottomSheet.js ~ line 88 ~ BottomSheet ~ selectedGalleries',
-                                            selectedGalleries
-                                        )
-                                    }}
-                                />
-                            )
-                        }}
+                        renderItem={renderItem}
                         showsVerticalScrollIndicator={false}
                         // columnWrapperStyle={{
                         //     marginLeft: 10,

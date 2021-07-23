@@ -38,6 +38,7 @@ import { Formik } from 'formik'
 import * as yup from 'yup'
 
 const EditNameScreen = ({ route, ...props }) => {
+    const { namNavPassed } = route.params
     //picture source
     const userInfo = useSelector((state) => state.signupReducer.userInfo)
 
@@ -80,7 +81,7 @@ const EditNameScreen = ({ route, ...props }) => {
             />
             <View>
                 <Formik
-                    initialValues={{ email: '' }}
+                    initialValues={{ fullName: namNavPassed }}
                     onSubmit={async (values) => {
                         const enteredName = values.fullName.split(' ')
                         const firstName = enteredName[0].trim()

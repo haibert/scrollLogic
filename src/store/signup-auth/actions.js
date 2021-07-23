@@ -167,6 +167,10 @@ export const login = (username, password) => {
 
             try {
                 const data = await response.json()
+                console.log(
+                    '🚀 ~ file: actions.js ~ line 170 ~ return ~ data',
+                    data
+                )
 
                 const userID = data.message?.userData?.basic?.uniqueID
                 const userInfo = data.message?.userData
@@ -666,11 +670,16 @@ export const editProfile = (firstName, lastName, birthDate, phone) => {
             lastName === null
                 ? getState().signupReducer.userInfo.lastName
                 : lastName
-        // const birthDatePassed =
-        //     birthDate === null
-        //         ? getState().signupReducer.userInfo.birthDate
-        //         : birthDate
-        const birthDatePassed = birthDate === null ? '12/12/12' : birthDate
+        const birthDatePassed =
+            birthDate === null
+                ? getState().signupReducer.userInfo.birthday
+                : birthDate
+
+        console.log(
+            '🚀 ~ file: actions.js ~ line 674 ~ return ~ birthDatePassed',
+            birthDatePassed
+        )
+
         const phonePassed =
             phone === null ? getState().signupReducer.userInfo.phone : phone
 
@@ -696,6 +705,7 @@ export const editProfile = (firstName, lastName, birthDate, phone) => {
             })
 
             if (!response.ok) {
+                console.log('no response from server')
                 throw new Error('Something went wrong!')
                 // OR below you can pass the error status.
                 throw new Error(response.status.toString())
@@ -703,11 +713,12 @@ export const editProfile = (firstName, lastName, birthDate, phone) => {
 
             try {
                 const data = await response.json()
-                console.log(
-                    '🚀 ~ file: actions.js ~ line 704 ~ return ~ data',
-                    data
-                )
+
                 const userProfileData = data.message?.userProfileData
+                console.log(
+                    '🚀 ~ file: actions.js ~ line 712 ~ return ~ userProfileData',
+                    userProfileData
+                )
                 const errorMessage = data.message?.response === 'error'
 
                 if (!userProfileData || errorMessage) {
