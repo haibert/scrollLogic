@@ -47,6 +47,7 @@ const AnimatedTabBAr = (props) => {
                 style={styles.requestsColumButtons}
                 onTouchStart={() => {
                     startAnimationLeft()
+                    props.onLeftPressed()
                 }}
             >
                 <Ionicons name="images-outline" size={30} />
@@ -55,6 +56,7 @@ const AnimatedTabBAr = (props) => {
                 style={styles.requestsColumButtons}
                 onTouchStart={() => {
                     startAnimationMiddle()
+                    props.onMiddlePressed()
                 }}
             >
                 <Ionicons name="heart-outline" size={30} />
