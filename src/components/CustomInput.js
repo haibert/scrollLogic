@@ -20,6 +20,7 @@ const CustomInput = (props) => {
                     selectionColor={props.selectionColor}
                     underlineColorAndroid="rgba(255,255,255,0)"
                     onChangeText={props.onChangeText}
+                    onChange={props.onChange}
                     value={props.value}
                     autoFocus={props.autoFocus}
                     keyboardAppearance={props.keyboardAppearance}
