@@ -520,7 +520,6 @@ const GalleryView = ({ route, navigation }) => {
                         removeClippedSubviews={
                             Platform.OS === 'android' ? true : false
                         }
-
                         // alwaysBounceVertical={false}
                         // bounces={false}
                     />

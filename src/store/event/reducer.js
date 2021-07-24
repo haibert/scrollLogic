@@ -73,7 +73,7 @@ const galleryReducer = (state = initialState, action) => {
         case EMPTY_PICS_ARRAY: {
             return {
                 ...state,
-                pics: [],
+                // pics: [],
             }
         }
 

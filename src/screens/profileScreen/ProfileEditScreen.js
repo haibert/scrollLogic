@@ -247,6 +247,11 @@ const ProfileEditScreen = ({ route, ...props }) => {
                         color: colors.placeHolder,
                     }}
                     style={styles.changeButtons}
+                    onPress={() => {
+                        props.navigation.navigate('EditUsernameScreen', {
+                            usernameNavPassed: userInfo.username,
+                        })
+                    }}
                 >
                     <Text style={styles.text}>Username</Text>
                     <View style={styles.arrowAndTextCont}>

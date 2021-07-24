@@ -91,7 +91,7 @@ const EditBirthdayScreen = ({ route, ...props }) => {
             return
         }
 
-        await dispatch(editProfile(null, null, momentDate, null))
+        await dispatch(editProfile(null, null, momentDate, null, null))
         props.navigation.goBack()
     }, [dateError, date])
     //----------------------------------------------------------------SAVE HANDLER----------------------------------------------------------------

@@ -204,9 +204,9 @@ const signupReducer = (state = initialState, action) => {
                     ...state.userInfo,
                     firstName: action.userProfileData.firstName,
                     lastName: action.userProfileData.lastName,
-                    // username: action.fullInfo.basic.userName,
                     birthday: action.userProfileData.birthDate,
                     phone: action.userProfileData.phone,
+                    username: action.username,
                 },
             }
         }

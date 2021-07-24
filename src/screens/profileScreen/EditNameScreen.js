@@ -39,8 +39,6 @@ import * as yup from 'yup'
 
 const EditNameScreen = ({ route, ...props }) => {
     const { namNavPassed } = route.params
-    //picture source
-    const userInfo = useSelector((state) => state.signupReducer.userInfo)
 
     //insets
     const insets = useSafeAreaInsets()
@@ -88,7 +86,7 @@ const EditNameScreen = ({ route, ...props }) => {
                         const lastName =
                             enteredName[enteredName.length - 1].trim()
                         await dispatch(
-                            editProfile(firstName, lastName, null, null)
+                            editProfile(firstName, lastName, null, null, null)
                         )
                         props.navigation.goBack()
                     }}

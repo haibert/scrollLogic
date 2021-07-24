@@ -71,7 +71,7 @@ const EditPhoneScreen = ({ route, ...props }) => {
                         if (!validationSchemaPhone.isValidSync(values.phone))
                             return
                         await dispatch(
-                            editProfile(null, null, null, values.phone)
+                            editProfile(null, null, null, values.phone, null)
                         )
                         props.navigation.goBack()
                     }}

@@ -167,17 +167,14 @@ export const login = (username, password) => {
 
             try {
                 const data = await response.json()
-                console.log(
-                    '🚀 ~ file: actions.js ~ line 170 ~ return ~ data',
-                    data
-                )
+
+                const errorMessage = data.message?.user.authCheck === 'ERROR'
+                if (errorMessage) {
+                    throw new Error('Incorrect Credentials')
+                }
 
                 const userID = data.message?.userData?.basic?.uniqueID
                 const userInfo = data.message?.userData
-                console.log(
-                    '🚀 ~ file: actions.js ~ line 171 ~ return ~ userInfo',
-                    userInfo
-                )
                 const credentials = data.message?.userData?.body
 
                 dispatch({
@@ -193,11 +190,6 @@ export const login = (username, password) => {
                     credentials.password,
                     userID
                 )
-
-                const error = data?.message?.user?.authCheck
-                if (error === 'ERROR') {
-                    throw new Error('Incorrect Credentials')
-                }
             } catch (error) {
                 throw error
             }
@@ -325,6 +317,10 @@ export const checkUserExistence = (userName) => {
 
             try {
                 const data = await response.json()
+                console.log(
+                    '🚀 ~ file: actions.js ~ line 320 ~ return ~ data',
+                    data
+                )
 
                 const userExists = data.message?.userNameCheck?.error
                 if (userExists) {
@@ -333,11 +329,6 @@ export const checkUserExistence = (userName) => {
             } catch (error) {
                 throw error
             }
-
-            dispatch({
-                type: TEXT_CODE,
-                textCode: code,
-            })
         } catch (error) {
             throw error
         }
@@ -659,7 +650,13 @@ export const loadFollowersFollowing = (userID, followType) => {
     }
 }
 
-export const editProfile = (firstName, lastName, birthDate, phone) => {
+export const editProfile = (
+    firstName,
+    lastName,
+    birthDate,
+    phone,
+    username
+) => {
     return async (dispatch, getState) => {
         const userID = getState().signupReducer.userInfo.userID
         const firstNamePassed =
@@ -674,14 +671,12 @@ export const editProfile = (firstName, lastName, birthDate, phone) => {
             birthDate === null
                 ? getState().signupReducer.userInfo.birthday
                 : birthDate
-
-        console.log(
-            '🚀 ~ file: actions.js ~ line 674 ~ return ~ birthDatePassed',
-            birthDatePassed
-        )
-
         const phonePassed =
             phone === null ? getState().signupReducer.userInfo.phone : phone
+        const usernamePassed =
+            username === null
+                ? getState().signupReducer.userInfo.username
+                : username
 
         const link = `${LINK}&edit-profile=1`
 
@@ -691,6 +686,7 @@ export const editProfile = (firstName, lastName, birthDate, phone) => {
             lastName: lastNamePassed,
             birthDate: birthDatePassed,
             phone: phonePassed,
+            userName: usernamePassed,
         })
         console.log('🚀 ~ file: actions.js ~ line 685 ~ return ~ body', body)
 
@@ -728,7 +724,12 @@ export const editProfile = (firstName, lastName, birthDate, phone) => {
                 dispatch({
                     type: EDIT_PROFILE,
                     userProfileData: userProfileData,
+                    username: usernamePassed,
                 })
+
+                if (username) {
+                    storeNewUsername(username)
+                }
             } catch (error) {
                 throw error
             }
@@ -754,6 +755,15 @@ const storeCredentials = async (username, password, userID) => {
         await AsyncStorage.setItem('username', username)
         await AsyncStorage.setItem('password', password)
         await AsyncStorage.setItem('userID', userID)
+    } catch (error) {
+        console.log(error)
+        throw error
+    }
+}
+
+const storeNewUsername = async (username) => {
+    try {
+        await AsyncStorage.setItem('username', username)
     } catch (error) {
         console.log(error)
         throw error

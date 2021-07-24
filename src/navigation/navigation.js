@@ -46,6 +46,7 @@ import ProfileEditScreen from '../screens/profileScreen/ProfileEditScreen'
 import EditNameScreen from '../screens/profileScreen/EditNameScreen'
 import EditBirthdayScreen from '../screens/profileScreen/EditBirthdayScreen'
 import EditPhoneScreen from '../screens/profileScreen/EditPhoneScreen'
+import EditUsernameScreen from '../screens/profileScreen/EditUsernameScreen'
 
 //event creation
 import CreateEventScreen from '../screens/eventCreation/CreateEventScreen'
@@ -493,6 +494,17 @@ const DashModalStack = () => {
             <DashStackShared.Screen
                 name="EditPhoneScreen"
                 component={EditPhoneScreen}
+                options={{
+                    headerShown: false,
+                    ...TransitionPresets.SlideFromRightIOS,
+                    gestureResponseDistance: gestureResponseHorizontal,
+                    gestureDirection: gestureDirectionHorizontal,
+                }}
+                sharedElementsConfig={nullAnimationConfig}
+            />
+            <DashStackShared.Screen
+                name="EditUsernameScreen"
+                component={EditUsernameScreen}
                 options={{
                     headerShown: false,
                     ...TransitionPresets.SlideFromRightIOS,

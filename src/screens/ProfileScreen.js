@@ -23,6 +23,7 @@ import StatsContainer from '../components/ProfileScreen/StatsContainer'
 import AnimatedTabBAr from '../components/ProfileScreen/AnimatedTabBAr'
 import ProfileTopElements from '../components/ProfileScreen/ProfileTopElements'
 import Thumbnail from '../components/Thumbnail'
+import ThumbnailSmall from '../components/ThumbnailSmall'
 
 //redux
 import { loadPermissions } from '../store/permissions/actions'
@@ -195,7 +196,7 @@ const ProfileScreen = (props) => {
     //----------------------------------------------------------------CAMERA PRESSED HANDLER----------------------------------------------------------------
 
     //----------------------------------------------------------------FLAT LIST FUNCTIONS--------------------------------------------------------------
-
+    const [listShown, setListShown] = useState('galleries')
     const render = useCallback(({ item, index }) => {
         return (
             <Thumbnail
@@ -244,7 +245,35 @@ const ProfileScreen = (props) => {
     )
 
     const keyExtractor = useCallback((item) => `${item.galleryID}`, [])
+    // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><LIKED PICS<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+    const pics = useSelector((state) => state.galleryReducer.pics)
 
+    const keyExtractorLiked = useCallback((item) => item.id, [])
+
+    const getItemLayoutLiked = useCallback(
+        (data, index) => ({
+            length: width / 2,
+            offset: (width / 2) * index,
+            index: index,
+        }),
+        []
+    )
+
+    const renderLiked = useCallback(({ item, index }) => {
+        return (
+            <ThumbnailSmall
+                key={item.id}
+                images={item}
+                picturePressedHandler={() => {
+                    picturePressedHandler(pics, index, item.id, item.fullPath)
+                }}
+                navigation={props.navigation}
+            />
+        )
+    }, [])
+
+    const itemHeightLiked = useMemo(() => width / 2)
+    // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><LIKED PICS<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
     //----------------------------------------------------------------FLAT LIST FUNCTIONS--------------------------------------------------------------
 
     //----------------------------------------------------------------PROFILE PHOTO PRESSED----------------------------------------------------------------
@@ -315,18 +344,28 @@ const ProfileScreen = (props) => {
             >
                 <Text style={styles.signOut}>Sign Out</Text>
             </HeaderBasic>
-            <AnimatedTabBAr />
-            <BigList
-                data={galleries}
-                renderItem={render}
-                itemHeight={itemHeight}
-                layOut={layOut}
-                keyExtractor={keyExtractor}
-                contentContainerStyle={{
-                    ...styles.bigListContentCont,
-                    paddingBottom: tabBarBottomPosition + 80,
+            <AnimatedTabBAr
+                onLeftPressed={() => {
+                    setListShown('galleries')
                 }}
-                numColumns={2}
+                onMiddlePressed={() => {
+                    setListShown('liked')
+                }}
+            />
+            <BigList
+                data={listShown === 'galleries' ? galleries : pics}
+                renderItem={listShown === 'galleries' ? render : renderLiked}
+                itemHeight={
+                    listShown === 'galleries' ? itemHeight : itemHeightLiked
+                }
+                layOut={listShown === 'galleries' ? layOut : getItemLayoutLiked}
+                keyExtractor={
+                    listShown === 'galleries' ? keyExtractor : keyExtractorLiked
+                }
+                contentContainerStyle={
+                    listShown === 'galleries' ? styles.bigListContentCont : null
+                }
+                numColumns={listShown === 'galleries' ? 2 : 3}
                 onRefresh={loadGalleries}
                 refreshing={loadingGalleries}
                 removeClippedSubviews={Platform.OS === 'android' ? true : false}
@@ -379,6 +418,7 @@ const styles = StyleSheet.create({
     },
     bigListContentCont: {
         marginLeft: 10,
+        paddingBottom: 15,
     },
     signOut: {
         color: colors.darkColorP1,
