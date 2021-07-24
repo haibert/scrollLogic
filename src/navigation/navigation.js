@@ -47,6 +47,7 @@ import EditNameScreen from '../screens/profileScreen/EditNameScreen'
 import EditBirthdayScreen from '../screens/profileScreen/EditBirthdayScreen'
 import EditPhoneScreen from '../screens/profileScreen/EditPhoneScreen'
 import EditUsernameScreen from '../screens/profileScreen/EditUsernameScreen'
+import NotificationsScreen from '../screens/profileScreen/NotificationsScreen'
 
 //event creation
 import CreateEventScreen from '../screens/eventCreation/CreateEventScreen'
@@ -287,15 +288,15 @@ const DashModalStack = () => {
                     gestureResponseDistance: gestureResponseVertical,
                     gestureDirection: gestureDirectionVertical,
                 }}
-                sharedElementsConfig={(route) => {
-                    const routeName = route.name
+                sharedElementsConfig={(navigation) => {
+                    const animatePlease = navigation.name === 'ProfileScreen'
                     console.log(
-                        '🚀 ~ file: navigation.js ~ line 280 ~ DashModalStack ~ routeName',
-                        routeName
+                        '🚀 ~ file: navigation.js ~ line 292 ~ DashModalStack ~ animatePlease',
+                        animatePlease
                     )
                     return [
                         {
-                            id: routeName === 'EditNameScreen' ? null : '1',
+                            id: animatePlease ? '1' : null,
                             animation:
                                 Platform.OS === 'android' ? 'fade-out' : null,
                             resize: 'auto',
@@ -467,28 +468,35 @@ const DashModalStack = () => {
                     gestureDirection: gestureDirectionHorizontal,
                 }}
             />
-            {/* ALL EDIT SCREENS BELLOW */}
             <DashStackShared.Screen
-                name="EditNameScreen"
-                component={EditNameScreen}
+                name="NotificationsScreen"
+                component={NotificationsScreen}
                 options={{
                     headerShown: false,
                     ...TransitionPresets.SlideFromRightIOS,
                     gestureResponseDistance: gestureResponseHorizontal,
                     gestureDirection: gestureDirectionHorizontal,
                 }}
-                sharedElementsConfig={nullAnimationConfig}
+            />
+
+            {/* ALL EDIT SCREENS BELLOW */}
+            <DashStackShared.Screen
+                name="EditNameScreen"
+                component={EditNameScreen}
+                options={{
+                    headerShown: false,
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                }}
             />
             <DashStackShared.Screen
                 name="EditBirthdayScreen"
                 component={EditBirthdayScreen}
                 options={{
                     headerShown: false,
-                    ...TransitionPresets.SlideFromRightIOS,
-                    gestureResponseDistance: { horizontal: 1000 },
-                    gestureDirection: gestureDirectionHorizontal,
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
                 }}
-                sharedElementsConfig={nullAnimationConfig}
             />
 
             <DashStackShared.Screen
@@ -496,22 +504,18 @@ const DashModalStack = () => {
                 component={EditPhoneScreen}
                 options={{
                     headerShown: false,
-                    ...TransitionPresets.SlideFromRightIOS,
-                    gestureResponseDistance: gestureResponseHorizontal,
-                    gestureDirection: gestureDirectionHorizontal,
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
                 }}
-                sharedElementsConfig={nullAnimationConfig}
             />
             <DashStackShared.Screen
                 name="EditUsernameScreen"
                 component={EditUsernameScreen}
                 options={{
                     headerShown: false,
-                    ...TransitionPresets.SlideFromRightIOS,
-                    gestureResponseDistance: gestureResponseHorizontal,
-                    gestureDirection: gestureDirectionHorizontal,
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
                 }}
-                sharedElementsConfig={nullAnimationConfig}
             />
         </DashStackShared.Navigator>
     )

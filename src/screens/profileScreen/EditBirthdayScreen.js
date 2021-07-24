@@ -102,7 +102,7 @@ const EditBirthdayScreen = ({ route, ...props }) => {
                 goBack={() => {
                     props.navigation.goBack()
                 }}
-                iconName="chevron-back-outline"
+                iconName="chevron-down-outline"
                 header="Birthday"
                 headerColor={{ color: colors.darkestColorP1 }}
             />

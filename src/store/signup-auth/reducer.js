@@ -17,6 +17,8 @@ import {
     EMPTY_PROFILE,
     LOAD_FOLLOWINGS,
     EDIT_PROFILE,
+    PRIVACY_UPDATE,
+    LOAD_REQUESTS,
 } from './actions'
 
 //async storage
@@ -47,10 +49,14 @@ const initialState = {
         followersCount: '',
         followingCount: '',
     },
+    settings: {
+        privacy: '',
+    },
     searches: [],
     loadedProfile: {},
     followings: [],
     followers: [],
+    friendRequests: [],
 }
 
 const signupReducer = (state = initialState, action) => {
@@ -210,6 +216,21 @@ const signupReducer = (state = initialState, action) => {
                 },
             }
         }
+        case PRIVACY_UPDATE: {
+            return {
+                ...state,
+                settings: {
+                    privacy: action.privacy,
+                },
+            }
+        }
+        case LOAD_REQUESTS: {
+            return {
+                ...state,
+                friendRequests: action.friendRequests,
+            }
+        }
+
         default:
             return state
     }

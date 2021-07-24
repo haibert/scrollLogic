@@ -89,7 +89,7 @@ const EditUsernameScreen = ({ route, ...props }) => {
     return (
         <ScreenWrapper style={{ paddingBottom: insets.bottom }}>
             <HeaderBasic
-                iconName="chevron-back-outline"
+                iconName="chevron-down-outline"
                 goBack={() => {
                     props.navigation.goBack()
                 }}

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState, useEffect } from 'react'
+import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react'
 import {
     View,
     Text,
@@ -10,13 +10,13 @@ import {
     Linking,
     Alert,
     Pressable,
+    ScrollView,
 } from 'react-native'
 
 //components
 import ScreenWrapper from '../components/ScreenWrapper'
 import HeaderBasic from '../components/HeaderBasic'
 import Button from '../components/Button'
-import GalRequestCell from '../components/ProfileScreen/GalRequestCell'
 import BottomNavBar from '../components/BottomNavBar'
 import NuemorphicNavBar from '../components/NuemorphicNavBar'
 import StatsContainer from '../components/ProfileScreen/StatsContainer'
@@ -51,6 +51,9 @@ import { Audio } from 'expo-av'
 //useFocus InteractionManager
 import { InteractionManager } from 'react-native'
 import { useIsFocused, useFocusEffect } from '@react-navigation/native'
+
+//ionicons
+import { Ionicons } from '@expo/vector-icons'
 
 const ProfileScreen = (props) => {
     //personal info
@@ -310,30 +313,112 @@ const ProfileScreen = (props) => {
         return normalizedSource
     }, [personalInfo])
     //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
+    const scrollViewRef = useRef()
+    let offset = 0
+
+    const onScroll = useCallback(({ nativeEvent }) => {
+        let currentOffset = nativeEvent.contentOffset.y
+        let direction = currentOffset > offset ? 'down' : 'up'
+        if (direction === 'up') {
+            scrollViewRef.current?.scrollTo({
+                x: 0,
+                y: 300,
+                animated: true,
+            })
+        }
+        if (direction === 'down') {
+            console.log('disabled!')
+        }
+        offset = currentOffset
+    }, [])
+
+    const onScrollToTop = useCallback((event) => {
+        if (event.nativeEvent.contentOffset.y === 0) {
+            console.log(
+                '🚀 ~ file: ProfileScreen.js ~ line 334 ~ onScrollToTop ~ event.nativeEvent.contentOffset.y',
+                event.nativeEvent.contentOffset.y
+            )
+            scrollViewRef.current?.scrollTo({ x: 0, y: 0, animated: true })
+            return
+        }
+    }, [])
 
     return (
         <ScreenWrapper style={{ paddingTop: 0 }}>
-            <ProfileTopElements
-                normalizedSource={normalizedSource}
-                handleProfilePhotoPressed={handleProfilePhotoPressed}
-                personalInfo={personalInfo}
+            <ScrollView
+                ref={scrollViewRef}
+                style={{
+                    height: height,
+                }}
+                contentContainerStyle={{
+                    height: height + 100,
+                }}
+                showsVerticalScrollIndicator={false}
+                // stickyHeaderIndices={[0]}
             >
-                <Button
-                    text="Edit"
-                    style={styles.button}
-                    onPress={editPressedHandler}
-                />
-                <StatsContainer
-                    followingCount={personalInfo?.followingCount}
-                    followersCount={personalInfo?.followersCount}
-                    followingsPressedHandler={() => {
-                        followingsPressedHandler('following')
+                <ProfileTopElements
+                    normalizedSource={normalizedSource}
+                    handleProfilePhotoPressed={handleProfilePhotoPressed}
+                    personalInfo={personalInfo}
+                >
+                    <Button
+                        text="Edit"
+                        style={styles.button}
+                        onPress={editPressedHandler}
+                    />
+                    <StatsContainer
+                        followingCount={personalInfo?.followingCount}
+                        followersCount={personalInfo?.followersCount}
+                        followingsPressedHandler={() => {
+                            followingsPressedHandler('following')
+                        }}
+                        followersPressedHandler={() => {
+                            followingsPressedHandler('followers')
+                        }}
+                    />
+                </ProfileTopElements>
+
+                <AnimatedTabBAr
+                    onLeftPressed={() => {
+                        setListShown('galleries')
                     }}
-                    followersPressedHandler={() => {
-                        followingsPressedHandler('followers')
+                    onMiddlePressed={() => {
+                        setListShown('liked')
                     }}
                 />
-            </ProfileTopElements>
+                <BigList
+                    data={listShown === 'galleries' ? galleries : pics}
+                    renderItem={
+                        listShown === 'galleries' ? render : renderLiked
+                    }
+                    itemHeight={
+                        listShown === 'galleries' ? itemHeight : itemHeightLiked
+                    }
+                    layOut={
+                        listShown === 'galleries' ? layOut : getItemLayoutLiked
+                    }
+                    keyExtractor={
+                        listShown === 'galleries'
+                            ? keyExtractor
+                            : keyExtractorLiked
+                    }
+                    contentContainerStyle={
+                        listShown === 'galleries'
+                            ? styles.bigListContentCont
+                            : null
+                    }
+                    numColumns={listShown === 'galleries' ? 2 : 3}
+                    onRefresh={loadGalleries}
+                    refreshing={loadingGalleries}
+                    removeClippedSubviews={
+                        Platform.OS === 'android' ? true : false
+                    }
+                    onScrollBeginDrag={onScroll}
+                    onScroll={onScrollToTop}
+                    scrollEventThrottle={16}
+                    bounces={false}
+                />
+            </ScrollView>
             <HeaderBasic
                 iconName="menu-outline"
                 goBack={() => {
@@ -342,35 +427,15 @@ const ProfileScreen = (props) => {
                 headerColor={{ color: colors.textColor }}
                 style={{ ...styles.header, marginTop: insets.top }}
             >
-                <Text style={styles.signOut}>Sign Out</Text>
+                <Ionicons
+                    name="notifications-outline"
+                    size={30}
+                    style={styles.signOut}
+                    onPress={() => {
+                        props.navigation.navigate('NotificationsScreen')
+                    }}
+                />
             </HeaderBasic>
-            <AnimatedTabBAr
-                onLeftPressed={() => {
-                    setListShown('galleries')
-                }}
-                onMiddlePressed={() => {
-                    setListShown('liked')
-                }}
-            />
-            <BigList
-                data={listShown === 'galleries' ? galleries : pics}
-                renderItem={listShown === 'galleries' ? render : renderLiked}
-                itemHeight={
-                    listShown === 'galleries' ? itemHeight : itemHeightLiked
-                }
-                layOut={listShown === 'galleries' ? layOut : getItemLayoutLiked}
-                keyExtractor={
-                    listShown === 'galleries' ? keyExtractor : keyExtractorLiked
-                }
-                contentContainerStyle={
-                    listShown === 'galleries' ? styles.bigListContentCont : null
-                }
-                numColumns={listShown === 'galleries' ? 2 : 3}
-                onRefresh={loadGalleries}
-                refreshing={loadingGalleries}
-                removeClippedSubviews={Platform.OS === 'android' ? true : false}
-                // ListEmptyComponent={}
-            />
             <NuemorphicNavBar
                 onCameraPressed={cameraPressedHandler}
                 onSearchPressed={() => {
@@ -423,9 +488,8 @@ const styles = StyleSheet.create({
     signOut: {
         color: colors.darkColorP1,
         fontWeight: 'bold',
-        fontSize: 17,
         position: 'absolute',
-        top: 10,
+        top: 0,
         right: 10,
     },
 })

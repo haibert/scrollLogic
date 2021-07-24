@@ -9,11 +9,15 @@ import {
     Alert,
     Linking,
     TouchableOpacity,
+    Switch,
 } from 'react-native'
 
 //custom components
 import ScreenWrapper from '../../components/ScreenWrapper'
 import HeaderBasic from '../../components/HeaderBasic'
+
+//custom customHooks
+import useDidMountEffect from '../../hooks/useDidMountEffect'
 
 //colors
 import colors from '../../constants/colors'
@@ -34,7 +38,7 @@ import * as ImagePicker from 'expo-image-picker'
 import * as ImageManipulator from 'expo-image-manipulator'
 
 //redux
-import { changeAvatar } from '../../store/signup-auth/actions'
+import { changeAvatar, privacyChange } from '../../store/signup-auth/actions'
 import { useDispatch, useSelector } from 'react-redux'
 
 //fast image
@@ -42,6 +46,7 @@ import FastImage from 'react-native-fast-image'
 
 //shared elements
 import { SharedElement } from 'react-navigation-shared-element'
+import { Platform } from 'react-native'
 
 const ProfileEditScreen = ({ route, ...props }) => {
     //picture source
@@ -187,6 +192,26 @@ const ProfileEditScreen = ({ route, ...props }) => {
     }
     //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
 
+    //----------------------------------------------------------------PRIVACY LOGIC----------------------------------------------------------------
+    const switchStyleIOS = {
+        transform: [
+            {
+                scale: 0.9,
+            },
+        ],
+    }
+    const [isPrivate, setIsPrivate] = useState(false)
+
+    const privacyChangeHandler = async () => {
+        await dispatch(privacyChange(isPrivate ? 'private' : 'public'))
+    }
+
+    useDidMountEffect(() => {
+        privacyChangeHandler()
+    }, [isPrivate])
+
+    //----------------------------------------------------------------PRIVACY LOGIC----------------------------------------------------------------
+
     return (
         <ScreenWrapper style={{ paddingBottom: insets.bottom }}>
             <HeaderBasic
@@ -197,7 +222,10 @@ const ProfileEditScreen = ({ route, ...props }) => {
                 header="Edit Profile"
                 headerColor={{ color: colors.darkestColorP1 }}
             />
-            <Pressable style={styles.imageCont} onPress={editPressedHandler}>
+            <Pressable
+                style={styles.topContentCont}
+                onPress={editPressedHandler}
+            >
                 <SharedElement id={'1'}>
                     <FastImage
                         resizeMode={FastImage.resizeMode.cover}
@@ -233,7 +261,7 @@ const ProfileEditScreen = ({ route, ...props }) => {
                             {`${userInfo.firstName} ` + `${userInfo.lastName}`}
                         </Text>
                         <Ionicons
-                            name="chevron-forward-outline"
+                            name="checkmark-outline"
                             size={20}
                             color={'black'}
                             style={{ bottom: -2 }}
@@ -257,7 +285,7 @@ const ProfileEditScreen = ({ route, ...props }) => {
                     <View style={styles.arrowAndTextCont}>
                         <Text style={styles.text}>{userInfo.username}</Text>
                         <Ionicons
-                            name="chevron-forward-outline"
+                            name="checkmark-outline"
                             size={20}
                             color={'black'}
                             style={{ bottom: -2 }}
@@ -281,7 +309,7 @@ const ProfileEditScreen = ({ route, ...props }) => {
                     <View style={styles.arrowAndTextCont}>
                         <Text style={styles.text}>{formattedDate}</Text>
                         <Ionicons
-                            name="chevron-forward-outline"
+                            name="checkmark-outline"
                             size={20}
                             color={'black'}
                             style={{ bottom: -2 }}
@@ -306,23 +334,34 @@ const ProfileEditScreen = ({ route, ...props }) => {
                     <View style={styles.arrowAndTextCont}>
                         <Text style={styles.text}>{userInfo.phone}</Text>
                         <Ionicons
-                            name="chevron-forward-outline"
+                            name="checkmark-outline"
                             size={20}
                             color={'black'}
                             style={{ bottom: -2 }}
                         />
                     </View>
                 </Pressable>
+                <View style={styles.changeButtons}>
+                    <Text style={styles.text}>Private Account</Text>
+                    <Switch
+                        value={isPrivate}
+                        onValueChange={(newValue) => setIsPrivate(newValue)}
+                        style={Platform.OS === 'ios' ? switchStyleIOS : null}
+                    />
+                </View>
             </View>
         </ScreenWrapper>
     )
 }
 
 const styles = StyleSheet.create({
-    imageCont: {
+    topContentCont: {
         alignItems: 'center',
         justifyContent: 'center',
         padding: 20,
+        borderBottomWidth: 0.8,
+        marginHorizontal: 15,
+        borderBottomColor: colors.inputBorderColor,
     },
     image: {
         width: 90,
@@ -337,6 +376,7 @@ const styles = StyleSheet.create({
     changeButtons: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+        alignItems: 'center',
         padding: 15,
     },
     arrowAndTextCont: {

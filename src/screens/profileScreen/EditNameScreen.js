@@ -70,7 +70,7 @@ const EditNameScreen = ({ route, ...props }) => {
     return (
         <ScreenWrapper style={{ paddingBottom: insets.bottom }}>
             <HeaderBasic
-                iconName="chevron-back-outline"
+                iconName="chevron-down-outline"
                 goBack={() => {
                     props.navigation.goBack()
                 }}
@@ -99,6 +99,7 @@ const EditNameScreen = ({ route, ...props }) => {
                         values,
                         errors,
                         resetForm,
+                        setFieldValue,
                     }) => (
                         <View>
                             <CustomInput
@@ -119,7 +120,11 @@ const EditNameScreen = ({ route, ...props }) => {
                                 autoCapitalize="words"
                                 maxLength={30}
                                 onXPressed={() => {
-                                    xPressed(resetForm)
+                                    console.log(values.fullName)
+                                    setFieldValue({
+                                        fullName: 'ment',
+                                    })
+                                    resetForm()
                                 }}
                             />
 

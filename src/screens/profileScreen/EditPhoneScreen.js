@@ -42,7 +42,11 @@ const EditPhoneScreen = ({ route, ...props }) => {
     const dispatch = useDispatch()
 
     // validation schema
-    const validationSchemaPhone = yup.string().phone('US', true).required()
+    const validationSchemaPhone = yup
+        .string()
+        .phone('US', true)
+        .required()
+        .matches(/[^0-9]/)
 
     const [showErrors, setShowErrors] = useState(false)
     const [phoneError, setPhoneError] = useState(' ')
@@ -57,7 +61,7 @@ const EditPhoneScreen = ({ route, ...props }) => {
     return (
         <ScreenWrapper style={{ paddingBottom: insets.bottom }}>
             <HeaderBasic
-                iconName="chevron-back-outline"
+                iconName="chevron-down-outline"
                 goBack={() => {
                     props.navigation.goBack()
                 }}
@@ -71,7 +75,13 @@ const EditPhoneScreen = ({ route, ...props }) => {
                         if (!validationSchemaPhone.isValidSync(values.phone))
                             return
                         await dispatch(
-                            editProfile(null, null, null, values.phone, null)
+                            editProfile(
+                                null,
+                                null,
+                                null,
+                                values.phone.replace(/[^0-9]/g, ''),
+                                null
+                            )
                         )
                         props.navigation.goBack()
                     }}
@@ -90,7 +100,7 @@ const EditPhoneScreen = ({ route, ...props }) => {
                                 viewStyle={styles.inputView}
                                 onChangeText={handleChange('phone')}
                                 onBlur={handleBlur('phone')}
-                                value={values.phone}
+                                value={values.phone.replace(/[^0-9]/g, '')}
                                 style={styles.input}
                                 placeholder="Phone Number"
                                 placeholderTextColor={'rgba(124,124,124,1)'}

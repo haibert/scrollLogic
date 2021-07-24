@@ -22,7 +22,7 @@ import { PanGestureHandler } from 'react-native-gesture-handler'
 
 //custom components
 import ScreenWrapper from '../../components/ScreenWrapper'
-import HeaderX from '../../components/HeaderX'
+import HeaderBasic from '../../components/HeaderBasic'
 
 //colors
 import colors from '../../constants/colors'
@@ -268,12 +268,13 @@ const PhotoEditScreen = ({ route, ...props }) => {
                 ]}
             >
                 <ScreenWrapper style={{ paddingBottom: insets.bottom }}>
-                    <HeaderX
-                        circleColor={{ backgroundColor: 'white' }}
-                        color={colors.darkestColorP1}
+                    <HeaderBasic
+                        iconName="close-outline"
                         goBack={() => {
                             props.navigation.goBack()
                         }}
+                        header="Username"
+                        headerColor={{ color: colors.darkestColorP1 }}
                     />
                     <View style={styles.screenCont}>
                         <SharedElement id={'1'}>

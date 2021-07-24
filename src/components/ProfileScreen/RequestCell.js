@@ -4,7 +4,10 @@ import { View, Text, StyleSheet } from 'react-native'
 import colors from '../../constants/colors'
 
 //components
-import ButtonFlatlist from '../../components/ButtonFlatlist'
+import ButtonFlatlist from '../ButtonFlatlist'
+
+//fast image
+import FastImage from 'react-native-fast-image'
 
 //bottom sheet
 // import {
@@ -15,41 +18,56 @@ import ButtonFlatlist from '../../components/ButtonFlatlist'
 //ionicons
 import { Ionicons } from '@expo/vector-icons'
 
-const GalRequestCell = (props) => {
-    const [checked, setChecked] = useState()
+const RequestCell = (props) => {
+    //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
+    const normalizedSource = () => {
+        const imageString = `${props.data.avatar}`
+        const normalizedSource =
+            imageString &&
+            typeof imageString === 'string' &&
+            !imageString.split('http')[1]
+                ? null
+                : imageString
+        return normalizedSource
+    }
+    //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
     return (
-        <View
-            onPress={() => {
-                setChecked((prevState) => !prevState)
-            }}
-            style={styles.cellOuter}
-        >
-            <View style={styles.imageCont}></View>
+        <View onPress={() => {}} style={styles.cellOuter}>
+            <FastImage
+                style={styles.imageCont}
+                resizeMode={FastImage.resizeMode.cover}
+                source={{
+                    uri: normalizedSource(),
+                    priority: FastImage.priority.normal,
+                }}
+            />
             <View style={styles.namesCont}>
                 <Text
                     maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
                     style={styles.galleryName}
                 >
-                    Gallery Name
+                    {`${props.data.firstName} ` + `${props.data.lastName}`}
                 </Text>
                 <Text
                     maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
                     style={styles.username}
                 >
-                    @username
+                    {`@${props.data.userName}`}
                 </Text>
             </View>
             <ButtonFlatlist
                 buttonContStyle={styles.buttonContStyle}
                 style={styles.button}
-                title="Confirm"
+                title="Accept"
                 iconName="checkmark-outline"
+                onPress={props.onAccept}
             />
             <ButtonFlatlist
                 buttonContStyle={styles.buttonContStyle}
                 style={styles.buttonReject}
                 title="Cancel"
                 iconName="close-outline"
+                onPress={props.onReject}
             />
         </View>
     )
@@ -106,4 +124,4 @@ const styles = StyleSheet.create({
     username: {},
 })
 
-export default GalRequestCell
+export default RequestCell
