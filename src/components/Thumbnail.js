@@ -56,7 +56,7 @@ const ThumbNail = ({
 
     useFocusEffect(() => {
         if (navigation.isFocused() && animatedOpacity.value === 0) {
-            animatedOpacity.value = withDelay(200, withTiming(1))
+            animatedOpacity.value = withDelay(100, withTiming(1))
         }
     })
 
@@ -67,7 +67,7 @@ const ThumbNail = ({
     }, [])
     //----------------------------------------------------------------OPTIMIZATION----------------------------------------------------------------
 
-    //----------------------------------------------------------------have to normalize uri----------------------------------------------------------------
+    //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
     const normalizedSource = () => {
         const imageString = `${images.thumbnail}`
         const normalizedSource =
@@ -78,7 +78,7 @@ const ThumbNail = ({
                 : imageString
         return images.thumbnail ? normalizedSource : images.thumbnail
     }
-    //----------------------------------------------------------------have to normalize uri----------------------------------------------------------------
+    //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
 
     return (
         <ScaleButton

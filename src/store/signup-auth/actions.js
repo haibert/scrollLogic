@@ -19,11 +19,14 @@ export const UNFOLLOW = 'UNFOLLOW'
 export const EMPTY_PROFILE = 'EMPTY_PROFILE'
 export const LOAD_FOLLOWINGS = 'LOAD_FOLLOWINGS'
 export const EDIT_PROFILE = 'EDIT_PROFILE'
+export const PRIVACY_UPDATE = 'PRIVACY_UPDATE'
+export const LOAD_REQUESTS = 'LOAD_REQUESTS'
 
 //models
 import { Search } from '../../models/SearchModel'
 import { Gallery } from '../../models/GalleryModel'
 import { Follows } from '../../models/FollowsModel'
+import { RequestModel } from '../../models/RequestModel'
 
 //Gallery Actions
 import { setGalleries } from '../event/action'
@@ -576,6 +579,10 @@ export const followUnfollow = (followID, followType) => {
                 const data = await response.json()
 
                 const results = data.message.response
+                console.log(
+                    '🚀 ~ file: actions.js ~ line 581 ~ return ~ results',
+                    results
+                )
 
                 if (results === 'success') {
                     dispatch({
@@ -739,6 +746,158 @@ export const editProfile = (
     }
 }
 
+export const privacyChange = (privacy) => {
+    return async (dispatch, getState) => {
+        const userID = getState().signupReducer.userInfo.userID
+
+        const body = JSON.stringify({
+            userID,
+            accountPrivacy: privacy,
+        })
+        try {
+            const response = await fetch(`${LINK}&account-privacy=1`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+            })
+
+            if (!response.ok) {
+                throw new Error('Something went wrong!')
+                // OR below you can pass the error status.
+                throw new Error(response.status.toString())
+            }
+
+            try {
+                const data = await response.json()
+                console.log(
+                    '🚀 ~ file: actions.js ~ line 770 ~ return ~ data',
+                    data
+                )
+                const success = data.message.response === 'success'
+
+                if (success) {
+                    dispatch({
+                        type: PRIVACY_UPDATE,
+                        privacy: privacy,
+                    })
+                }
+            } catch (error) {
+                throw new Error('Something went wrong!')
+            }
+        } catch (error) {
+            throw error
+        }
+    }
+}
+
+export const getFollowRequests = () => {
+    return async (dispatch, getState) => {
+        const userID = getState().signupReducer.userInfo.userID
+        const body = JSON.stringify({
+            userID,
+        })
+        try {
+            const response = await fetch(`${LINK}&get-follow-requests=1`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+            })
+
+            if (!response.ok) {
+                throw new Error('Something went wrong!')
+                // OR below you can pass the error status.
+                throw new Error(response.status.toString())
+            }
+
+            try {
+                const data = await response.json()
+                console.log(
+                    '🚀 ~ file: actions.js ~ line 769 ~ return ~ data',
+                    data
+                )
+                const requests = data.message.data
+                const loadedRequests = []
+                for (const key in requests) {
+                    loadedRequests.push(
+                        new RequestModel(
+                            requests[key].avatar,
+                            requests[key].firstName,
+                            requests[key].lastName,
+                            requests[key].uniqueID,
+                            requests[key].userName
+                        )
+                    )
+                }
+
+                dispatch({
+                    type: LOAD_REQUESTS,
+                    friendRequests: loadedRequests,
+                })
+            } catch (error) {
+                console.log(error)
+                throw new Error('Something went wrong!')
+            }
+        } catch (error) {
+            throw error
+        }
+    }
+}
+
+export const friendRequestResponse = (followerID, status) => {
+    return async (dispatch, getState) => {
+        const userID = getState().signupReducer.userInfo.userID
+
+        const body = JSON.stringify({
+            userID,
+            followerID,
+            status: status,
+        })
+        console.log('🚀 ~ file: actions.js ~ line 861 ~ return ~ body', body)
+        try {
+            const response = await fetch(`${LINK}&follow-accept-reject=1`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+            })
+
+            if (!response.ok) {
+                throw new Error('Something went wrong!')
+                // OR below you can pass the error status.
+                throw new Error(response.status.toString())
+            }
+
+            try {
+                const data = await response.json()
+                console.log(
+                    '🚀 ~ file: actions.js ~ line 770 ~ return ~ data',
+                    data
+                )
+                const success = data.message.response === 'success'
+
+                if (!success) {
+                    throw new Error('Something went wrong!')
+                }
+
+                dispatch({
+                    type: FOLLOW_RESPONSE,
+                })
+            } catch (error) {
+                throw new Error('Something went wrong!')
+            }
+        } catch (error) {
+            throw error
+        }
+    }
+}
 // helpers
 const storeData = async (value) => {
     try {
