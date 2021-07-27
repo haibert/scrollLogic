@@ -57,6 +57,8 @@ import JoinEventScreen from '../screens/eventCreation/JoinEventScreen'
 //custom drawer content
 import DrawerContent from '../screens/drawerContent/DrawerContent'
 
+import NotificationTest from '../screens/NotificationTest'
+
 //colors
 import colors from '../constants/colors'
 
@@ -562,8 +564,8 @@ function DrawerNav({ navigation, route }) {
                 })}
             />
             <Drawer.Screen
-                name="DesignTest"
-                component={DesignTest}
+                name="NotificationTest"
+                component={NotificationTest}
                 options={({ route }) => ({
                     drawerLabel: 'Design',
                     drawerIcon: (config) => (
