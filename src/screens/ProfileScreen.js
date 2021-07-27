@@ -1,17 +1,5 @@
 import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react'
-import {
-    View,
-    Text,
-    StyleSheet,
-    Dimensions,
-    ImageBackground,
-    Image,
-    TouchableWithoutFeedback,
-    Linking,
-    Alert,
-    Pressable,
-    ScrollView,
-} from 'react-native'
+import { StyleSheet, Dimensions, Linking, Alert } from 'react-native'
 
 //components
 import ScreenWrapper from '../components/ScreenWrapper'
@@ -20,7 +8,7 @@ import Button from '../components/Button'
 import BottomNavBar from '../components/BottomNavBar'
 import NuemorphicNavBar from '../components/NuemorphicNavBar'
 import StatsContainer from '../components/ProfileScreen/StatsContainer'
-import AnimatedTabBAr from '../components/ProfileScreen/AnimatedTabBAr'
+import AnimatedTabBar from '../components/ProfileScreen/AnimatedTabBar'
 import ProfileTopElements from '../components/ProfileScreen/ProfileTopElements'
 import Thumbnail from '../components/Thumbnail'
 import ThumbnailSmall from '../components/ThumbnailSmall'
@@ -28,6 +16,10 @@ import ThumbnailSmall from '../components/ThumbnailSmall'
 //redux
 import { loadPermissions } from '../store/permissions/actions'
 import { setGalleries, shouldRefreshSet } from '../store/event/action'
+import {
+    setShouldRefreshProfile,
+    loadProfile,
+} from '../store/signup-auth/actions'
 import { useDispatch, useSelector } from 'react-redux'
 
 //colors
@@ -39,10 +31,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 // big list
 import BigList from 'react-native-big-list'
 
-// fakeData
-import { fakeArray as listData } from '../data/images'
-
-const { width, height } = Dimensions.get('window')
+const { width } = Dimensions.get('window')
 
 //expo camera
 import { Camera } from 'expo-camera'
@@ -54,22 +43,54 @@ import { useIsFocused, useFocusEffect } from '@react-navigation/native'
 
 //ionicons
 import { Ionicons } from '@expo/vector-icons'
+import { ScrollView } from 'react-native-gesture-handler'
 
 const ProfileScreen = (props) => {
     //personal info
     const personalInfo = useSelector((state) => state.signupReducer.userInfo)
+    console.log(
+        '🚀 ~ file: ProfileScreen.js ~ line 51 ~ ProfileScreen ~ personalInfo',
+        personalInfo
+    )
+
+    //should refresh
+    const shouldRefreshProfile = useSelector(
+        (state) => state.signupReducer.shouldRefreshProfile
+    )
 
     //insets
     const insets = useSafeAreaInsets()
 
-    //isFocused
-    const isFocused = useIsFocused()
-
     //dispatch
     const dispatch = useDispatch()
 
-    //tab bar position
-    let tabBarBottomPosition = insets.bottom > 0 ? insets.bottom / 2 + 2 : 10
+    // //----------------------------------------------------------------CONDITIONAL PROFILE REFRESH----------------------------------------------------------------
+
+    // const loadProfileHandler = useCallback(async () => {
+    //     try {
+    //         await dispatch(loadProfile(null))
+    //     } catch (error) {
+    //         // setError(error.message)
+    //         console.log(error)
+    //     }
+    // }, [dispatch])
+
+    // useFocusEffect(() => {
+    //     const refreshConditionally = async () => {
+    //         if (shouldRefreshProfile) {
+    //             console.log('conditionally refresh profile')
+    //             const task = InteractionManager.runAfterInteractions(
+    //                 async () => {
+    //                     loadProfileHandler()
+    //                     await dispatch(setShouldRefreshProfile(false))
+    //                 }
+    //             )
+    //             return () => task.cancel()
+    //         }
+    //     }
+    //     refreshConditionally()
+    // })
+    // //----------------------------------------------------------------CONDITIONAL PROFILE REFRESH----------------------------------------------------------------
 
     //----------------------------------------------------------------LOAD GALLERIES----------------------------------------------------------------
     const [loadingGalleries, setLoadingGalleries] = useState(false)
@@ -277,6 +298,45 @@ const ProfileScreen = (props) => {
 
     const itemHeightLiked = useMemo(() => width / 2)
     // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><LIKED PICS<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+
+    const RenderHeader = useCallback(() => {
+        return (
+            <ProfileTopElements
+                normalizedSource={normalizedSource}
+                handleProfilePhotoPressed={handleProfilePhotoPressed}
+                personalInfo={personalInfo}
+            >
+                <Button
+                    text="Edit"
+                    style={styles.button}
+                    onPress={editPressedHandler}
+                />
+                <StatsContainer
+                    followingCount={personalInfo?.followingCount}
+                    followersCount={personalInfo?.followersCount}
+                    followingsPressedHandler={() => {
+                        followingsPressedHandler('following')
+                    }}
+                    followersPressedHandler={() => {
+                        followingsPressedHandler('followers')
+                    }}
+                />
+            </ProfileTopElements>
+        )
+    }, [personalInfo])
+
+    const RenderSectionHeader = useCallback(() => {
+        return (
+            <AnimatedTabBar
+                onLeftPressed={() => {
+                    setListShown('galleries')
+                }}
+                onMiddlePressed={() => {
+                    setListShown('liked')
+                }}
+            />
+        )
+    }, [])
     //----------------------------------------------------------------FLAT LIST FUNCTIONS--------------------------------------------------------------
 
     //----------------------------------------------------------------PROFILE PHOTO PRESSED----------------------------------------------------------------
@@ -311,81 +371,47 @@ const ProfileScreen = (props) => {
                 ? null
                 : imageString
         return normalizedSource
-    }, [personalInfo])
+    }, [personalInfo.avatarThumbPath])
     //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
-    const scrollViewRef = useRef()
-    let offset = 0
 
-    const onScroll = useCallback(({ nativeEvent }) => {
-        let currentOffset = nativeEvent.contentOffset.y
-        let direction = currentOffset > offset ? 'down' : 'up'
-        if (direction === 'up') {
-            scrollViewRef.current?.scrollTo({
-                x: 0,
-                y: 300,
-                animated: true,
-            })
-        }
-        if (direction === 'down') {
-            console.log('disabled!')
-        }
-        offset = currentOffset
+    //----------------------------------------------------------------NAV BAR FUNCTIONS----------------------------------------------------------------
+    const onSearchPressed = useCallback(() => {
+        props.navigation.navigate('SearchScreen')
     }, [])
 
-    const onScrollToTop = useCallback((event) => {
-        if (event.nativeEvent.contentOffset.y === 0) {
-            console.log(
-                '🚀 ~ file: ProfileScreen.js ~ line 334 ~ onScrollToTop ~ event.nativeEvent.contentOffset.y',
-                event.nativeEvent.contentOffset.y
-            )
-            scrollViewRef.current?.scrollTo({ x: 0, y: 0, animated: true })
-            return
-        }
+    const onFeedPressed = useCallback(() => {
+        props.navigation.navigate('DashboardScreen')
     }, [])
+    //----------------------------------------------------------------NAV BAR FUNCTIONS----------------------------------------------------------------
 
     return (
-        <ScreenWrapper style={{ paddingTop: 0 }}>
-            <ScrollView
-                ref={scrollViewRef}
-                style={{
-                    height: height,
+        <ScreenWrapper>
+            <HeaderBasic
+                iconName="menu-outline"
+                goBack={() => {
+                    props.navigation.toggleDrawer()
                 }}
-                contentContainerStyle={{
-                    height: height + 100,
-                }}
-                showsVerticalScrollIndicator={false}
-                // stickyHeaderIndices={[0]}
+                headerColor={{ color: colors.textColor }}
             >
-                <ProfileTopElements
-                    normalizedSource={normalizedSource}
-                    handleProfilePhotoPressed={handleProfilePhotoPressed}
-                    personalInfo={personalInfo}
-                >
-                    <Button
-                        text="Edit"
-                        style={styles.button}
-                        onPress={editPressedHandler}
-                    />
-                    <StatsContainer
-                        followingCount={personalInfo?.followingCount}
-                        followersCount={personalInfo?.followersCount}
-                        followingsPressedHandler={() => {
-                            followingsPressedHandler('following')
-                        }}
-                        followersPressedHandler={() => {
-                            followingsPressedHandler('followers')
-                        }}
-                    />
-                </ProfileTopElements>
-
-                <AnimatedTabBAr
-                    onLeftPressed={() => {
-                        setListShown('galleries')
-                    }}
-                    onMiddlePressed={() => {
-                        setListShown('liked')
+                <Ionicons
+                    name="notifications-outline"
+                    size={30}
+                    style={styles.signOut}
+                    onPress={() => {
+                        props.navigation.navigate('NotificationsScreen')
                     }}
                 />
+            </HeaderBasic>
+            <ScrollView
+                StickySectionHeadersEnabled={true}
+                stickyHeaderIndices={[1]}
+                contentContainerStyle={{
+                    minHeight: '100%',
+                }}
+                showsVerticalScrollIndicator={false}
+            >
+                <RenderHeader />
+                <RenderSectionHeader />
                 <BigList
                     data={listShown === 'galleries' ? galleries : pics}
                     renderItem={
@@ -402,50 +428,26 @@ const ProfileScreen = (props) => {
                             ? keyExtractor
                             : keyExtractorLiked
                     }
-                    contentContainerStyle={
-                        listShown === 'galleries'
-                            ? styles.bigListContentCont
-                            : null
-                    }
                     numColumns={listShown === 'galleries' ? 2 : 3}
-                    onRefresh={loadGalleries}
-                    refreshing={loadingGalleries}
+                    // onRefresh={loadGalleries}
+                    // refreshing={loadingGalleries}
                     removeClippedSubviews={
                         Platform.OS === 'android' ? true : false
                     }
-                    onScrollBeginDrag={onScroll}
-                    onScroll={onScrollToTop}
-                    scrollEventThrottle={16}
-                    bounces={false}
+                    showsVerticalScrollIndicator={false}
+                    //header components
+                    // headerHeight={260}
+                    // sectionHeaderHeight={50}
+                    // renderHeader={renderHeader}
+                    // renderSectionHeader={renderSectionHeader}
+                    // stickySectionHeadersEnabled={true}
                 />
             </ScrollView>
-            <HeaderBasic
-                iconName="menu-outline"
-                goBack={() => {
-                    props.navigation.toggleDrawer()
-                }}
-                headerColor={{ color: colors.textColor }}
-                style={{ ...styles.header, marginTop: insets.top }}
-            >
-                <Ionicons
-                    name="notifications-outline"
-                    size={30}
-                    style={styles.signOut}
-                    onPress={() => {
-                        props.navigation.navigate('NotificationsScreen')
-                    }}
-                />
-            </HeaderBasic>
             <NuemorphicNavBar
                 onCameraPressed={cameraPressedHandler}
-                onSearchPressed={() => {
-                    props.navigation.navigate('SearchScreen')
-                }}
-                onFeedPressed={() => {
-                    props.navigation.navigate('DashboardScreen')
-                }}
-                navigation={props.navigation}
-                profileFocused={isFocused ? true : false}
+                onSearchPressed={onSearchPressed}
+                onFeedPressed={onFeedPressed}
+                profileFocused={true}
             />
         </ScreenWrapper>
     )

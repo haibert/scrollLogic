@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { View, StyleSheet, TouchableWithoutFeedback } from 'react-native'
 import Animated, {
     useSharedValue,
@@ -30,16 +30,18 @@ const ScaleButton = ({
             ],
         }
     })
-    function runOnJSPlease() {
+    const runOnJSPlease = useCallback(() => {
         'worklet'
         runOnJS(onPress)()
-    }
-    const animateIn = () => {
+    }, [])
+
+    const animateIn = useCallback(() => {
         scale.value = activeScale
-    }
-    const animateOut = () => {
+    }, [])
+
+    const animateOut = useCallback(() => {
         scale.value = withSpring(1, springConfig)
-    }
+    }, [])
     return (
         <TouchableWithoutFeedback
             onPress={() => {

@@ -60,15 +60,14 @@ export const addGallery = (eventName, eventType, thumbnail, allowedUsers) => {
     }
 }
 
-export const setGalleries = (
-    userID = getState().signupReducer.userInfo.userID
-) => {
+export const setGalleries = (userID) => {
     return async (dispatch, getState) => {
+        const userIDPassed =
+            userID === null ? getState().signupReducer.userInfo.userID : userID
         try {
             const body = JSON.stringify({
-                userID: userID,
+                userID: userIDPassed,
             })
-            console.log('🚀 ~ file: action.js ~ line 71 ~ return ~ body', body)
             const response = await fetch(`${LINK}&get-user-galleries=1`, {
                 method: 'POST',
                 headers: {
@@ -87,12 +86,7 @@ export const setGalleries = (
 
             try {
                 const data = await response.json()
-
                 const galleries = data.message.galleries
-                console.log(
-                    '🚀 ~ file: action.js ~ line 92 ~ return ~ galleries',
-                    galleries
-                )
                 const loadedGalleries = []
                 for (const key in galleries) {
                     loadedGalleries.push(
@@ -104,7 +98,7 @@ export const setGalleries = (
                         )
                     )
                 }
-                if (userID !== getState().signupReducer.userInfo.userID) {
+                if (userID !== null) {
                     dispatch({
                         type: SET_OTHER_GALLERIES,
                         otherGalleries: loadedGalleries,
@@ -116,11 +110,12 @@ export const setGalleries = (
                     })
                 }
             } catch (error) {
-                throw error
+                console.log(error)
+                throw new Error('Something went wrong!')
             }
         } catch (error) {
             console.log(error)
-            throw error
+            throw new Error('Something went wrong!')
         }
     }
 }
@@ -189,6 +184,7 @@ export const deleteGallery = (galleryID) => {
             const body = JSON.stringify({
                 id: galleryID.id,
             })
+            console.log('🚀 ~ file: action.js ~ line 192 ~ return ~ body', body)
             const response = await fetch(`${LINK}&delete-gallery=1`, {
                 method: 'DELETE',
                 headers: {
@@ -206,6 +202,10 @@ export const deleteGallery = (galleryID) => {
 
             try {
                 const data = await JSON.stringify(response)
+                console.log(
+                    '🚀 ~ file: action.js ~ line 210 ~ return ~ data',
+                    data
+                )
 
                 // const data = await response.json()
                 // const response = data.message.response
@@ -279,6 +279,7 @@ export const deletePhoto = (photoID) => {
 
 export const shouldRefreshSet = (boolean) => {
     return async (dispatch, getState) => {
+        console.log('setting should refresh ', boolean)
         try {
             dispatch({
                 type: SHOULD_REFRESH,

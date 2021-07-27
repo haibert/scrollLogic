@@ -1,24 +1,11 @@
-import React, { useState, useRef, useCallback } from 'react'
-import {
-    StyleSheet,
-    View,
-    Image,
-    TouchableNativeFeedback,
-    Text,
-    Dimensions,
-    ImageBackground,
-    Platform,
-    TouchableWithoutFeedback,
-    TouchableOpacity,
-} from 'react-native'
+import React, { useCallback } from 'react'
+import { StyleSheet, Text, Dimensions } from 'react-native'
 import Animated, {
     useSharedValue,
     withTiming,
     useAnimatedStyle,
     withDelay,
 } from 'react-native-reanimated'
-//shared elements
-import { SharedElement } from 'react-navigation-shared-element'
 
 //custom components
 import ScaleButton from './TouchableScale'
@@ -27,12 +14,15 @@ import ScaleButton from './TouchableScale'
 import colors from '../constants/colors'
 
 //nav hooks
-import { useFocusEffect } from '@react-navigation/native'
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
 
 const { width, height } = Dimensions.get('window')
 
 //fast image
 import FastImage from 'react-native-fast-image'
+
+//shared elements
+import { SharedElement } from 'react-navigation-shared-element'
 
 //ionicons
 import { Ionicons } from '@expo/vector-icons'
@@ -40,12 +30,13 @@ import { Ionicons } from '@expo/vector-icons'
 const ThumbNail = ({
     galleryName,
     galleryPressedHandler,
-    navigation,
     images,
     onActionsPressed,
-    fakeImages,
-    imageURI,
 }) => {
+    //navigation
+    const navigation = useNavigation()
+
+    //----------------------------------------------------------------OPACITY ANIMATION--------------------------------------------------------------
     const animatedOpacity = useSharedValue(1)
 
     const opacityStyle = useAnimatedStyle(() => {
@@ -59,6 +50,7 @@ const ThumbNail = ({
             animatedOpacity.value = withDelay(100, withTiming(1))
         }
     })
+    //----------------------------------------------------------------OPACITY ANIMATION--------------------------------------------------------------
 
     //----------------------------------------------------------------OPTIMIZATION----------------------------------------------------------------
     const onPress = useCallback(() => {
@@ -68,7 +60,7 @@ const ThumbNail = ({
     //----------------------------------------------------------------OPTIMIZATION----------------------------------------------------------------
 
     //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
-    const normalizedSource = () => {
+    const normalizedSource = useCallback(() => {
         const imageString = `${images.thumbnail}`
         const normalizedSource =
             imageString &&
@@ -77,7 +69,7 @@ const ThumbNail = ({
                 ? null
                 : imageString
         return images.thumbnail ? normalizedSource : images.thumbnail
-    }
+    }, [])
     //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
 
     return (
@@ -87,32 +79,7 @@ const ThumbNail = ({
             contentContainerStyle={styles.contentContainerStyle}
             animatedStyle={opacityStyle}
         >
-            {/* <TouchableOpacity
-            onPress={onPress}
-            style={styles.contentContainerStyle}
-        >
-            <View> */}
             <SharedElement id={`${images.galleryID}`}>
-                {/* <Image
-                    style={styles.image}
-                    imageStyle={{
-                        borderRadius: 9,
-                        backgroundColor: 'transparent',
-                    }}
-                    resizeMode="cover"
-                    source={{
-                        uri: images.thumbnail,
-                        cache: 'force-cache',
-                    }}
-                /> */}
-                {/* <CachedImage
-                    style={styles.image}
-                    resizeMode="cover"
-                    source={{
-                        uri: `${images.thumbnail}`,
-                    }}
-                    cacheKey={`${images.galleryID}t`}
-                /> */}
                 <FastImage
                     style={styles.image}
                     resizeMode={FastImage.resizeMode.cover}
@@ -138,8 +105,6 @@ const ThumbNail = ({
                 style={styles.actionsStyle}
                 onPress={onActionsPressed}
             />
-            {/* </View>
-        </TouchableOpacity> */}
         </ScaleButton>
     )
 }
@@ -149,21 +114,19 @@ const styles = StyleSheet.create({
         marginTop: 10,
         width: width / 2 - 15,
         height: width / 2 - 15,
-        marginRight: 10,
         borderRadius: 9,
         justifyContent: 'flex-end',
         backgroundColor: 'transparent',
     },
     contentContainerStyle: {
         // marginRight: 10,
+        marginLeft: 7.5,
         marginTop: 10,
         width: width / 2 - 15,
         height: width / 2 - 15,
         borderRadius: 9,
         backgroundColor: 'transparent',
         borderRadius: 9,
-        // uncomment this if you are going to use ImageBackground
-
         shadowColor: 'black',
         shadowRadius: 10,
         shadowOpacity: 0.17,
@@ -182,16 +145,6 @@ const styles = StyleSheet.create({
         width: width / 2 - 15,
         height: width / 2 - 15,
         borderRadius: 9,
-
-        // uncomment this if you are going to REMOVE CACHED IMAGE IMPLEMENTATION
-        // shadowColor: 'black',
-        // shadowRadius: 4,
-        // shadowOpacity: 1,
-        // backgroundColor: 'white',
-        // shadowOffset: {
-        //     width: 0,
-        //     height: 2,
-        // },
     },
     insideTopCont: {
         flex: 1,
@@ -240,4 +193,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default ThumbNail
+export default React.memo(ThumbNail)

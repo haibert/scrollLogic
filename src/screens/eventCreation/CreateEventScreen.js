@@ -32,7 +32,7 @@ import NeumorphicButton from '../../components/NeumorphicButton'
 const { height, width } = Dimensions.get('screen')
 
 //redux
-import { addGallery } from '../../store/event/action'
+import { addGallery, shouldRefreshSet } from '../../store/event/action'
 import { useDispatch, useSelector } from 'react-redux'
 
 //formik
@@ -131,6 +131,9 @@ const CreateEventScreen = (props) => {
                                                     'none',
                                                     ['123']
                                                 )
+                                            )
+                                            await dispatch(
+                                                shouldRefreshSet(true)
                                             )
                                             setIsLoading(false)
                                             props.navigation.navigate(

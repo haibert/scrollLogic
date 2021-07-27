@@ -3,13 +3,9 @@ import {
     View,
     Text,
     StyleSheet,
-    Dimensions,
     ImageBackground,
     Image,
     TouchableWithoutFeedback,
-    Linking,
-    Alert,
-    Pressable,
 } from 'react-native'
 
 //fast image
@@ -18,21 +14,18 @@ import FastImage from 'react-native-fast-image'
 //shared elements
 import { SharedElement } from 'react-navigation-shared-element'
 
-//safe area
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-
 //colors
 import colors from '../../constants/colors'
 
 const ProfileTopElements = (props) => {
-    //insets
-    const insets = useSafeAreaInsets()
     return (
         <ImageBackground
-            style={{ ...styles.topCont, paddingTop: insets.top * 2 - 10 }}
-            source={{
-                uri: props.personalInfo.avatarFullPath,
-            }}
+            style={{ ...styles.topCont }}
+            source={
+                {
+                    // uri: props.personalInfo.avatarFullPath,
+                }
+            }
             blurRadius={10}
         >
             <TouchableWithoutFeedback onPress={props.handleProfilePhotoPressed}>
@@ -54,7 +47,7 @@ const ProfileTopElements = (props) => {
                 {props.personalInfo.firstName} {props.personalInfo.lastName}
             </Text>
             <Text
-                style={{ color: 'white', fontSize: 15 }}
+                style={styles.usernameText}
                 maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
             >{`@${props.personalInfo.username}`}</Text>
             {props.children}
@@ -68,7 +61,8 @@ const styles = StyleSheet.create({
         width: '100%',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: colors.placeHolder,
+        backgroundColor: colors.overallBackground,
+        height: 260,
     },
     signOut: {
         color: colors.darkColorP1,
@@ -85,10 +79,11 @@ const styles = StyleSheet.create({
         width: 60,
     },
     name: {
-        color: 'white',
+        color: 'black',
         fontSize: 17,
         margin: 5,
     },
+    usernameText: { color: 'black', fontSize: 15 },
 })
 
-export default ProfileTopElements
+export default React.memo(ProfileTopElements)

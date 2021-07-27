@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, TextInput, StyleSheet } from 'react-native'
+import { View, TextInput, StyleSheet, Pressable } from 'react-native'
 
 // colors
 import colors from '../constants/colors'
@@ -27,13 +27,14 @@ const CustomInput = (props) => {
                     autoCapitalize={props.autoCapitalize}
                     maxLength={props.maxLength}
                 />
-                <Ionicons
-                    name="close-circle"
-                    size={20}
-                    color={colors.darkestColorP1}
-                    style={{ opacity: 1 }}
-                    onPress={props.onXPressed}
-                />
+                <Pressable onPress={props.onXPressed}>
+                    <Ionicons
+                        name="close-circle"
+                        size={20}
+                        color={colors.darkestColorP1}
+                        // onPress={props.onXPressed}
+                    />
+                </Pressable>
             </View>
         </View>
     )

@@ -1,23 +1,8 @@
 import React, { useCallback } from 'react'
-import {
-    View,
-    StyleSheet,
-    Dimensions,
-    // TouchableWithoutFeedback,
-    Pressable,
-    Text,
-} from 'react-native'
+import { View, StyleSheet, Dimensions } from 'react-native'
 
-//custom components
-import ScaleButton from '../components/TouchableScale'
-
+// custom components
 import NeumorphicButton from './NeumorphicButton'
-
-//colors
-import colors from '../constants/colors'
-
-//Linear Gradient
-import { LinearGradient } from 'expo-linear-gradient'
 
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -34,31 +19,37 @@ import FloatingButton from './FloatingButton'
 //expo qr scanner
 import { BarCodeScanner } from 'expo-barcode-scanner'
 
+//nav hooks
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
+
 const NuemorphicNavBar = (props) => {
     //insets
     const insets = useSafeAreaInsets()
 
+    //navigation
+    const navigation = useNavigation()
+
+    //tab bar position
     const tabBarBottomPosition = insets.bottom > 0 ? insets.bottom + 5 : 5
-    console.log(
-        '🚀 ~ file: BottomNavBar.js ~ line 32 ~ BottomNavBar ~ tabBarBottomPosition',
-        tabBarBottomPosition
-    )
+    // console.log(
+    //     '🚀 ~ file: BottomNavBar.js ~ line 32 ~ BottomNavBar ~ tabBarBottomPosition',
+    //     tabBarBottomPosition
+    // )
 
     //----------------------------------------------------------------JOIN EVENT PRESSED--------------------------------------------------------------
-    const askForQRScannerPermissions = async () => {
+    const askForQRScannerPermissions = useCallback(async () => {
         const { status } = await BarCodeScanner.requestPermissionsAsync()
-        // setShowModal(false)
 
         if (status === 'granted') {
-            props.navigation.navigate('JoinEventScreen', {
+            navigation.navigate('JoinEventScreen', {
                 permission: status,
             })
         } else {
-            props.navigation.navigate('JoinEventScreen', {
+            navigation.navigate('JoinEventScreen', {
                 permission: status,
             })
         }
-    }
+    }, [])
 
     const joinEventHandler = useCallback(() => {
         askForQRScannerPermissions()
@@ -67,7 +58,7 @@ const NuemorphicNavBar = (props) => {
 
     //----------------------------------------------------------------CREATE EVENT PRESSED--------------------------------------------------------------
     const createEventHandler = useCallback(() => {
-        props.navigation.navigate('CreateEventScreen')
+        navigation.navigate('CreateEventScreen')
     }, [])
 
     //----------------------------------------------------------------CREATE EVENT PRESSED--------------------------------------------------------------
@@ -267,4 +258,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default NuemorphicNavBar
+export default React.memo(NuemorphicNavBar)

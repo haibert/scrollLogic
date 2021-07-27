@@ -1,12 +1,9 @@
 import React, { useRef, useCallback, useEffect, useMemo, useState } from 'react'
 import {
     View,
-    Text,
     StyleSheet,
     Dimensions,
-    FlatList,
     ImageBackground,
-    ActivityIndicator,
     Image,
     TouchableOpacity,
     InteractionManager,
@@ -15,24 +12,18 @@ import {
 
 //reanimated
 import Animated, {
-    Extrapolate,
-    interpolate,
     useAnimatedStyle,
     useSharedValue,
     withTiming,
     withDelay,
-    useAnimatedScrollHandler,
-    useAnimatedProps,
 } from 'react-native-reanimated'
 
 //components
 import ScreenWrapper from '../components/ScreenWrapper'
 import HeaderBasic from '../components/HeaderBasic'
 import ActionSheetGV from '../components/ActionSheetGV'
-import CachedImage from '../components/CachedImage'
 import ThumbnailBig from '../components/ThumbnailBig'
 import { EntryAnimation } from '../components/EntryAnimation'
-import CachedImageGalleryView from '../components/CachedImageGalleryView'
 
 const { width, height } = Dimensions.get('window')
 
@@ -55,10 +46,6 @@ import BigList from 'react-native-big-list'
 //shared elements
 import { SharedElement } from 'react-navigation-shared-element'
 
-//paper
-import { Avatar, Title, Caption, Paragraph, Drawer } from 'react-native-paper'
-import { ScrollView } from 'react-native'
-
 // blurview
 import { BlurView } from 'expo-blur'
 
@@ -68,24 +55,25 @@ import { useFocusEffect } from '@react-navigation/native'
 //fast image
 import FastImage from 'react-native-fast-image'
 
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
-
 const GalleryDetailScreen = ({ route, navigation }) => {
+    //insets
     const insets = useSafeAreaInsets()
 
+    //adjusted height
     const rowHeightAdjusted = useMemo(() => {
         const calcHeight = height - 40 - insets.top - insets.bottom - 70 - 30
         return +calcHeight.toFixed(0)
-    })
-    const rowWidthAdjust = useMemo(() => (rowHeightAdjusted * 9) / 16)
+    }, [])
+    //adjusted width
+    const rowWidthAdjust = useMemo(() => (rowHeightAdjusted * 9) / 16, [])
 
+    //nav params
     const { scrollIndex, picID, fullPathNav } = route.params
-    const image = useSelector((state) => state.galleryReducer.pics)
-    // console.log(
-    //     '🚀 ~ file: GalleryDetailScreen.js ~ line 65 ~ GalleryDetailScreen ~ image',
-    //     image
-    // )
 
+    //data
+    const image = useSelector((state) => state.galleryReducer.pics)
+
+    // bottom sheet ref
     const bottomSheetModalRef = useRef()
 
     //----------------------------------------------------------------COMMENT PRESSED-------------------------------------------------------------
@@ -114,17 +102,12 @@ const GalleryDetailScreen = ({ route, navigation }) => {
 
         setActiveIndex(newIndex)
     }
-    const thumbnailRef = useRef()
-
-    // console.log(`rendered galleryviewdetail screen ${Math.floor(activeIndex)}`)
-
     //----------------------------------------------------------------DELETE PHOTO----------------------------------------------------------------
 
-    //----------------------------------------------------------------SYNCED LISTS LOGIC----------------------------------------------------------------
+    //----------------------------------------------------------------SCROLL TO INDEX WHEN MOUNTED----------------------------------------------------------------
     const bigListRef = useRef()
     const smallListRef = useRef()
 
-    //----------------------------------------------------------------SCROLL TO INDEX WHEN MOUNTED----------------------------------------------------------------
     const listOpacity = useSharedValue(0)
     const opacityStyle = useAnimatedStyle(() => {
         return {
@@ -190,6 +173,7 @@ const GalleryDetailScreen = ({ route, navigation }) => {
     )
     //----------------------------------------------------------------SCROLL TO INDEX WHEN MOUNTED----------------------------------------------------------------
 
+    //----------------------------------------------------------------SYNCED LISTS LOGIC----------------------------------------------------------------
     const [activeIndex, setActiveIndex] = useState(0)
 
     const onMomentumScrollEnd = useCallback((ev) => {
@@ -232,8 +216,8 @@ const GalleryDetailScreen = ({ route, navigation }) => {
         }
     }, [])
     //----------------------------------------------------------------SYNCED LISTS LOGIC----------------------------------------------------------------
-    //----------------------------------------------------------------FLATlIST OPTIMIZATION----------------------------------------------------------------
 
+    //----------------------------------------------------------------FLATlIST OPTIMIZATION----------------------------------------------------------------
     const oneEllipsisPressed = useCallback(
         (picToDelete, index) => {
             bottomSheetModalRef.current?.handlePresentModalPress()
@@ -324,7 +308,6 @@ const GalleryDetailScreen = ({ route, navigation }) => {
             })
         }, 500)
     }, [])
-
     //----------------------------------------------------------------FLATlIST OPTIMIZATION----------------------------------------------------------------
 
     return (
@@ -352,12 +335,7 @@ const GalleryDetailScreen = ({ route, navigation }) => {
                     width: width,
                 }}
             >
-                <SharedElement
-                    id={picID}
-                    style={{
-                        borderRadius: 17,
-                    }}
-                >
+                <SharedElement id={picID}>
                     <FastImage
                         style={{
                             height: rowHeightAdjusted,
@@ -365,21 +343,9 @@ const GalleryDetailScreen = ({ route, navigation }) => {
                             borderRadius: 17,
                         }}
                         resizeMode={FastImage.resizeMode.cover}
-                        // source={{
-                        //     uri: fullPathNav,
-                        //     // headers: { Authorization: 'someAuthToken' },
-                        //     priority: FastImage.priority.normal,
-                        // }}
                     />
                 </SharedElement>
             </View>
-            {/* <EntryAnimation
-                index={1}
-                style={{
-                    width: '100%',
-                    flex: 1,
-                }}
-            > */}
 
             <View
                 style={{
@@ -415,7 +381,6 @@ const GalleryDetailScreen = ({ route, navigation }) => {
                     />
                 </Animated.View>
             </View>
-            {/* </EntryAnimation> */}
 
             <View
                 style={{
@@ -438,9 +403,7 @@ const GalleryDetailScreen = ({ route, navigation }) => {
             </View>
             <HeaderBasic
                 goBack={() => {
-                    navigation.navigate('GalleryView', {
-                        picID,
-                    })
+                    navigation.goBack()
                 }}
                 headerColor={{ color: colors.textColor }}
                 iconName="chevron-down-outline"

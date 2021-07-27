@@ -1,5 +1,5 @@
-import React from 'react'
-import { View, Text, StyleSheet, Dimensions } from 'react-native'
+import React, { useCallback } from 'react'
+import { View, StyleSheet, Dimensions } from 'react-native'
 //reanimated
 import Animated, {
     useAnimatedStyle,
@@ -16,7 +16,7 @@ import { Ionicons } from '@expo/vector-icons'
 //colors
 import colors from '../../constants/colors'
 
-const AnimatedTabBAr = (props) => {
+const AnimatedTabBar = (props) => {
     //----------------------------------------------------------------ANIMATION LOGIC----------------------------------------------------------------
     const animatedValue = useSharedValue(0)
     const animatedStyle = useAnimatedStyle(() => {
@@ -27,19 +27,19 @@ const AnimatedTabBAr = (props) => {
             height: 5,
         }
     })
-    const startAnimationRight = () => {
+    const startAnimationRight = useCallback(() => {
         animatedValue.value = withTiming(-(width - width / 3), {
-            duration: 100,
+            duration: 0,
         })
-    }
-    const startAnimationMiddle = () => {
+    }, [])
+    const startAnimationMiddle = useCallback(() => {
         animatedValue.value = withTiming(-(width - width / 3 - width / 3), {
-            duration: 100,
+            duration: 0,
         })
-    }
-    const startAnimationLeft = () => {
-        animatedValue.value = withTiming(0, { duration: 100 })
-    }
+    }, [])
+    const startAnimationLeft = useCallback(() => {
+        animatedValue.value = withTiming(0, { duration: 0 })
+    }, [])
     //----------------------------------------------------------------ANIMATION LOGIC----------------------------------------------------------------
     return (
         <View style={styles.columCont}>
@@ -83,9 +83,6 @@ const styles = StyleSheet.create({
         borderColor: colors.separatorLine,
         flexDirection: 'row',
         backgroundColor: 'white',
-        borderTopRightRadius: 20,
-        borderTopLeftRadius: 20,
-        marginTop: -20,
     },
     requestsColumButtons: {
         flex: 1,
@@ -100,4 +97,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default AnimatedTabBAr
+export default React.memo(AnimatedTabBar)

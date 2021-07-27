@@ -21,6 +21,9 @@ export const LOAD_FOLLOWINGS = 'LOAD_FOLLOWINGS'
 export const EDIT_PROFILE = 'EDIT_PROFILE'
 export const PRIVACY_UPDATE = 'PRIVACY_UPDATE'
 export const LOAD_REQUESTS = 'LOAD_REQUESTS'
+export const FOLLOW_RESPONSE = 'FOLLOW_RESPONSE'
+export const UPDATE_USER_STATS = 'UPDATE_USER_STATS'
+export const SHOULD_REFRESH_PROFILE = 'SHOULD_REFRESH_PROFILE'
 
 //models
 import { Search } from '../../models/SearchModel'
@@ -128,18 +131,25 @@ export const signupUser = () => {
                 throw new Error('Something went wrong!')
             }
 
-            const newUserID = responseData.message?.userData?.uniqID
-            console.log(
-                '🚀 ~ file: actions.js ~ line 116 ~ return ~ newUserID',
-                newUserID
+            dispatch(
+                login(
+                    responseData.message?.userData?.username,
+                    responseData.message?.userData?.password
+                )
             )
-            await storeData(newUserID)
 
-            dispatch({
-                type: SIGN_UP,
-                newUserID: newUserID,
-            })
-        } catch {
+            // const newUserID = responseData.message?.userData?.uniqID
+            // console.log(
+            //     '🚀 ~ file: actions.js ~ line 116 ~ return ~ newUserID',
+            //     newUserID
+            // )
+            // await storeData(newUserID)
+
+            // dispatch({
+            //     type: SIGN_UP,
+            //     newUserID: newUserID,
+            // })
+        } catch (error) {
             throw error
         }
     }
@@ -147,7 +157,6 @@ export const signupUser = () => {
 
 export const login = (username, password) => {
     return async (dispatch, getState) => {
-        let userID
         const body = JSON.stringify({
             userName: username,
             password,
@@ -177,6 +186,7 @@ export const login = (username, password) => {
                 }
 
                 const userID = data.message?.userData?.basic?.uniqueID
+
                 const userInfo = data.message?.userData
                 const credentials = data.message?.userData?.body
 
@@ -186,7 +196,7 @@ export const login = (username, password) => {
                     fullInfo: userInfo,
                 })
 
-                dispatch(setGalleries(userID))
+                dispatch(setGalleries(null))
 
                 await storeCredentials(
                     credentials.userName,
@@ -487,12 +497,13 @@ export const search = (text) => {
 
 export const loadProfile = (userID) => {
     return async (dispatch, getState) => {
-        // const userID = getState().signupReducer.userInfo.userID
+        const userIDPassed =
+            userID === null ? getState().signupReducer.userInfo.userID : userID
 
         const body = JSON.stringify({
-            userID,
+            userID: userIDPassed,
         })
-        // console.log('🚀 ~ file: actions.js ~ line 496 ~ return ~ body', body)
+
         try {
             const response = await fetch(`${LINK}&get-user=1`, {
                 method: 'POST',
@@ -512,15 +523,18 @@ export const loadProfile = (userID) => {
             try {
                 const data = await response.json()
                 const loadedProfile = data.message.data
-                // console.log(
-                //     '🚀 ~ file: actions.js ~ line 509 ~ return ~ loadedProfile',
-                //     loadedProfile
-                // )
 
-                dispatch({
-                    type: LOAD_PROFILE,
-                    loadedProfile: loadedProfile,
-                })
+                if (userID === null) {
+                    dispatch({
+                        type: UPDATE_USER_STATS,
+                        updatedStats: loadedProfile,
+                    })
+                } else {
+                    dispatch({
+                        type: LOAD_PROFILE,
+                        loadedProfile: loadedProfile,
+                    })
+                }
             } catch (error) {
                 throw error
             }
@@ -754,6 +768,7 @@ export const privacyChange = (privacy) => {
             userID,
             accountPrivacy: privacy,
         })
+
         try {
             const response = await fetch(`${LINK}&account-privacy=1`, {
                 method: 'POST',
@@ -772,13 +787,10 @@ export const privacyChange = (privacy) => {
 
             try {
                 const data = await response.json()
-                console.log(
-                    '🚀 ~ file: actions.js ~ line 770 ~ return ~ data',
-                    data
-                )
-                const success = data.message.response === 'success'
+                const success = data.message.response === 'Success'
 
                 if (success) {
+                    console.log('success gotten', privacy)
                     dispatch({
                         type: PRIVACY_UPDATE,
                         privacy: privacy,
@@ -830,7 +842,8 @@ export const getFollowRequests = () => {
                             requests[key].firstName,
                             requests[key].lastName,
                             requests[key].uniqueID,
-                            requests[key].userName
+                            requests[key].userName,
+                            requests[key].id
                         )
                     )
                 }
@@ -849,9 +862,13 @@ export const getFollowRequests = () => {
     }
 }
 
-export const friendRequestResponse = (followerID, status) => {
+export const friendRequestResponse = (followerID, requestID, status) => {
     return async (dispatch, getState) => {
         const userID = getState().signupReducer.userInfo.userID
+        console.log(
+            '🚀 ~ file: actions.js ~ line 857 ~ return ~ userID',
+            userID
+        )
 
         const body = JSON.stringify({
             userID,
@@ -889,6 +906,7 @@ export const friendRequestResponse = (followerID, status) => {
 
                 dispatch({
                     type: FOLLOW_RESPONSE,
+                    requestID: requestID,
                 })
             } catch (error) {
                 throw new Error('Something went wrong!')
@@ -898,14 +916,16 @@ export const friendRequestResponse = (followerID, status) => {
         }
     }
 }
-// helpers
-const storeData = async (value) => {
-    try {
-        await AsyncStorage.removeItem('userID')
-        await AsyncStorage.setItem('userID', value)
-    } catch (e) {
-        console.log(e)
-        // throw error
+export const setShouldRefreshProfile = (boolean) => {
+    return async (dispatch, getState) => {
+        try {
+            dispatch({
+                type: SHOULD_REFRESH_PROFILE,
+                shouldRefreshProfile: boolean,
+            })
+        } catch (error) {
+            throw error
+        }
     }
 }
 

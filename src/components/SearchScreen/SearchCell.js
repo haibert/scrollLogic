@@ -9,32 +9,12 @@ import {
 
 import colors from '../../constants/colors'
 
-//redux
-import { loadProfile } from '../../store/signup-auth/actions'
-import { useDispatch, useSelector } from 'react-redux'
-
 //fast image
 import FastImage from 'react-native-fast-image'
 
 const SearchCell = (props) => {
-    //dispatch
-    const dispatch = useDispatch()
-
-    //----------------------------------------------------------------Load Profile----------------------------------------------------------------
-    const onPress = useCallback(async () => {
-        try {
-            // await dispatch(loadProfile(props.searchResults.uniqueID))
-            props.navigation.navigate('OtherProfileScreen', {
-                uniqueID: props.searchResults.uniqueID,
-            })
-        } catch (err) {
-            console.log(err)
-        }
-    }, [props.searchResults])
-    //----------------------------------------------------------------Load Profile----------------------------------------------------------------
-
     //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
-    const normalizedSource = () => {
+    const normalizedSource = useCallback(() => {
         const imageString = `${props.searchResults.avatar}`
         const normalizedSource =
             imageString &&
@@ -43,10 +23,11 @@ const SearchCell = (props) => {
                 ? null
                 : imageString
         return normalizedSource
-    }
+    }, [])
     //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
+
     return (
-        <TouchableWithoutFeedback onPress={onPress}>
+        <TouchableWithoutFeedback onPress={props.onPress}>
             <View style={styles.cellOuter}>
                 <FastImage
                     style={styles.imageCont}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, Pressable } from 'react-native'
 
 import colors from '../../constants/colors'
 
@@ -56,15 +56,15 @@ const RequestCell = (props) => {
                 </Text>
             </View>
             <ButtonFlatlist
-                buttonContStyle={styles.buttonContStyle}
-                style={styles.button}
+                buttonContStyle={styles.button}
+                style={styles.buttonContStyleRight}
                 title="Accept"
                 iconName="checkmark-outline"
                 onPress={props.onAccept}
             />
             <ButtonFlatlist
-                buttonContStyle={styles.buttonContStyle}
-                style={styles.buttonReject}
+                buttonContStyle={styles.buttonReject}
+                style={styles.buttonContStyleLeft}
                 title="Cancel"
                 iconName="close-outline"
                 onPress={props.onReject}
@@ -100,22 +100,23 @@ const styles = StyleSheet.create({
         left: 60,
         justifyContent: 'center',
     },
-    buttonContStyle: {
+    buttonContStyleLeft: {
         position: 'absolute',
         height: 30,
-        right: 0,
+        right: 10,
+    },
+    buttonContStyleRight: {
+        position: 'absolute',
+        height: 30,
+        right: 90,
     },
     button: {
         height: 30,
         width: 70,
-        position: 'absolute',
-        right: 90,
     },
     buttonReject: {
         height: 30,
         width: 70,
-        position: 'absolute',
-        right: 10,
         backgroundColor: colors.lightestColorP1,
     },
     galleryName: {

@@ -11,9 +11,9 @@ const ButtonFlatlist = (props) => {
     return (
         <TouchableOpacity
             onPress={props.onPress}
-            style={{ ...styles.const, ...props.buttonContStyle }}
+            style={{ ...styles.cont, ...props.style }}
         >
-            <View style={{ ...styles.button, ...props.style }}>
+            <View style={{ ...styles.button, ...props.buttonContStyle }}>
                 <Ionicons name={props.iconName} size={22} color="white" />
             </View>
         </TouchableOpacity>
@@ -21,7 +21,7 @@ const ButtonFlatlist = (props) => {
 }
 
 const styles = StyleSheet.create({
-    const: {
+    cont: {
         alignItems: 'center',
         justifyContent: 'center',
     },

@@ -34,6 +34,9 @@ import CustomHeaderBasic from '../components/HeaderBasic'
 import ScreenWrapper from '../components/ScreenWrapper'
 import BottomNavBar from '../components/BottomNavBar'
 import NuemorphicNavBar from '../components/NuemorphicNavBar'
+import CustomActionSheet from '../components/CustomActionSheet'
+//floating Button
+import FloatingButton from '../components/FloatingButton'
 
 import ActionBottomSheet from '../components/ActionBottomSheet'
 
@@ -56,12 +59,6 @@ import { Icon } from 'react-native-elements'
 import { Camera } from 'expo-camera'
 import { Audio } from 'expo-av'
 
-//expo qr scanner
-import { BarCodeScanner } from 'expo-barcode-scanner'
-
-//dummy data
-import images from '../data/images'
-
 //redux
 import {
     savePermissionsStatus,
@@ -73,15 +70,55 @@ import { useDispatch, useSelector } from 'react-redux'
 // big list
 import BigList from 'react-native-big-list'
 
+//dimensions
 const { height, width } = Dimensions.get('screen')
+
+import Constants from 'expo-constants'
+import * as Notifications from 'expo-notifications'
 
 //fake data make sure to comment out
 // import { fakeArray, fakeArray2 } from '../data/images'
+
+//-------------------------------------------------------------------NOTIFICATIONS LOGIC-------------------------------------------------------------------
+const registerForPushNotificationsAsync = async () => {
+    let token
+    if (Constants.isDevice) {
+        const { status: existingStatus } =
+            await Notifications.getPermissionsAsync()
+        let finalStatus = existingStatus
+        if (existingStatus !== 'granted') {
+            const { status } = await Notifications.requestPermissionsAsync()
+            finalStatus = status
+        }
+        if (finalStatus !== 'granted') {
+            alert('Failed to get push token for push notification!')
+            return
+        }
+        token = (await Notifications.getExpoPushTokenAsync()).data
+        console.log(token)
+    } else {
+        alert('Must use physical device for Push Notifications')
+    }
+
+    if (Platform.OS === 'android') {
+        Notifications.setNotificationChannelAsync('default', {
+            name: 'default',
+            importance: Notifications.AndroidImportance.MAX,
+            vibrationPattern: [0, 250, 250, 250],
+            lightColor: '#FF231F7C',
+        })
+    }
+
+    return token
+}
 
 const DashboardScreen = (props) => {
     const insets = useSafeAreaInsets()
 
     const isFocused = useIsFocused()
+
+    // sheet ref
+    const bottomSheetRef = useRef()
 
     let tabBarBottomPosition = insets.bottom > 0 ? insets.bottom / 2 + 2 : 10
     const [deleteID, setDeleteID] = useState({ id: '', index: '' })
@@ -98,14 +135,11 @@ const DashboardScreen = (props) => {
         (state) => state.permissionsReducer.permissions.camera
     )
 
-    //----------------------------------------------------------------BOTTOM SHEET----------------------------------------------------------------
-    const bottomSheetRef = useRef()
-    //----------------------------------------------------------------BOTTOM SHEET----------------------------------------------------------------
-
     //----------------------------------------------------------------LOAD GALLERIES----------------------------------------------------------------
     const [loadingGalleries, setLoadingGalleries] = useState(false)
     // states
     const galleries = useSelector((state) => state.galleryReducer.galleries)
+
     console.log('Dash Screen Loaded')
     const shouldRefresh = useSelector(
         (state) => state.galleryReducer.shouldRefresh
@@ -115,16 +149,16 @@ const DashboardScreen = (props) => {
         // setLoadingGalleries(true)
         // setError(null)
         try {
-            await dispatch(setGalleries(userID))
+            await dispatch(setGalleries(null))
         } catch (error) {
             // setError(error.message)
         }
         // setLoadingGalleries(false)
     }, [setLoadingGalleries, dispatch])
 
-    // useEffect(() => {
-    //     loadGalleries()
-    // }, [loadGalleries])
+    useEffect(() => {
+        loadGalleries()
+    }, [loadGalleries])
 
     useFocusEffect(() => {
         const refreshConditionally = async () => {
@@ -133,7 +167,6 @@ const DashboardScreen = (props) => {
                 await dispatch(shouldRefreshSet(false))
             }
         }
-
         refreshConditionally()
     })
     //----------------------------------------------------------------LOAD GALLERIES----------------------------------------------------------------
@@ -179,25 +212,6 @@ const DashboardScreen = (props) => {
                 }
             }
         }
-    }
-
-    const askForQRScannerPermissions = async () => {
-        const { status } = await BarCodeScanner.requestPermissionsAsync()
-        // setShowModal(false)
-
-        if (status === 'granted') {
-            props.navigation.navigate('JoinEventScreen', {
-                permission: status,
-            })
-        } else {
-            props.navigation.navigate('JoinEventScreen', {
-                permission: status,
-            })
-        }
-    }
-
-    function joinEventHandler() {
-        askForQRScannerPermissions()
     }
 
     // // handle checking permissions after app state change
@@ -316,6 +330,18 @@ const DashboardScreen = (props) => {
     // })
     //----------------------------------------------------------------PRESENTATION ANIMATION---------------------------------------------------------------
 
+    //----------------------------------------------------------------NAV BAR FUNCTIONS----------------------------------------------------------------
+    const onSearchPressed = useCallback(() => {
+        props.navigation.navigate('SearchScreen')
+    }, [])
+
+    const onPersonPressed = useCallback(() => {
+        props.navigation.navigate('ProfileScreen')
+    }, [])
+
+    const onFeedPressed = useCallback(() => {}, [])
+    //----------------------------------------------------------------NAV BAR FUNCTIONS----------------------------------------------------------------
+
     //----------------------------------------------------------------FLAT LIST FUNCTIONS--------------------------------------------------------------
     const render = useCallback(({ item, index }) => {
         return (
@@ -328,11 +354,9 @@ const DashboardScreen = (props) => {
                         item.galleryName
                     )
                 }}
-                navigation={props.navigation}
                 galleryName={item.galleryName}
                 onActionsPressed={onActionsPressed.bind(this, item, index)}
                 key={item.galleryID}
-                imageURI={`${item.thumbnail}`}
             />
         )
     }, [])
@@ -353,7 +377,7 @@ const DashboardScreen = (props) => {
         setDeleteID({ id: item.galleryID, index: index })
     }, [])
 
-    const itemHeight = useMemo(() => width / 2 - 5)
+    const itemHeight = useMemo(() => width / 2 - 5, [])
 
     const layOut = useCallback(
         (data, index) => ({
@@ -386,9 +410,9 @@ const DashboardScreen = (props) => {
                 layOut={layOut}
                 keyExtractor={keyExtractor}
                 contentContainerStyle={{
-                    ...styles.bigListContentCont,
                     paddingBottom: tabBarBottomPosition + 80,
                 }}
+                showsVerticalScrollIndicator={false}
                 numColumns={2}
                 onRefresh={loadGalleries}
                 refreshing={loadingGalleries}
@@ -431,55 +455,22 @@ const DashboardScreen = (props) => {
             >
                 <Ionicons name="home" size={20} color="#555"></Ionicons>
             </Reanimated.View> */}
+
             <NuemorphicNavBar
                 onCameraPressed={cameraPressedHandler}
-                onSearchPressed={() => {
-                    props.navigation.navigate('SearchScreen')
-                }}
-                onPersonPressed={() => {
-                    props.navigation.navigate('ProfileScreen')
-                }}
-                onFeedPressed={() => {}}
-                navigation={props.navigation}
-                feedFocused={isFocused ? true : false}
+                onSearchPressed={onSearchPressed}
+                onPersonPressed={onPersonPressed}
+                onFeedPressed={onFeedPressed}
+                feedFocused={true}
             />
-
-            {/* <Modal visible={showModal} transparent animationType="slide">
-                <View style={styles.modal}>
-                    <View>
-                        <View style={styles.modalActions}>
-                            <Button
-                                text="Join Gallery"
-                                style={styles.innerButton}
-                                onPress={joinEventHandler}
-                            ></Button>
-                            <Button
-                                text="Create Event"
-                                onPress={() => {
-                                    setShowModal(false)
-                                    props.navigation.navigate(
-                                        'CreateEventScreen'
-                                    )
-                                }}
-                            />
-                        </View>
-                        <Button
-                            style={styles.cancelButton}
-                            onPress={() => {
-                                setShowModal(false)
-                            }}
-                            text="Cancel"
-                        />
-                    </View>
-                </View>
-            </Modal> */}
 
             <ActionBottomSheet
                 ref={bottomSheetRef}
-                navigation={props.navigation}
                 galleryID={deleteID}
                 refreshGalleryList={loadGalleries}
             />
+
+            {/* <CustomActionSheet /> */}
         </ScreenWrapper>
     )
 }
@@ -508,114 +499,6 @@ const styles = StyleSheet.create({
     bigListContentCont: {
         marginLeft: 10,
     },
-    modalActions: {
-        width: '80%',
-        height: 200,
-        shadowColor: 'black',
-        shadowRadius: 10,
-        shadowOpacity: 0.26,
-        backgroundColor: colors.pinkLESSTransparent,
-
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        borderRadius: 10,
-        elevation: 5,
-        alignItems: 'center',
-        justifyContent: 'space-around',
-        padding: 30,
-    },
-    innerButton: {
-        marginBottom: 20,
-    },
-    cancelButton: {
-        marginTop: 30,
-        width: `80%`,
-    },
-    tabBar: {
-        height: 50,
-        // backgroundColor: 'rgba(255, 227, 255, 1)',
-        justifyContent: 'space-evenly',
-        flexDirection: 'row',
-        borderRadius: 15,
-        marginHorizontal: 10,
-        position: 'absolute',
-        alignItems: 'center',
-        overflow: 'hidden',
-    },
-    tabBarImage: {
-        height: 50,
-        borderRadius: 15,
-        marginHorizontal: 10,
-        position: 'absolute',
-    },
-    tabBarGradient: {
-        flex: 1,
-        borderRadius: 15,
-    },
-    tabButton: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        flex: 1,
-        minHeight: '100%',
-    },
-    tabLabel: {
-        color: 'white',
-        fontSize: 10,
-    },
-    tabLabel2: {
-        color: 'white',
-        fontSize: 10,
-    },
-    tabBarShadow: {
-        position: 'absolute',
-        height: 50,
-        backgroundColor: 'white',
-        flexDirection: 'row',
-        borderRadius: 15,
-        marginHorizontal: 10,
-        shadowColor: 'black',
-        shadowRadius: 3,
-        shadowOpacity: 0.3,
-        shadowOffset: {
-            width: 0,
-            height: 1,
-        },
-        elevation: 5,
-    },
-    bigPlusButton: {
-        backgroundColor: colors.mediumTint,
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: 'black',
-        shadowRadius: 2,
-        shadowOpacity: 0.5,
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-    },
-    floatingPlusCont: {
-        position: 'absolute',
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        // overflow: Platform.OS === 'android' ? 'hidden' : 'visible',
-        elevation: 10,
-    },
-    floatingTouchable: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        borderWidth: 2,
-        borderColor: 'black',
-        backgroundColor: 'red',
-    },
-
     //animation
     animation: {
         width: 54,

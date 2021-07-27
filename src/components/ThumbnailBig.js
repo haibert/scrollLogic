@@ -1,15 +1,5 @@
-import React, { useRef, useCallback, useMemo } from 'react'
-import {
-    StyleSheet,
-    View,
-    Text,
-    Dimensions,
-    ImageBackground,
-    Pressable,
-    Image,
-    ActivityIndicator,
-} from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import React, { useCallback, useMemo } from 'react'
+import { StyleSheet, View, Text, Dimensions, Pressable } from 'react-native'
 import Animated, {
     useSharedValue,
     withTiming,
@@ -25,9 +15,8 @@ import colors from '../constants/colors'
 //custom  component
 import Heart from '../components/Heart'
 
+//dimensions
 const { width, height } = Dimensions.get('window')
-
-const CELL_WIDTH = width / 2
 
 //ionicons
 import { Ionicons } from '@expo/vector-icons'
@@ -36,46 +25,20 @@ import { EvilIcons } from '@expo/vector-icons'
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-//custom components
-import CachedImage from '../components/CachedImage'
-
 //fast image
 import FastImage from 'react-native-fast-image'
 
 const ThumbnailBig = (props) => {
+    //insets
     const insets = useSafeAreaInsets()
 
     //----------------------------------------------------------------ROW HEIGHT CALCS----------------------------------------------------------------
     const rowHeightAdjusted = useMemo(() => {
         const calcHeight = height - 40 - insets.top - insets.bottom - 70 - 30
         return +calcHeight.toFixed(0)
-    })
-    const rowWidthAdjust = useMemo(() => (rowHeightAdjusted * 9) / 16)
+    }, [])
+    const rowWidthAdjust = useMemo(() => (rowHeightAdjusted * 9) / 16, [])
     //----------------------------------------------------------------ROW HEIGHT CALCS----------------------------------------------------------------
-
-    //----------------------------------------------------------------DELETE ANIMATION LOGIC----------------------------------------------------------------
-    const animatedHight = useSharedValue(colors.rowHeight)
-
-    const deleteStyle = useAnimatedStyle(() => {
-        return {
-            height: animatedHight.value,
-            width: '100%',
-        }
-    })
-
-    const startDeleteAnimation = () => {
-        animatedHight.value = withTiming(0, { duration: 300 })
-    }
-    // const animatedScaleStyle = useAnimatedStyle(() => {
-    //     return {
-    //         transform: [
-    //             {
-    //                 scale: props.animatedValue,
-    //             },
-    //         ],
-    //     }
-    // })
-    //----------------------------------------------------------------DELETE ANIMATION LOGIC----------------------------------------------------------------
 
     //----------------------------------------------------------------HIDE ACTIONS ANIMATION----------------------------------------------------------------
 
@@ -121,40 +84,16 @@ const ThumbnailBig = (props) => {
         >
             <View
                 style={{
+                    ...styles.rotatorCont,
                     height: rowHeightAdjusted,
                     width: rowWidthAdjust,
-                    transform: [
-                        {
-                            rotate: '90deg',
-                        },
-                    ],
                 }}
             >
-                {/* <ImageBackground
-                    style={styles.image}
-                    source={{
-                        uri: props.images.fullPath,
-                    }}
-                    // onLoadStart={onLoadStart}
-                    onLoad={onLoad}
-                /> */}
-
-                {/* <CachedImage
-                    style={styles.image}
-                    resizeMode="cover"
-                    source={{
-                        uri: `${props.images.fullPath}`,
-                    }}
-                    cacheKey={`${props.images.id}t`}
-                    onLoad={onLoad}
-                /> */}
-
                 <FastImage
                     style={styles.image}
                     resizeMode={FastImage.resizeMode.cover}
                     source={{
                         uri: `${props.images.fullPath}`,
-                        // headers: { Authorization: 'someAuthToken' },
                         priority: FastImage.priority.normal,
                         cache: FastImage.cacheControl.immutable,
                     }}
@@ -165,7 +104,6 @@ const ThumbnailBig = (props) => {
                         style={[styles.image, StyleSheet.absoluteFill]}
                         source={{
                             uri: `${props.images.thumbPath}`,
-                            // headers: { Authorization: 'someAuthToken' },
                             priority: FastImage.priority.normal,
                             cache: FastImage.cacheControl.immutable,
                         }}
@@ -173,10 +111,7 @@ const ThumbnailBig = (props) => {
                     />
                 </Animated.View>
                 <Animated.View style={[styles.wholeCont, bigContStyle]}>
-                    <View
-                        style={styles.actionBar}
-                        // source={require('../../assets/AndroidTransparentPngBLUR.png')}
-                    />
+                    <View style={styles.actionBar} />
 
                     <Ionicons
                         name="ellipsis-horizontal"
@@ -206,6 +141,13 @@ const styles = StyleSheet.create({
         height: width,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    rotatorCont: {
+        transform: [
+            {
+                rotate: '90deg',
+            },
+        ],
     },
     image: {
         position: 'absolute',

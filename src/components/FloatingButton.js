@@ -9,6 +9,7 @@ import {
     TouchableWithoutFeedback,
     Dimensions,
     Pressable,
+    Platform,
 } from 'react-native'
 import Reanimated, {
     useSharedValue,
@@ -243,7 +244,6 @@ const styles = StyleSheet.create({
         shadowOpacity: 1,
         shadowOffset: { x: 2, y: 0 },
         shadowRadius: 2,
-        // position: 'absolute',
     },
     other: {
         backgroundColor: '#FFF',

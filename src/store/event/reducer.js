@@ -65,6 +65,8 @@ const galleryReducer = (state = initialState, action) => {
             }
         }
         case SHOULD_REFRESH: {
+            console.log('heres the input ', action.shouldRefresh)
+
             return {
                 ...state,
                 shouldRefresh: action.shouldRefresh,
@@ -73,7 +75,7 @@ const galleryReducer = (state = initialState, action) => {
         case EMPTY_PICS_ARRAY: {
             return {
                 ...state,
-                // pics: [],
+                pics: [],
             }
         }
 

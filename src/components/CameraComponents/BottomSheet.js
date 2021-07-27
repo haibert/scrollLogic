@@ -181,10 +181,10 @@ const BottomSheet = forwardRef((props, ref) => {
     }, [])
     //----------------------------------------------------------------NO GALLERIES CONTENT----------------------------------------------------------------
 
-    const animationConfig = useBottomSheetTimingConfigs({
-        duration: 1000,
-        // easing: 'easeInOut',
-    })
+    // const animationConfig = useBottomSheetTimingConfigs({
+    //     duration: 1000,
+    //     // easing: 'easeInOut',
+    // })
     return (
         <BottomSheetModalProvider>
             <BottomSheetModal
@@ -196,7 +196,7 @@ const BottomSheet = forwardRef((props, ref) => {
                 // dismissOnPanDown={true}
                 handleComponent={CustomHandleComponent}
                 dismissOnPanDown={true}
-                animationConfigs={animationConfig}
+                // animationConfigs={animationConfig}
             >
                 <View
                     style={{

@@ -300,12 +300,12 @@ const CameraScreen = ({ navigation, route }) => {
 
     //----------------------------------------------------------------SCREEN SHOTTING----------------------------------------------------------------
     //----------------------------------------------------------------UPLOAD PICTURE----------------------------------------------------------------
-    const uploadPhotoHandler = async () => {
+    const uploadPhotoHandler = useCallback(async () => {
         console.log('iOS upload Ran')
         const resizedPhoto = await ImageManipulator.manipulateAsync(
             pic,
             [{ resize: { height: 1100 } }],
-            { compress: 1, format: 'jpeg', base64: true }
+            { compress: 0.5, format: 'jpeg', base64: true }
         )
 
         try {
@@ -318,13 +318,13 @@ const CameraScreen = ({ navigation, route }) => {
             )
             setShowPicture(false)
         } catch (err) {}
-    }
+    }, [showPicModal])
 
     const screenShotBase64 = useSelector(
         (state) => state.cameraReducer.pictureBase64
     )
 
-    const uploadScreenShotHandler = async () => {
+    const uploadScreenShotHandler = useCallback(async () => {
         console.log('android upload fired')
         try {
             await dispatch(shouldRefreshSet(true))
@@ -343,7 +343,7 @@ const CameraScreen = ({ navigation, route }) => {
             //     })
             // }
         } catch (err) {}
-    }
+    }, [])
     //----------------------------------------------------------------UPLOAD PICTURE----------------------------------------------------------------
 
     const flipCameraHandler = () => {

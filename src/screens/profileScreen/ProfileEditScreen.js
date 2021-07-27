@@ -200,7 +200,17 @@ const ProfileEditScreen = ({ route, ...props }) => {
             },
         ],
     }
-    const [isPrivate, setIsPrivate] = useState(false)
+
+    const accountPrivacy = useSelector(
+        (state) => state.signupReducer.settings.privacy
+    )
+    console.log(
+        '🚀 ~ file: ProfileEditScreen.js ~ line 207 ~ ProfileEditScreen ~ accountPrivacy',
+        accountPrivacy
+    )
+    const [isPrivate, setIsPrivate] = useState(
+        accountPrivacy === 'private' ? true : false
+    )
 
     const privacyChangeHandler = async () => {
         await dispatch(privacyChange(isPrivate ? 'private' : 'public'))

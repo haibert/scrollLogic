@@ -30,13 +30,11 @@ import colors from '../../constants/colors'
 // big list
 import BigList from 'react-native-big-list'
 
-//fakeData
-// import { fakeArray as listData } from '../data/images'
-
 //redux
 import {
     getFollowRequests,
     friendRequestResponse,
+    setShouldRefreshProfile,
 } from '../../store/signup-auth/actions'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -88,6 +86,35 @@ const NotificationsScreen = (props) => {
     }, [loadFollows])
 
     //----------------------------------------------------------------LOAD DATA----------------------------------------------------------------
+    //----------------------------------------------------------------ACCEPT / REJECT FRIEND REQUEST----------------------------------------------------------------
+    const acceptFriendRequest = useCallback(
+        async (followerID, requestID, status) => {
+            try {
+                await dispatch(setShouldRefreshProfile(true))
+                await dispatch(
+                    friendRequestResponse(followerID, requestID, status)
+                )
+            } catch (err) {
+                console.log(err)
+            }
+        },
+        [dispatch]
+    )
+
+    const rejectFriendRequest = useCallback(
+        async (followerID, requestID, status) => {
+            console.log('reject friend request')
+            try {
+                await dispatch(
+                    friendRequestResponse(followerID, requestID, status)
+                )
+            } catch (err) {
+                console.log(err)
+            }
+        },
+        [dispatch]
+    )
+    //----------------------------------------------------------------ACCEPT / REJECT FRIEND REQUEST----------------------------------------------------------------
 
     //----------------------------------------------------------------FLATlIST OPTIMIZATION----------------------------------------------------------------
     const render = useCallback(({ item, index }) => {
@@ -95,10 +122,10 @@ const NotificationsScreen = (props) => {
             <RequestCell
                 data={item}
                 onAccept={() => {
-                    acceptFriendRequest(item.userID, 'accepted')
+                    acceptFriendRequest(item.userID, item.id, 'accepted')
                 }}
                 onReject={() => {
-                    rejectFriendRequest(item.userID, 'rejected')
+                    rejectFriendRequest(item.userID, item.id, 'rejected')
                 }}
             />
         )
@@ -117,29 +144,6 @@ const NotificationsScreen = (props) => {
 
     //----------------------------------------------------------------FLATlIST OPTIMIZATION----------------------------------------------------------------
 
-    //----------------------------------------------------------------ACCEPT / REJECT FRIEND REQUEST----------------------------------------------------------------
-    const acceptFriendRequest = useCallback(
-        async (followerID, status) => {
-            try {
-                await dispatch(friendRequestResponse(followerID, status))
-            } catch (err) {
-                console.log(err)
-            }
-        },
-        [dispatch]
-    )
-
-    const rejectFriendRequest = useCallback(
-        async (followerID, status) => {
-            try {
-                await dispatch(friendRequestResponse(followerID, status))
-            } catch (err) {
-                console.log(err)
-            }
-        },
-        [dispatch]
-    )
-    //----------------------------------------------------------------ACCEPT / REJECT FRIEND REQUEST----------------------------------------------------------------
     return (
         <ScreenWrapper>
             <HeaderBasic
@@ -157,7 +161,7 @@ const NotificationsScreen = (props) => {
                 style={styles.bigList}
                 showsVerticalScrollIndicator={true}
             />
-            <Animated.View
+            {/* <Animated.View
                 pointerEvents="none"
                 style={[
                     styles.loadingView,
@@ -168,7 +172,7 @@ const NotificationsScreen = (props) => {
                 ]}
             >
                 <ActivityIndicator color={colors.nPButton} />
-            </Animated.View>
+            </Animated.View> */}
         </ScreenWrapper>
     )
 }

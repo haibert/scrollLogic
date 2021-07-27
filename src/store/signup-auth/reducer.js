@@ -19,6 +19,9 @@ import {
     EDIT_PROFILE,
     PRIVACY_UPDATE,
     LOAD_REQUESTS,
+    FOLLOW_RESPONSE,
+    SHOULD_REFRESH_PROFILE,
+    UPDATE_USER_STATS,
 } from './actions'
 
 //async storage
@@ -57,6 +60,7 @@ const initialState = {
     followings: [],
     followers: [],
     friendRequests: [],
+    shouldRefreshProfile: false,
 }
 
 const signupReducer = (state = initialState, action) => {
@@ -146,6 +150,9 @@ const signupReducer = (state = initialState, action) => {
                     followersCount: action.fullInfo.basic.followersCount,
                     followingCount: action.fullInfo.basic.followingCount,
                 },
+                settings: {
+                    privacy: action.fullInfo.basic.accountPrivacy,
+                },
             }
         }
         case SET_USER_ID: {
@@ -217,6 +224,12 @@ const signupReducer = (state = initialState, action) => {
             }
         }
         case PRIVACY_UPDATE: {
+            action.privacy
+            console.log(
+                '🚀 ~ file: reducer.js ~ line 700 ~ signupReducer ~ action.privacy',
+                action.privacy
+            )
+
             return {
                 ...state,
                 settings: {
@@ -228,6 +241,31 @@ const signupReducer = (state = initialState, action) => {
             return {
                 ...state,
                 friendRequests: action.friendRequests,
+            }
+        }
+        case FOLLOW_RESPONSE: {
+            const filteredArray = state.friendRequests.filter(function (obj) {
+                return obj.id !== action.requestID
+            })
+            return {
+                ...state,
+                friendRequests: filteredArray,
+            }
+        }
+        case SHOULD_REFRESH_PROFILE: {
+            return {
+                ...state,
+                shouldRefreshProfile: action.shouldRefreshProfile,
+            }
+        }
+        case UPDATE_USER_STATS: {
+            return {
+                ...state,
+                userInfo: {
+                    ...state.userInfo,
+                    followersCount: action.updatedStats.followersCount,
+                    followingCount: action.updatedStats.followingCount,
+                },
             }
         }
 

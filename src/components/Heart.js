@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { View, StyleSheet, Pressable } from 'react-native'
 import Animated, {
     useSharedValue,
@@ -21,13 +21,14 @@ const Heart = (props) => {
         return { opacity: animatedOpacity.value }
     })
 
-    const changeOpacity = () => {
+    const changeOpacity = useCallback(() => {
         if (animatedOpacity.value === 0) {
             animatedOpacity.value = 1
             return
         }
         animatedOpacity.value = 0
-    }
+    }, [])
+
     return (
         <Pressable
             style={{ ...styles.cont, ...props.style }}
@@ -63,4 +64,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default Heart
+export default React.memo(Heart)

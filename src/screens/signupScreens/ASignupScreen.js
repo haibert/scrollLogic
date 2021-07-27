@@ -187,17 +187,6 @@ const SignupScreen = (props) => {
                                         setErrors({ email: error.message })
                                         return
                                     }
-                                    // try {
-                                    //     await dispatch(
-                                    //         sendEmailCode(values.email)
-                                    //     )
-                                    //     props.navigation.navigate(
-                                    //         'BConfirmationScreen'
-                                    //     )
-                                    // } catch (error) {
-                                    //     setErrors({ email: error.message })
-                                    //     return
-                                    // }
                                 }}
                                 validationSchema={validationSchemaEmail}
                             >

@@ -39,7 +39,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(145,145,145,0.6)',
         overflow: 'hidden',
         alignItems: 'center',
-        marginBottom: 10,
         marginTop: 10,
     },
     statCubes1: {

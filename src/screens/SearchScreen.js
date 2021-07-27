@@ -23,7 +23,6 @@ import ScreenWrapper from '../components/ScreenWrapper'
 import SearchCell from '../components/SearchScreen/SearchCell'
 import BottomNavBar from '../components/BottomNavBar'
 import NuemorphicNavBar from '../components/NuemorphicNavBar'
-import useDidMountEffect from '../hooks/useDidMountEffect'
 
 //colors
 import colors from '../constants/colors'
@@ -53,7 +52,6 @@ import { Camera } from 'expo-camera'
 import { Audio } from 'expo-av'
 
 //useFocus InteractionManager
-import { InteractionManager } from 'react-native'
 import { useFocusEffect } from '@react-navigation/native'
 
 //isFocused
@@ -74,15 +72,11 @@ const SearchScreen = ({ route, ...props }) => {
     //dispatch
     const dispatch = useDispatch()
 
-    //isfocused
+    //isFocused
     const isFocused = useIsFocused()
 
     //searches
     const searches = useSelector((state) => state.signupReducer.searches)
-    // console.log(
-    //     '🚀 ~ file: SearchScreen.js ~ line 59 ~ SearchScreen ~ searches',
-    //     searches
-    //)
 
     useFocusEffect(
         useCallback(() => {
@@ -285,18 +279,20 @@ const SearchScreen = ({ route, ...props }) => {
         }
     }
 
-    const openSettings = useCallback(() => {
-        Platform.OS === 'android'
-            ? Linking.openSettings()
-            : Linking.canOpenURL('app-settings:')
-                  .then((supported) => {
-                      if (!supported) {
-                          console.log("Can't handle settings url")
-                      } else {
-                          return Linking.openURL('app-settings:')
-                      }
-                  })
-                  .catch((err) => console.error('An error occurred', err))
+    const openSettings = useCallback(async () => {
+        Platform.OS === 'android' ? Linking.openSettings() : null
+        if (Platform.OS === 'ios') {
+            const supported = await Linking.canOpenURL('app-settings:')
+            try {
+                if (!supported) {
+                    console.log("Can't handle settings url")
+                } else {
+                    return Linking.openURL('app-settings:')
+                }
+            } catch (err) {
+                console.error('An error occurred', err)
+            }
+        }
     }, [])
 
     const sendUserToSettingsHandler = useCallback(() => {
@@ -338,7 +334,12 @@ const SearchScreen = ({ route, ...props }) => {
     //----------------------------------------------------------------FLATlIST OPTIMIZATION----------------------------------------------------------------
 
     const render = useCallback(({ item, index }) => {
-        return <SearchCell searchResults={item} navigation={props.navigation} />
+        return (
+            <SearchCell
+                searchResults={item}
+                onPress={onSearchPress.bind(this, item.uniqueID)}
+            />
+        )
     }, [])
 
     const layOut = useCallback(
@@ -358,14 +359,27 @@ const SearchScreen = ({ route, ...props }) => {
         Keyboard.dismiss()
     }, [isAndroid])
 
-    const onTouchStart = useCallback(() => {
-        if (searches.length === 0) {
-            // moveCancelButton()
-            // expandSearchBar()
-        }
-    }, [searches])
+    const onSearchPress = useCallback(async (uniqueID) => {
+        props.navigation.navigate('OtherProfileScreen', {
+            uniqueID,
+        })
+    }, [])
 
     //----------------------------------------------------------------FLATlIST OPTIMIZATION----------------------------------------------------------------
+
+    //----------------------------------------------------------------NAV BAR FUNCTIONS----------------------------------------------------------------
+    const onSearchPressed = useCallback(() => {
+        props.navigation.navigate('SearchScreen')
+    }, [])
+
+    const onPersonPressed = useCallback(() => {
+        props.navigation.navigate('ProfileScreen')
+    }, [])
+
+    const onFeedPressed = useCallback(() => {
+        props.navigation.navigate('DashboardScreen')
+    }, [])
+    //----------------------------------------------------------------NAV BAR FUNCTIONS----------------------------------------------------------------
     return (
         <ScreenWrapper
             style={{
@@ -413,7 +427,6 @@ const SearchScreen = ({ route, ...props }) => {
             </View>
 
             <BigList
-                onTouchStart={onTouchStart}
                 data={searches}
                 renderItem={render}
                 keyExtractor={keyExtractor}
@@ -439,18 +452,10 @@ const SearchScreen = ({ route, ...props }) => {
             </Animated.View>
             <Animated.View style={bottomNavStyle}>
                 <NuemorphicNavBar
-                    onFeedPressed={() => {
-                        props.navigation.navigate('DashboardScreen')
-                    }}
-                    onPlusPressed={() => {
-                        setShowModal(true)
-                    }}
+                    onFeedPressed={onFeedPressed}
                     onCameraPressed={cameraPressedHandler}
-                    onPersonPressed={() => {
-                        props.navigation.navigate('ProfileScreen')
-                    }}
-                    navigation={props.navigation}
-                    searchFocused={isFocused ? true : false}
+                    onPersonPressed={onPersonPressed}
+                    searchFocused={true}
                 />
             </Animated.View>
         </ScreenWrapper>

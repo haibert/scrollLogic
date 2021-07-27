@@ -112,16 +112,8 @@ const PhotoEditScreen = ({ route, ...props }) => {
         }
     }
 
-    const askForPermission = async () => {
+    const askForPermission = useCallback(async () => {
         const { status } = await ImagePicker.getMediaLibraryPermissionsAsync()
-
-        //     if (status !== 'granted') {
-        //     alert('Sorry, we need camera roll permissions to make this work!')
-        //     return false
-        // } else {
-        //     return true
-        // }
-
         if (status === 'granted') {
             return true
         } else if (status === 'undetermined') {
@@ -143,12 +135,13 @@ const PhotoEditScreen = ({ route, ...props }) => {
                 return false
             }
         }
-    }
+    }, [])
     //----------------------------------------------------------------PERMISSION LOGIC----------------------------------------------------------------
 
     //----------------------------------------------------------------EDIT PRESSED----------------------------------------------------------------
     const [chosenImage, setChosenImage] = useState(null)
-    const editPressedHandler = async () => {
+
+    const editPressedHandler = useCallback(async () => {
         const havePermission = await askForPermission()
 
         if (havePermission) {
@@ -157,7 +150,6 @@ const PhotoEditScreen = ({ route, ...props }) => {
                 allowsEditing: true,
                 aspect: [1, 1],
                 quality: Platform.OS === 'ios' ? 0 : 1,
-                base64: true,
             })
 
             if (!result.cancelled) {
@@ -172,12 +164,14 @@ const PhotoEditScreen = ({ route, ...props }) => {
                     }
                 )
                 await dispatch(
-                    changeAvatar(`data:image/jpeg;base64,${result.base64}`)
+                    changeAvatar(
+                        `data:image/jpeg;base64,${compressedPhoto.base64}`
+                    )
                 )
                 setChosenImage(compressedPhoto.uri)
             }
         }
-    }
+    }, [askForPermission])
     //----------------------------------------------------------------EDIT PRESSED----------------------------------------------------------------
 
     //----------------------------------------------------------------PAN ANIMATION LOGIC----------------------------------------------------------------
@@ -256,11 +250,7 @@ const PhotoEditScreen = ({ route, ...props }) => {
     }
     //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
     return (
-        <PanGestureHandler
-            onGestureEvent={onGestureEvent}
-            // activeOffsetY={5}
-            // failOffsetY={-5}
-        >
+        <PanGestureHandler onGestureEvent={onGestureEvent}>
             <Animated.View
                 style={[
                     { flex: 1, backgroundColor: 'white', overflow: 'hidden' },
@@ -273,7 +263,6 @@ const PhotoEditScreen = ({ route, ...props }) => {
                         goBack={() => {
                             props.navigation.goBack()
                         }}
-                        header="Username"
                         headerColor={{ color: colors.darkestColorP1 }}
                     />
                     <View style={styles.screenCont}>

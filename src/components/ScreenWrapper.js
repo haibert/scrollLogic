@@ -31,7 +31,10 @@ const ScreenWrapper = (props) => {
             style={{
                 flex: 1,
                 width: width,
-                paddingTop: Platform.OS === 'android' ? insets.top : null,
+                paddingTop:
+                    Platform.OS === 'android' || props.paddingTop
+                        ? insets.top
+                        : null,
                 paddingBottom: props.paddingBottom ? insets.bottom : null,
                 backgroundColor: colors.overallBackground,
             }}

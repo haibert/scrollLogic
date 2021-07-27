@@ -1,14 +1,5 @@
 import React, { useState, useCallback } from 'react'
-import {
-    View,
-    Text,
-    StyleSheet,
-    Dimensions,
-    Pressable,
-    Alert,
-    Linking,
-    TouchableOpacity,
-} from 'react-native'
+import { View, Text, StyleSheet, Pressable } from 'react-native'
 
 //custom components
 import ScreenWrapper from '../../components/ScreenWrapper'
@@ -42,18 +33,14 @@ const EditPhoneScreen = ({ route, ...props }) => {
     const dispatch = useDispatch()
 
     // validation schema
-    const validationSchemaPhone = yup
-        .string()
-        .phone('US', true)
-        .required()
-        .matches(/[^0-9]/)
+    const validationSchemaPhone = yup.string().phone('US', true).required()
 
     const [showErrors, setShowErrors] = useState(false)
     const [phoneError, setPhoneError] = useState(' ')
 
     //----------------------------------------------------------------X PRESSED----------------------------------------------------------------
-    const xPressed = useCallback((resetForm) => {
-        resetForm()
+    const xPressed = useCallback((setFieldValue) => {
+        setFieldValue('phone', '')
     }, [])
 
     //----------------------------------------------------------------X PRESSED----------------------------------------------------------------
@@ -93,7 +80,7 @@ const EditPhoneScreen = ({ route, ...props }) => {
                         handleSubmit,
                         values,
                         errors,
-                        resetForm,
+                        setFieldValue,
                     }) => (
                         <View>
                             <CustomInput
@@ -112,9 +99,7 @@ const EditPhoneScreen = ({ route, ...props }) => {
                                 keyboardType="number-pad"
                                 autoFocus
                                 maxLength={30}
-                                onXPressed={() => {
-                                    xPressed(resetForm)
-                                }}
+                                onXPressed={xPressed.bind(this, setFieldValue)}
                             />
 
                             {showErrors ? (

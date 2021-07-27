@@ -105,9 +105,8 @@ const GalleryView = ({ route, navigation }) => {
     }
 
     const picturePressedHandler = useCallback(
-        (image, scrollIndex, picID, fullPathNav) => {
+        (scrollIndex, picID, fullPathNav) => {
             navigation.navigate('GalleryDetailScreen', {
-                image,
                 scrollIndex,
                 picID,
                 fullPathNav,
@@ -413,16 +412,15 @@ const GalleryView = ({ route, navigation }) => {
                 key={item.id}
                 images={item}
                 picturePressedHandler={() => {
-                    picturePressedHandler(pics, index, item.id, item.fullPath)
+                    picturePressedHandler(index, item.id, item.fullPath)
                 }}
-                navigation={navigation}
             />
         )
     }, [])
     //----------------------------------------------------FLAT LIST OPTIMIZATION--------------------------------------------------------
 
     //----------------------------------------------------------------have to normalize uri----------------------------------------------------------------
-    const normalizedSource = () => {
+    const normalizedSource = useCallback(() => {
         const imageString = `${thumbnail}`
         const normalizedSource =
             imageString &&
@@ -431,7 +429,7 @@ const GalleryView = ({ route, navigation }) => {
                 ? null
                 : imageString
         return normalizedSource
-    }
+    }, [])
     //----------------------------------------------------------------have to normalize uri----------------------------------------------------------------
 
     return (
@@ -462,7 +460,6 @@ const GalleryView = ({ route, navigation }) => {
                             resizeMode={FastImage.resizeMode.cover}
                             source={{
                                 uri: normalizedSource(),
-                                // headers: { Authorization: 'someAuthToken' },
                                 priority: FastImage.priority.normal,
                             }}
                         />

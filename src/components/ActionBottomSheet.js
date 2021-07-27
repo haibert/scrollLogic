@@ -14,6 +14,7 @@ import {
     BottomSheetFlatList,
     BottomSheetView,
     BottomSheetBackdrop,
+    useBottomSheetTimingConfigs,
 } from '@gorhom/bottom-sheet'
 import BottomSheet from '@gorhom/bottom-sheet'
 
@@ -32,11 +33,6 @@ import {
 //file system
 import * as FileSystem from 'expo-file-system'
 
-const { height, width } = Dimensions.get('window')
-
-//Due to wrapping the content and handle with TapGestureHandler & PanGestureHandler, any gesture interaction would not function as expected.
-//To resolve this issue, please use touchables that this library provides.
-
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -50,9 +46,6 @@ import colors from '../constants/colors'
 //redux
 import { deleteGallery } from '../store/event/action'
 import { useDispatch, useSelector } from 'react-redux'
-
-//custom components
-import Card from '../components/Card'
 
 const CustomHandleComponent = () => {
     return <View style={{ borderRadius: 20, width: '100%', height: 15 }}></View>
@@ -73,14 +66,6 @@ const ActionBottomSheet = forwardRef((props, ref) => {
 
     //----------------------------------------------------------------DELETING GALLERY----------------------------------------------------------------
     const deleteGalleryHandler = useCallback(async () => {
-        // const wholeDirectory = FileSystem.cacheDirectory + 'images/'
-        const picDir =
-            FileSystem.cacheDirectory + 'images/' + `${props.galleryID.id}t`
-        const cacheExists = await FileSystem.getInfoAsync(picDir)
-        if (cacheExists.exists) {
-            await FileSystem.deleteAsync(picDir)
-        }
-
         await dispatch(deleteGallery(props.galleryID))
         bottomSheetModalRef.current?.close()
         props.refreshGalleryList()
@@ -99,13 +84,21 @@ const ActionBottomSheet = forwardRef((props, ref) => {
     }
     //----------------------------------------------------------------CONFIRMATION ANIMATION----------------------------------------------------------------
 
+    //----------------------------------------------------------------ANIMATION CONFIG----------------------------------------------------------------
+    const animationConfigs = useBottomSheetTimingConfigs({
+        duration: 200,
+    })
+    //----------------------------------------------------------------ANIMATION CONFIG----------------------------------------------------------------
+
     return (
         <BottomSheetModalProvider>
             <BottomSheetModal
                 ref={bottomSheetModalRef}
                 index={1}
                 snapPoints={snapPoints}
-                onChange={handleSheetChangesModal}
+                backgroundComponent={null}
+                animationConfigs={animationConfigs}
+                // onChange={handleSheetChangesModal}
                 backdropComponent={({ animatedIndex, style }) => {
                     const containerAnimatedStyle = useAnimatedStyle(() => ({
                         opacity: interpolate(
@@ -142,8 +135,10 @@ const ActionBottomSheet = forwardRef((props, ref) => {
                 <View
                     style={{
                         paddingBottom: insets.bottom,
-                        height: 100,
-                        backgroundColor: 'transparent',
+                        height: 101,
+                        backgroundColor: 'white',
+                        marginHorizontal: 15,
+                        borderRadius: 20,
                     }}
                 >
                     <TouchableOpacity
@@ -151,22 +146,44 @@ const ActionBottomSheet = forwardRef((props, ref) => {
                             bottomSheetModalRef.current?.snapTo(2)
                             animate()
                         }}
+                        style={{
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: 10,
+                            height: 50,
+                        }}
                     >
-                        <View style={styles.actionButton}>
-                            <Ionicons
-                                name="trash-outline"
-                                size={20}
-                                color="red"
-                            />
-                            <Text
-                                style={styles.deleteText}
-                                maxFontSizeMultiplier={
-                                    colors.maxFontSizeMultiplier
-                                }
-                            >
-                                Delete
-                            </Text>
-                        </View>
+                        <Text
+                            style={styles.deleteText}
+                            maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                        >
+                            Delete
+                        </Text>
+                    </TouchableOpacity>
+                    <View
+                        style={{
+                            borderTopWidth: 1,
+                            borderTopColor: '#e0e0e0',
+                        }}
+                    ></View>
+                    <TouchableOpacity
+                        onPress={() => {
+                            bottomSheetModalRef.current?.snapTo(2)
+                            animate()
+                        }}
+                        style={{
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: 10,
+                            height: 50,
+                        }}
+                    >
+                        <Text
+                            style={styles.darkText}
+                            maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                        >
+                            Make Private
+                        </Text>
                     </TouchableOpacity>
                     <Animated.View style={[styles.actionButton2, opacity]}>
                         <Text
@@ -223,7 +240,7 @@ const ActionBottomSheet = forwardRef((props, ref) => {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        // flex: 1,
         padding: 2,
     },
     actionButton: {
@@ -245,12 +262,9 @@ const styles = StyleSheet.create({
     },
     deleteText: {
         color: 'red',
-        fontWeight: 'bold',
         fontSize: 20,
-        marginLeft: 10,
     },
-    confirmQuestion: {
-        fontWeight: 'bold',
+    darkText: {
         fontSize: 20,
     },
     yesNo: {

@@ -61,10 +61,9 @@ const EditNameScreen = ({ route, ...props }) => {
     const [showErrors, setShowErrors] = useState(false)
 
     //----------------------------------------------------------------X PRESSED----------------------------------------------------------------
-    const xPressed = useCallback((resetForm) => {
-        resetForm()
+    const xPressed = useCallback((setFieldValue) => {
+        setFieldValue('fullName', '')
     }, [])
-
     //----------------------------------------------------------------X PRESSED----------------------------------------------------------------
 
     return (
@@ -119,13 +118,7 @@ const EditNameScreen = ({ route, ...props }) => {
                                 autoFocus
                                 autoCapitalize="words"
                                 maxLength={30}
-                                onXPressed={() => {
-                                    console.log(values.fullName)
-                                    setFieldValue({
-                                        fullName: 'ment',
-                                    })
-                                    resetForm()
-                                }}
+                                onXPressed={xPressed.bind(this, setFieldValue)}
                             />
 
                             <Counter
