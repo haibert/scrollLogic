@@ -35,8 +35,6 @@ import ScreenWrapper from '../components/ScreenWrapper'
 import BottomNavBar from '../components/BottomNavBar'
 import NuemorphicNavBar from '../components/NuemorphicNavBar'
 import CustomActionSheet from '../components/CustomActionSheet'
-//floating Button
-import FloatingButton from '../components/FloatingButton'
 
 import ActionBottomSheet from '../components/ActionBottomSheet'
 
@@ -80,6 +78,7 @@ import * as Notifications from 'expo-notifications'
 // import { fakeArray, fakeArray2 } from '../data/images'
 
 //-------------------------------------------------------------------NOTIFICATIONS LOGIC-------------------------------------------------------------------
+// get notifications permission and send token to server
 const registerForPushNotificationsAsync = async () => {
     let token
     if (Constants.isDevice) {
@@ -95,6 +94,7 @@ const registerForPushNotificationsAsync = async () => {
             return
         }
         token = (await Notifications.getExpoPushTokenAsync()).data
+        // send token to server for specific user
         console.log(token)
     } else {
         alert('Must use physical device for Push Notifications')
@@ -111,6 +111,7 @@ const registerForPushNotificationsAsync = async () => {
 
     return token
 }
+//-------------------------------------------------------------------NOTIFICATIONS LOGIC-------------------------------------------------------------------
 
 const DashboardScreen = (props) => {
     const insets = useSafeAreaInsets()

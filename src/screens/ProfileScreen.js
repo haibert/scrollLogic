@@ -11,7 +11,7 @@ import StatsContainer from '../components/ProfileScreen/StatsContainer'
 import ProfileTopElements from '../components/ProfileScreen/ProfileTopElements'
 import Thumbnail from '../components/Thumbnail'
 import ThumbnailSmall from '../components/ThumbnailSmall'
-import AnimatedTabBar from '../components/ProfileScreen/AnimatedTabBar'
+import ProfileTabBar from '../components/ProfileScreen/ProfileTabBar'
 
 //redux
 import { loadPermissions } from '../store/permissions/actions'
@@ -327,7 +327,7 @@ const ProfileScreen = (props) => {
 
     const RenderSectionHeader = useCallback(() => {
         return (
-            <AnimatedTabBar
+            <ProfileTabBar
                 onLeftPressed={() => {
                     setListShown('galleries')
                 }}
