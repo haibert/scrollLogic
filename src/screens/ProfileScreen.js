@@ -8,10 +8,10 @@ import Button from '../components/Button'
 import BottomNavBar from '../components/BottomNavBar'
 import NuemorphicNavBar from '../components/NuemorphicNavBar'
 import StatsContainer from '../components/ProfileScreen/StatsContainer'
-import AnimatedTabBar from '../components/ProfileScreen/AnimatedTabBar'
 import ProfileTopElements from '../components/ProfileScreen/ProfileTopElements'
 import Thumbnail from '../components/Thumbnail'
 import ThumbnailSmall from '../components/ThumbnailSmall'
+import AnimatedTabBar from '../components/ProfileScreen/AnimatedTabBar'
 
 //redux
 import { loadPermissions } from '../store/permissions/actions'
