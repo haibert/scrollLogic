@@ -69,7 +69,7 @@ const ThumbnailBig = (props) => {
     })
 
     const startOpacity2Anim = useCallback(() => {
-        animatedOpacity2.value = withTiming(0, { duration: 200 })
+        animatedOpacity2.value = withTiming(0, { duration: 100 })
     }, [])
 
     const onLoad = useCallback(() => {
