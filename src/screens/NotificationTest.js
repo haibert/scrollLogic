@@ -17,10 +17,18 @@ export default function NotificationTest() {
     const notificationListener = useRef()
     const responseListener = useRef()
 
+    const getPermission = async () => {
+        const { status } = await Notifications.requestPermissionsAsync()
+    }
+
     useEffect(() => {
+        // getPermission()
         registerForPushNotificationsAsync().then((token) => {
-            console.log(token)
-            setExpoPushToken(token)
+            if (Platform.OS === 'android') {
+                setExpoPushToken(token.data)
+            } else {
+                setExpoPushToken(token)
+            }
         })
 
         // This listener is fired whenever a notification is received while the app is foregrounded
@@ -114,8 +122,15 @@ async function registerForPushNotificationsAsync() {
             alert('Failed to get push token for push notification!')
             return
         }
-        token = (await Notifications.getExpoPushTokenAsync()).data
-        console.log(token)
+        if (Platform.OS === 'android') {
+            token = await Notifications.getExpoPushTokenAsync({
+                experienceId: '@haibert/EventShare',
+            })
+            console.log(token)
+        } else {
+            token = (await Notifications.getExpoPushTokenAsync()).data
+            console.log(token)
+        }
     } else {
         alert('Must use physical device for Push Notifications')
     }
