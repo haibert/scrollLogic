@@ -90,14 +90,14 @@ export default function NotificationTest() {
 // Can use this function below, OR use Expo's Push Notification Tool-> https://expo.io/notifications
 async function sendPushNotification(expoPushToken) {
     const message = {
-        to: expoPushToken,
+        to: `${expoPushToken}`,
         sound: 'default',
         title: 'Original Title',
         body: 'And here is the body!',
         data: { someData: 'goes here' },
     }
 
-    await fetch('https://exp.host/--/api/v2/push/send', {
+    const response = await fetch('https://exp.host/--/api/v2/push/send', {
         method: 'POST',
         headers: {
             Accept: 'application/json',
@@ -106,6 +106,12 @@ async function sendPushNotification(expoPushToken) {
         },
         body: JSON.stringify(message),
     })
+
+    const data = await response.json()
+    console.log(
+        '🚀 ~ file: NotificationTest.js ~ line 111 ~ sendPushNotification ~ data',
+        data
+    )
 }
 
 async function registerForPushNotificationsAsync() {
