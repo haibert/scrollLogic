@@ -72,12 +72,13 @@ const { height, width } = Dimensions.get('screen')
 
 import Constants from 'expo-constants'
 import * as Notifications from 'expo-notifications'
+import * as TaskManager from 'expo-task-manager'
 
+const BACKGROUND_NOTIFICATION_TASK = 'BACKGROUND-NOTIFICATION-TASK'
 //fake data make sure to comment out
 // import { fakeArray, fakeArray2 } from '../data/images'
 
 import { CommonActions, useNavigation } from '@react-navigation/native'
-import { StackActions } from '@react-navigation/native'
 
 //-------------------------------------------------------------------NOTIFICATIONS LOGIC-------------------------------------------------------------------
 // get notifications permission and send token to server
@@ -89,6 +90,7 @@ const DashboardScreen = (props) => {
     const responseListener = useRef()
 
     const navigateToNotifications = useCallback(() => {
+        Notifications.setBadgeCountAsync(0)
         //resetting navigation state didn't work so.. work around.
         props.navigation.dispatch(
             CommonActions.navigate({
@@ -104,9 +106,31 @@ const DashboardScreen = (props) => {
     }, [props.navigation])
 
     useEffect(() => {
+        TaskManager.defineTask(
+            BACKGROUND_NOTIFICATION_TASK,
+            ({ data, error, executionInfo }) => {
+                console.log('Received a notification in the background!')
+                // Do something with the notification data
+            }
+        )
+
+        Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK)
         console.log('added notifications listener')
         notificationListener.current =
-            Notifications.addNotificationReceivedListener((notification) => {})
+            Notifications.addNotificationReceivedListener(
+                async (notification) => {
+                    console.log(
+                        'got notification while the app is in the foreground'
+                    )
+                    const currentBadgeCount =
+                        await Notifications.getBadgeCountAsync()
+                    console.log(
+                        '🚀 ~ file: DashboardScreen.js ~ line 114 ~ Notifications.addNotificationReceivedListener ~ currentBadgeCount',
+                        currentBadgeCount
+                    )
+                    Notifications.setBadgeCountAsync(currentBadgeCount + 1)
+                }
+            )
 
         responseListener.current =
             Notifications.addNotificationResponseReceivedListener(
