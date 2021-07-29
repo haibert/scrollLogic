@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import 'expo-dev-client'
 //redux
 import { createStore, combineReducers, applyMiddleware } from 'redux'
@@ -10,16 +10,9 @@ import ReduxThunk from 'redux-thunk'
 
 // navigation
 import AppNavigator from './src/navigation/navigation'
-import { init } from './src/sql/database'
 
 //expo status_bar
 import { StatusBar } from 'expo-status-bar'
-
-//file system
-import * as FileSystem from 'expo-file-system'
-
-//utilities
-import { cleanupCache } from './src/utilities/cleanUpCash'
 
 // init()
 //     .then(() => {

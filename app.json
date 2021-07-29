@@ -31,7 +31,6 @@
         "android": {
             "jsEngine": "hermes",
             "googleServicesFile": "./google-services.json",
-            "useNextNotificationsApi": true,
             "adaptiveIcon": {
                 "foregroundImage": "./assets/adaptive-icon.png",
                 "backgroundColor": "#FFFFFF"

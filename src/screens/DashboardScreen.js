@@ -44,7 +44,6 @@ import useAppState from '../hooks/useAppState'
 //useFocusEffect
 import { InteractionManager } from 'react-native'
 import { useFocusEffect } from '@react-navigation/native'
-import { useIsFocused } from '@react-navigation/native'
 
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -77,46 +76,58 @@ import * as Notifications from 'expo-notifications'
 //fake data make sure to comment out
 // import { fakeArray, fakeArray2 } from '../data/images'
 
+import { CommonActions, useNavigation } from '@react-navigation/native'
+import { StackActions } from '@react-navigation/native'
+
 //-------------------------------------------------------------------NOTIFICATIONS LOGIC-------------------------------------------------------------------
 // get notifications permission and send token to server
-const registerForPushNotificationsAsync = async () => {
-    let token
-    if (Constants.isDevice) {
-        const { status: existingStatus } =
-            await Notifications.getPermissionsAsync()
-        let finalStatus = existingStatus
-        if (existingStatus !== 'granted') {
-            const { status } = await Notifications.requestPermissionsAsync()
-            finalStatus = status
-        }
-        if (finalStatus !== 'granted') {
-            alert('Failed to get push token for push notification!')
-            return
-        }
-        token = (await Notifications.getExpoPushTokenAsync()).data
-        // send token to server for specific user
-        console.log(token)
-    } else {
-        alert('Must use physical device for Push Notifications')
-    }
 
-    if (Platform.OS === 'android') {
-        Notifications.setNotificationChannelAsync('default', {
-            name: 'default',
-            importance: Notifications.AndroidImportance.MAX,
-            vibrationPattern: [0, 250, 250, 250],
-            lightColor: '#FF231F7C',
-        })
-    }
-
-    return token
-}
 //-------------------------------------------------------------------NOTIFICATIONS LOGIC-------------------------------------------------------------------
 
 const DashboardScreen = (props) => {
-    const insets = useSafeAreaInsets()
+    const notificationListener = useRef()
+    const responseListener = useRef()
 
-    const isFocused = useIsFocused()
+    const navigateToNotifications = useCallback(() => {
+        //resetting navigation state didn't work so.. work around.
+        props.navigation.dispatch(
+            CommonActions.navigate({
+                name: 'ProfileScreen',
+            })
+        )
+        props.navigation.dispatch(
+            CommonActions.navigate({
+                name: 'NotificationsScreen',
+            })
+        )
+        // props.navigation.navigate('NotificationsScreen')
+    }, [props.navigation])
+
+    useEffect(() => {
+        console.log('added notifications listener')
+        notificationListener.current =
+            Notifications.addNotificationReceivedListener((notification) => {})
+
+        responseListener.current =
+            Notifications.addNotificationResponseReceivedListener(
+                (response) => {
+                    // console.log(response)
+                    navigateToNotifications()
+                }
+            )
+
+        return () => {
+            Notifications.removeNotificationSubscription(
+                notificationListener.current
+            )
+            Notifications.removeNotificationSubscription(
+                responseListener.current
+            )
+        }
+    }, [])
+
+    //insets
+    const insets = useSafeAreaInsets()
 
     // sheet ref
     const bottomSheetRef = useRef()
@@ -127,18 +138,14 @@ const DashboardScreen = (props) => {
     //dispatch
     const dispatch = useDispatch()
 
-    const [hasCameraPermission, setHasCameraPermission] = useState(null)
-    const [type, setType] = useState(Camera.Constants.Type.back)
-
-    const [showModal, setShowModal] = useState(false)
-
+    // green on permissions
     const greenLightOnPermissions = useSelector(
         (state) => state.permissionsReducer.permissions.camera
     )
 
     //----------------------------------------------------------------LOAD GALLERIES----------------------------------------------------------------
     const [loadingGalleries, setLoadingGalleries] = useState(false)
-    // states
+
     const galleries = useSelector((state) => state.galleryReducer.galleries)
 
     console.log('Dash Screen Loaded')
@@ -155,7 +162,7 @@ const DashboardScreen = (props) => {
             // setError(error.message)
         }
         // setLoadingGalleries(false)
-    }, [setLoadingGalleries, dispatch])
+    }, [dispatch])
 
     useEffect(() => {
         loadGalleries()
@@ -419,6 +426,10 @@ const DashboardScreen = (props) => {
                 refreshing={loadingGalleries}
                 removeClippedSubviews={Platform.OS === 'android' ? true : false}
                 // ListEmptyComponent={}
+                onEndReached={() => {
+                    console.log('end reached')
+                }}
+                onEndReachedThreshold={0.8}
             />
 
             {/* <FlatList
