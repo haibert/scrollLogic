@@ -23,7 +23,11 @@
             "userInterfaceStyle": "dark",
             "infoPlist": {
                 "NSCameraUsageDescription": "This app uses the camera to take pictures, videos and scan barcodes on from other users.",
-                "UIBackgroundModes": ["remote-notification"]
+                "UIBackgroundModes": [
+                    "remote-notification",
+                    "fetch",
+                    "processing"
+                ]
             },
             "bundleIdentifier": "com.simplyrem.GalleryShare",
             "buildNumber": "1.0.8",

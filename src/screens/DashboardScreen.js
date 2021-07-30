@@ -75,6 +75,17 @@ import * as Notifications from 'expo-notifications'
 import * as TaskManager from 'expo-task-manager'
 
 const BACKGROUND_NOTIFICATION_TASK = 'BACKGROUND-NOTIFICATION-TASK'
+
+TaskManager.defineTask(
+    BACKGROUND_NOTIFICATION_TASK,
+    ({ data, error, executionInfo }) => {
+        console.log('Received a notification in the background!')
+        console.log(data)
+        // Do something with the notification data
+    }
+)
+
+Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK)
 //fake data make sure to comment out
 // import { fakeArray, fakeArray2 } from '../data/images'
 
@@ -102,19 +113,21 @@ const DashboardScreen = (props) => {
                 name: 'NotificationsScreen',
             })
         )
-        // props.navigation.navigate('NotificationsScreen')
     }, [props.navigation])
 
     useEffect(() => {
-        TaskManager.defineTask(
-            BACKGROUND_NOTIFICATION_TASK,
-            ({ data, error, executionInfo }) => {
-                console.log('Received a notification in the background!')
-                // Do something with the notification data
-            }
-        )
+        const runAsync = async () => {
+            const test = await TaskManager.getRegisteredTasksAsync()
+            console.log(test)
+        }
+        runAsync()
+        const runAsync2 = async () => {
+            const test = await TaskManager.isAvailableAsync()
+        }
+        runAsync2()
+    }, [])
 
-        Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK)
+    useEffect(() => {
         console.log('added notifications listener')
         notificationListener.current =
             Notifications.addNotificationReceivedListener(
@@ -124,10 +137,7 @@ const DashboardScreen = (props) => {
                     )
                     const currentBadgeCount =
                         await Notifications.getBadgeCountAsync()
-                    console.log(
-                        '🚀 ~ file: DashboardScreen.js ~ line 114 ~ Notifications.addNotificationReceivedListener ~ currentBadgeCount',
-                        currentBadgeCount
-                    )
+
                     Notifications.setBadgeCountAsync(currentBadgeCount + 1)
                 }
             )

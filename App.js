@@ -14,6 +14,9 @@ import AppNavigator from './src/navigation/navigation'
 //expo status_bar
 import { StatusBar } from 'expo-status-bar'
 
+import * as Notifications from 'expo-notifications'
+import * as TaskManager from 'expo-task-manager'
+
 // init()
 //     .then(() => {
 //         console.log('Initialized DB')
@@ -40,6 +43,7 @@ const rootReducer = combineReducers({
 })
 
 const store = createStore(rootReducer, applyMiddleware(ReduxThunk))
+const BACKGROUND_NOTIFICATION_TASK = 'BACKGROUND-NOTIFICATION-TASK'
 
 export default function App() {
     // useEffect(() => {
@@ -48,6 +52,17 @@ export default function App() {
 
     // const isHermes = () => !!global.HermesInternal
     // console.log('🚀 ~ file: App.js ~ line 28 ~ isHermes', isHermes())
+
+    TaskManager.defineTask(
+        BACKGROUND_NOTIFICATION_TASK,
+        ({ data, error, executionInfo }) => {
+            console.log('Received a notification in the background!')
+            console.log(data)
+            // Do something with the notification data
+        }
+    )
+
+    Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK)
 
     let [fontsLoaded] = useFonts({
         Inter_900Black,
