@@ -3,17 +3,6 @@
         "name": "EventShare",
         "slug": "EventShare",
         "version": "0.1.0",
-        "plugins": [
-            [
-                "react-native-vision-camera",
-                {
-                    "cameraPermissionText": "EventShare needs access to your Camera.",
-
-                    "enableMicrophonePermission": true,
-                    "microphonePermissionText": "EventShare needs access to your Microphone."
-                }
-            ]
-        ],
         "orientation": "portrait",
         "icon": "./assets/1024.png",
         "splash": {
