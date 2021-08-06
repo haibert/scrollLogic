@@ -12,6 +12,8 @@ import ProfileTopElements from '../components/ProfileScreen/ProfileTopElements'
 import Thumbnail from '../components/Thumbnail'
 import ThumbnailSmall from '../components/ThumbnailSmall'
 import ProfileTabBar from '../components/ProfileScreen/ProfileTabBar'
+import DeleteConfirmation from '../components/DeleteConfirmation'
+import ActionBottomSheet from '../components/ActionBottomSheet'
 
 //redux
 import { loadPermissions } from '../store/permissions/actions'
@@ -55,6 +57,9 @@ const ProfileScreen = (props) => {
     //dispatch
     const dispatch = useDispatch()
 
+    // sheet ref
+    const bottomSheetRef = useRef()
+
     // //----------------------------------------------------------------CONDITIONAL PROFILE REFRESH----------------------------------------------------------------
 
     // const loadProfileHandler = useCallback(async () => {
@@ -82,6 +87,35 @@ const ProfileScreen = (props) => {
     //     refreshConditionally()
     // })
     // //----------------------------------------------------------------CONDITIONAL PROFILE REFRESH----------------------------------------------------------------
+
+    //----------------------------------------------------------------ACTION SHEET LOGIC---------------------------------------------------------------
+    const [showConfirmationBool, setShowConfirmationBool] = useState()
+    const [deleteID, setDeleteID] = useState({ id: '', index: '' })
+
+    const showConfirmation = useCallback(() => {
+        setTimeout(() => {
+            setShowConfirmationBool(true)
+        }, 180)
+    }, [])
+
+    const dismissConfirmation = useCallback(() => {
+        setTimeout(() => {
+            setShowConfirmationBool(false)
+        }, 100)
+    }, [])
+
+    const onConfirmPressed = useCallback(async () => {
+        try {
+            await dispatch(deleteGallery(deleteID))
+            setTimeout(() => {
+                setShowConfirmationBool(false)
+            }, 100)
+        } catch (err) {
+            console.log('Error deleting gallery', err)
+        }
+    }, [deleteID])
+
+    //----------------------------------------------------------------ACTION SHEET LOGIC--------------------------------------------------------------
 
     //----------------------------------------------------------------LOAD GALLERIES----------------------------------------------------------------
     const [loadingGalleries, setLoadingGalleries] = useState(false)
@@ -225,7 +259,9 @@ const ProfileScreen = (props) => {
                 }}
                 navigation={props.navigation}
                 galleryName={item.galleryName}
-                onActionsPressed={onActionsPressed.bind(this, item, index)}
+                oneEllipsisPressed={() => {
+                    oneEllipsisPressed(item.galleryID, index)
+                }}
                 key={item.galleryID}
                 imageURI={`${item.thumbnail}`}
             />
@@ -243,9 +279,9 @@ const ProfileScreen = (props) => {
         []
     )
 
-    const onActionsPressed = useCallback((item, index) => {
+    const oneEllipsisPressed = useCallback((galleryID, index) => {
         bottomSheetRef.current?.handlePresentModalPress()
-        setDeleteID({ id: item.galleryID, index: index })
+        setDeleteID({ id: galleryID, index: index })
     }, [])
 
     const itemHeight = useMemo(() => width / 2 - 5)
@@ -440,6 +476,20 @@ const ProfileScreen = (props) => {
                 onFeedPressed={onFeedPressed}
                 profileFocused={true}
             />
+
+            <ActionBottomSheet
+                ref={bottomSheetRef}
+                showConfirmation={showConfirmation}
+            />
+
+            {showConfirmationBool && (
+                <DeleteConfirmation
+                    dismissConfirmation={dismissConfirmation}
+                    onConfirmPressed={onConfirmPressed}
+                    message="This will permanently delete all of the pictures
+                            inside this gallery"
+                />
+            )}
         </ScreenWrapper>
     )
 }

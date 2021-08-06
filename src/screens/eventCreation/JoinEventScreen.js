@@ -34,7 +34,7 @@ import { BarCodeScanner } from 'expo-barcode-scanner'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 //blurview
-// import { BlurView } from 'expo-blur'
+import { BlurView } from '@react-native-community/blur'
 
 //constants
 import colors from '../../constants/colors'

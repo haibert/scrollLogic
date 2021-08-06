@@ -27,7 +27,6 @@ import BottomNavBar from '../components/BottomNavBar'
 import NuemorphicNavBar from '../components/NuemorphicNavBar'
 import CustomActionSheet from '../components/CustomActionSheet'
 import DeleteConfirmation from '../components/DeleteConfirmation'
-
 import ActionBottomSheet from '../components/ActionBottomSheet'
 
 //customHooks
@@ -75,7 +74,6 @@ const DashboardScreen = (props) => {
     const bottomSheetRef = useRef()
 
     let tabBarBottomPosition = insets.bottom > 0 ? insets.bottom / 2 + 2 : 10
-    const [deleteID, setDeleteID] = useState({ id: '', index: '' })
 
     //dispatch
     const dispatch = useDispatch()
@@ -241,6 +239,8 @@ const DashboardScreen = (props) => {
 
     //----------------------------------------------------------------ACTION SHEET LOGIC---------------------------------------------------------------
     const [showConfirmationBool, setShowConfirmationBool] = useState()
+    const [deleteID, setDeleteID] = useState({ id: '', index: '' })
+
     const showConfirmation = useCallback(() => {
         setTimeout(() => {
             setShowConfirmationBool(true)
