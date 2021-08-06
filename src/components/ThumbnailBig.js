@@ -3,11 +3,19 @@ import { StyleSheet, View, Text, Dimensions, Pressable } from 'react-native'
 import Animated, {
     useSharedValue,
     withTiming,
+    withDelay,
     useAnimatedStyle,
+    Extrapolate,
+    interpolate,
+    useAnimatedGestureHandler,
+    cancelAnimation,
 } from 'react-native-reanimated'
+import { PinchGestureHandler } from 'react-native-gesture-handler'
+
+const AnimatedFastImage = Animated.createAnimatedComponent(FastImage)
 
 // expo blurview
-import { BlurView } from 'expo-blur'
+// import { BlurView } from 'expo-blur'
 
 //colors
 import colors from '../constants/colors'
@@ -50,7 +58,7 @@ const ThumbnailBig = (props) => {
         }
     })
 
-    const startOpacityAnim = useCallback(() => {
+    const hideActions = useCallback(() => {
         if (animatedOpacity.value === 1) {
             animatedOpacity.value = withTiming(0, { duration: 200 })
         } else {
@@ -77,62 +85,118 @@ const ThumbnailBig = (props) => {
     }, [])
     //----------------------------------------------------------------LOADING LOGIC----------------------------------------------------------------
 
+    //----------------------------------------------------------------PINCH GESTURE HANDLER----------------------------------------------------------------
+    const scale = useSharedValue(1)
+    const focalX = useSharedValue(0)
+    const focalY = useSharedValue(0)
+
+    const pinchHandler = useAnimatedGestureHandler({
+        onActive: (event) => {
+            animatedOpacity.value = withTiming(0, { duration: 200 })
+            scale.value = interpolate(
+                event.scale,
+                [0, 1],
+                [0.5, 1],
+                Extrapolate.clamp
+            )
+            focalX.value = event.focalY
+            focalY.value = event.focalX
+        },
+        onEnd: () => {
+            scale.value = withTiming(1, { duration: 200 })
+            animatedOpacity.value = withDelay(
+                100,
+                withTiming(1, { duration: 400 })
+            )
+        },
+    })
+
+    const rStyle = useAnimatedStyle(() => {
+        return {
+            transform: [
+                { translateX: -focalX.value },
+                { translateY: focalY.value },
+                { translateX: width / 2 },
+                { translateY: -height / 2 },
+                { scale: scale.value },
+                { translateX: focalX.value },
+                { translateY: -focalY.value },
+                { translateX: -width / 2 },
+                { translateY: height / 2 },
+            ],
+        }
+    })
+
+    //----------------------------------------------------------------PINCH GESTURE HANDLER----------------------------------------------------------------
+
     return (
-        <Pressable
-            style={{ ...styles.pressable, width: rowHeightAdjusted }}
-            onPress={startOpacityAnim}
-        >
-            <View
+        <PinchGestureHandler onGestureEvent={pinchHandler}>
+            <Animated.View
                 style={{
-                    ...styles.rotatorCont,
                     height: rowHeightAdjusted,
                     width: rowWidthAdjust,
                 }}
             >
-                <FastImage
-                    style={styles.image}
-                    resizeMode={FastImage.resizeMode.cover}
-                    source={{
-                        uri: `${props.images.fullPath}`,
-                        priority: FastImage.priority.normal,
-                        cache: FastImage.cacheControl.immutable,
-                    }}
-                    onLoad={onLoad}
-                />
-                <Animated.View style={[StyleSheet.absoluteFill, opacityStyle]}>
-                    <FastImage
-                        style={[styles.image, StyleSheet.absoluteFill]}
-                        source={{
-                            uri: `${props.images.thumbPath}`,
-                            priority: FastImage.priority.normal,
-                            cache: FastImage.cacheControl.immutable,
+                <Pressable
+                    style={{ ...styles.pressable, width: rowHeightAdjusted }}
+                    onPress={hideActions}
+                >
+                    <View
+                        style={{
+                            ...styles.rotatorCont,
+                            height: rowHeightAdjusted,
+                            width: rowWidthAdjust,
                         }}
-                        resizeMode="cover"
-                    />
-                </Animated.View>
-                <Animated.View style={[styles.wholeCont, bigContStyle]}>
-                    <View style={styles.actionBar} />
+                    >
+                        <AnimatedFastImage
+                            style={[styles.image, rStyle]}
+                            resizeMode={FastImage.resizeMode.cover}
+                            source={{
+                                uri: `${props.images.fullPath}`,
+                                priority: FastImage.priority.normal,
+                                cache: FastImage.cacheControl.immutable,
+                            }}
+                            onLoad={onLoad}
+                        />
 
-                    <Ionicons
-                        name="ellipsis-horizontal"
-                        size={25}
-                        color={colors.darkestColorP1}
-                        onPress={props.oneEllipsisPressed}
-                        style={styles.deleteIcon}
-                    />
-                    <Heart style={styles.heartIcon} />
-                    <Text style={styles.likes}>500</Text>
-                    <EvilIcons
-                        name="comment"
-                        size={41}
-                        color={colors.darkestColorP1}
-                        onPress={props.onCommentPressed}
-                        style={styles.commentIcon}
-                    />
-                    <Text style={styles.comments}>12</Text>
-                </Animated.View>
-            </View>
-        </Pressable>
+                        <Animated.View
+                            style={[StyleSheet.absoluteFill, opacityStyle]}
+                        >
+                            <FastImage
+                                style={[styles.image, StyleSheet.absoluteFill]}
+                                source={{
+                                    uri: `${props.images.thumbPath}`,
+                                    priority: FastImage.priority.normal,
+                                    cache: FastImage.cacheControl.immutable,
+                                }}
+                                resizeMode="cover"
+                            />
+                        </Animated.View>
+                        <Animated.View style={[styles.wholeCont, bigContStyle]}>
+                            <View style={styles.actionBar} />
+
+                            <Ionicons
+                                name="ellipsis-horizontal"
+                                size={25}
+                                color={colors.darkestColorP1}
+                                onPress={props.oneEllipsisPressed}
+                                style={styles.deleteIcon}
+                            />
+                            <Heart style={styles.heartIcon} />
+                            <Text style={styles.likes}>500</Text>
+                            <EvilIcons
+                                name="comment"
+                                size={41}
+                                color={colors.darkestColorP1}
+                                onPress={props.onCommentPressed}
+                                style={styles.commentIcon}
+                            />
+                            <Text style={styles.comments}>12</Text>
+                        </Animated.View>
+                    </View>
+                </Pressable>
+            </Animated.View>
+        </PinchGestureHandler>
     )
 }
 

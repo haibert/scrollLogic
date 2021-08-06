@@ -8,7 +8,6 @@ import {
     TouchableOpacity,
     InteractionManager,
 } from 'react-native'
-// import { FlatList, PanGestureHandler } from 'react-native-gesture-handler'
 
 //reanimated
 import Animated, {
@@ -21,9 +20,9 @@ import Animated, {
 //components
 import ScreenWrapper from '../components/ScreenWrapper'
 import HeaderBasic from '../components/HeaderBasic'
-import ActionSheetGV from '../components/ActionSheetGV'
 import ThumbnailBig from '../components/ThumbnailBig'
-import { EntryAnimation } from '../components/EntryAnimation'
+import DeletePicBottomSheet from '../components/ProfileScreen/DeletePicBottomSheet'
+import DeleteConfirmation from '../components/DeleteConfirmation'
 
 const { width, height } = Dimensions.get('window')
 
@@ -32,9 +31,6 @@ import colors from '../constants/colors'
 
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-
-//ionicons
-import { Ionicons } from '@expo/vector-icons'
 
 //redux
 import { deletePhoto } from '../store/event/action'
@@ -47,7 +43,7 @@ import BigList from 'react-native-big-list'
 import { SharedElement } from 'react-navigation-shared-element'
 
 // blurview
-import { BlurView } from 'expo-blur'
+// import { BlurView } from 'expo-blur'
 
 //focus effect
 import { useFocusEffect } from '@react-navigation/native'
@@ -76,18 +72,38 @@ const GalleryDetailScreen = ({ route, navigation }) => {
     // bottom sheet ref
     const bottomSheetModalRef = useRef()
 
+    //dispatch
+    const dispatch = useDispatch()
+
     //----------------------------------------------------------------COMMENT PRESSED-------------------------------------------------------------
     const onCommentPressed = useCallback(() => {
         navigation.navigate('CommentsScreen')
     }, [])
 
-    //----------------------------------------------------------------DELETE PHOTO----------------------------------------------------------------
+    //----------------------------------------------------------------NAV FUNCTIONS-------------------------------------------------------------
+    const goBack = useCallback(() => {
+        navigation.goBack()
+    }, [])
+
+    //----------------------------------------------------------------ACTION SHEET LOGIC---------------------------------------------------------------
     const [picToDelete, setPicToDelete] = useState()
     const [refreshFlatlist, setRefreshFlatList] = useState(false)
-    const dispatch = useDispatch()
-    const deletePhotoHandler = async () => {
+    const [showConfirmationBool, setShowConfirmationBool] = useState(false)
+
+    const showConfirmation = useCallback(() => {
+        setTimeout(() => {
+            setShowConfirmationBool(true)
+        }, 180)
+    }, [])
+
+    const dismissConfirmation = useCallback(() => {
+        setTimeout(() => {
+            setShowConfirmationBool(false)
+        }, 100)
+    }, [])
+
+    const onConfirmPressed = useCallback(async () => {
         await dispatch(deletePhoto(picToDelete.picToDelete))
-        bottomSheetModalRef.current?.handleClosetModalPress()
 
         const newIndex = picToDelete.index - 1
 
@@ -101,8 +117,8 @@ const GalleryDetailScreen = ({ route, navigation }) => {
         })
 
         setActiveIndex(newIndex)
-    }
-    //----------------------------------------------------------------DELETE PHOTO----------------------------------------------------------------
+    }, [picToDelete])
+    //----------------------------------------------------------------ACTION SHEET LOGIC--------------------------------------------------------------
 
     //----------------------------------------------------------------SCROLL TO INDEX WHEN MOUNTED----------------------------------------------------------------
     const bigListRef = useRef()
@@ -350,15 +366,27 @@ const GalleryDetailScreen = ({ route, navigation }) => {
             <View
                 style={{
                     ...styles.bigListFlipperCont,
-                    marginTop: insets.top + 40,
-                    height: rowHeightAdjusted,
+                    height: height,
                 }}
+                //  style={{
+                //     ...styles.bigListFlipperCont,
+                //     marginTop: insets.top + 40,
+                //     height: rowHeightAdjusted,
+                // }}
             >
                 <Animated.View
                     style={[
-                        { ...styles.bigListFlipper, width: rowHeightAdjusted },
+                        {
+                            ...styles.bigListFlipper,
+                            width: height,
+                            overflow: 'visible',
+                        },
                         opacityStyle,
                     ]}
+                    // style={[
+                    //     { ...styles.bigListFlipper, width: rowHeightAdjusted },
+                    //     opacityStyle,
+                    // ]}
                 >
                     <BigList
                         ref={bigListRef}
@@ -372,7 +400,10 @@ const GalleryDetailScreen = ({ route, navigation }) => {
                         // alwaysBounceVertical={false}
                         // bounces={false}
                         scrollEventThrottle={16}
-                        style={styles.bigList}
+                        style={{
+                            ...styles.bigList,
+                            paddingLeft: insets.bottom + 100,
+                        }}
                         // carousel props
                         pagingEnabled
                         showsHorizontalScrollIndicator={false}
@@ -381,7 +412,12 @@ const GalleryDetailScreen = ({ route, navigation }) => {
                     />
                 </Animated.View>
             </View>
-
+            <HeaderBasic
+                goBack={goBack}
+                headerColor={{ color: colors.textColor }}
+                iconName="chevron-down-outline"
+                style={{ ...styles.header, marginTop: insets.top }}
+            />
             <View
                 style={{
                     ...styles.smallListFlipperCont,
@@ -401,24 +437,19 @@ const GalleryDetailScreen = ({ route, navigation }) => {
                     />
                 </View>
             </View>
-            <HeaderBasic
-                goBack={() => {
-                    navigation.goBack()
-                }}
-                headerColor={{ color: colors.textColor }}
-                iconName="chevron-down-outline"
-                style={{
-                    marginBottom: 10,
-                    position: 'absolute',
-                    marginTop: insets.top,
-                }}
+
+            <DeletePicBottomSheet
+                ref={bottomSheetModalRef}
+                showConfirmation={showConfirmation}
             />
 
-            <ActionSheetGV
-                ref={bottomSheetModalRef}
-                navigation={navigation}
-                yesPressed={deletePhotoHandler}
-            />
+            {showConfirmationBool && (
+                <DeleteConfirmation
+                    dismissConfirmation={dismissConfirmation}
+                    onConfirmPressed={onConfirmPressed}
+                    message={'This will permanently delete this photo'}
+                />
+            )}
         </ScreenWrapper>
     )
 }
@@ -428,6 +459,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-end',
         paddingHorizontal: 10,
+    },
+    header: {
+        marginBottom: 10,
+        position: 'absolute',
     },
     imageBackground: {
         backgroundColor: colors.backgroundBlurLight,
@@ -474,6 +509,9 @@ const styles = StyleSheet.create({
         ],
         height: width,
         opacity: 0,
+    },
+    bigList: {
+        flex: 1,
     },
     smallListFlipperCont: {
         width: width,

@@ -111,12 +111,9 @@ async function sendPushNotification(expoPushToken) {
         sound: 'default',
         title: 'Original Title',
         body: 'And here is the body!',
+
         data: { someData: 'goes here' },
     }
-    console.log(
-        '🚀 ~ file: NotificationTest.js ~ line 99 ~ sendPushNotification ~ message',
-        message
-    )
 
     const response = await fetch('https://exp.host/--/api/v2/push/send', {
         method: 'POST',
@@ -142,7 +139,14 @@ async function registerForPushNotificationsAsync() {
             await Notifications.getPermissionsAsync()
         let finalStatus = existingStatus
         if (existingStatus !== 'granted') {
-            const { status } = await Notifications.requestPermissionsAsync()
+            const { status } = await Notifications.requestPermissionsAsync({
+                ios: {
+                    allowAlert: true,
+                    allowBadge: true,
+                    allowSound: true,
+                    allowAnnouncements: true,
+                },
+            })
             finalStatus = status
         }
         if (finalStatus !== 'granted') {

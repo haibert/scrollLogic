@@ -129,7 +129,6 @@ export const setPics = (userID, galleryID) => {
                 userID: userPassed,
                 galleryID,
             })
-            console.log('🚀 ~ file: action.js ~ line 124 ~ return ~ body', body)
             const response = await fetch(`${LINK}&get-gallery-files=1`, {
                 method: 'POST',
                 headers: {
@@ -212,7 +211,7 @@ export const deleteGallery = (galleryID) => {
                 // if (response === 'success') {
                 dispatch({
                     type: DELETE_GALLERY,
-                    deletedGallery: galleryID,
+                    deletedGallery: galleryID.id,
                 })
                 // } else {
                 //     throw new Error('Something went wrong!')
@@ -249,25 +248,11 @@ export const deletePhoto = (photoID) => {
 
             try {
                 const data = await JSON.stringify(response)
-                // console.log(
-                //     '🚀 ~ file: action.js ~ line 189 ~ return ~ data',
-                //     data
-                // )
 
                 dispatch({
                     type: DELETE_PHOTO,
                     deletedPhoto: photoID,
                 })
-                // const data = await response.json()
-                // const response = data.message.response
-                // if (response === 'success') {
-                //     dispatch({
-                //         type: DELETE_GALLERY,
-                //         deletedGallery: galleryID,
-                //     })
-                // } else {
-                //     throw new Error('Something went wrong!')
-                // }
             } catch (error) {
                 throw error
             }

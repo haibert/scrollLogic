@@ -411,6 +411,7 @@ const CameraScreen = ({ navigation, route }) => {
                   })
                   .catch((err) => console.error('An error occurred', err))
     }
+
     async function savePictureLocallyHandler() {
         const { status } = await MediaLibrary.getPermissionsAsync()
 
@@ -611,7 +612,6 @@ const CameraScreen = ({ navigation, route }) => {
                                 onLayout={(event) => {
                                     setCamWidth(event.nativeEvent.layout.width)
                                 }}
-                                // animatedProps={cameraAnimatedProps}
                             />
                         </ViewShot>
                     )}

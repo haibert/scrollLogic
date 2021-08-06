@@ -35,6 +35,7 @@ import ScreenWrapper from '../components/ScreenWrapper'
 import BottomNavBar from '../components/BottomNavBar'
 import NuemorphicNavBar from '../components/NuemorphicNavBar'
 import CustomActionSheet from '../components/CustomActionSheet'
+import DeleteConfirmation from '../components/DeleteConfirmation'
 
 import ActionBottomSheet from '../components/ActionBottomSheet'
 
@@ -61,7 +62,12 @@ import {
     savePermissionsStatus,
     loadPermissions,
 } from '../store/permissions/actions'
-import { setGalleries, shouldRefreshSet } from '../store/event/action'
+import {
+    setGalleries,
+    shouldRefreshSet,
+    deleteGallery,
+} from '../store/event/action'
+
 import { useDispatch, useSelector } from 'react-redux'
 
 // big list
@@ -86,8 +92,6 @@ TaskManager.defineTask(
 )
 
 Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK)
-//fake data make sure to comment out
-// import { fakeArray, fakeArray2 } from '../data/images'
 
 import { CommonActions, useNavigation } from '@react-navigation/native'
 
@@ -331,46 +335,32 @@ const DashboardScreen = (props) => {
         }
     }
 
-    //----------------------------------------------------------------PRESENTATION ANIMATION---------------------------------------------------------------
-    // const reanimatedValue = useSharedValue(0)
+    //----------------------------------------------------------------ACTION SHEET LOGIC---------------------------------------------------------------
+    const [showConfirmationBool, setShowConfirmationBool] = useState()
+    const showConfirmation = useCallback(() => {
+        setTimeout(() => {
+            setShowConfirmationBool(true)
+        }, 180)
+    }, [])
 
-    // const reToggleOpen = () => {
-    //     reanimatedValue.value = withSequence(
-    //         withTiming(1, {
-    //             duration: 400,
-    //         }),
-    //         withTiming(0, {
-    //             duration: 400,
-    //         })
-    //     )
-    // }
+    const dismissConfirmation = useCallback(() => {
+        setTimeout(() => {
+            setShowConfirmationBool(false)
+        }, 100)
+    }, [])
 
-    // const reReloadStyle = useAnimatedStyle(() => {
-    //     return {
-    //         transform: [
-    //             {
-    //                 scale: reanimatedValue.value,
-    //             },
-    //             {
-    //                 translateY: interpolate(
-    //                     reanimatedValue.value,
-    //                     [0, 1],
-    //                     [0, -70]
-    //                 ),
-    //             },
-    //             {
-    //                 rotate: interpolate(reanimatedValue.value, [0, 1], [0, 1]),
-    //             },
-    //         ],
-    //     }
-    // })
-    // useFocusEffect(() => {
-    //     const task = InteractionManager.runAfterInteractions(() => {
-    //         setTimeout(() => reToggleOpen(), 200)
-    //     })
-    //     return () => task.cancel()
-    // })
-    //----------------------------------------------------------------PRESENTATION ANIMATION---------------------------------------------------------------
+    const onConfirmPressed = useCallback(async () => {
+        try {
+            await dispatch(deleteGallery(deleteID))
+            setTimeout(() => {
+                setShowConfirmationBool(false)
+            }, 100)
+        } catch (err) {
+            console.log('Error deleting gallery', err)
+        }
+    }, [deleteID])
+
+    //----------------------------------------------------------------ACTION SHEET LOGIC--------------------------------------------------------------
 
     //----------------------------------------------------------------NAV BAR FUNCTIONS----------------------------------------------------------------
     const onSearchPressed = useCallback(() => {
@@ -397,7 +387,9 @@ const DashboardScreen = (props) => {
                     )
                 }}
                 galleryName={item.galleryName}
-                onActionsPressed={onActionsPressed.bind(this, item, index)}
+                oneEllipsisPressed={() => {
+                    oneEllipsisPressed(item.galleryID, index)
+                }}
                 key={item.galleryID}
             />
         )
@@ -414,9 +406,9 @@ const DashboardScreen = (props) => {
         []
     )
 
-    const onActionsPressed = useCallback((item, index) => {
+    const oneEllipsisPressed = useCallback((galleryID, index) => {
         bottomSheetRef.current?.handlePresentModalPress()
-        setDeleteID({ id: item.galleryID, index: index })
+        setDeleteID({ id: galleryID, index: index })
     }, [])
 
     const itemHeight = useMemo(() => width / 2 - 5, [])
@@ -486,21 +478,6 @@ const DashboardScreen = (props) => {
                 maxToRenderPerBatch={6}
                 getItemLayout={layOut}
             /> */}
-            {/* <Reanimated.View
-                style={[
-                    styles.animation,
-                    reReloadStyle,
-                    {
-                        position: 'absolute',
-                        bottom: insets.bottom + 5,
-                        left: (width - 50) / 28,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    },
-                ]}
-            >
-                <Ionicons name="home" size={20} color="#555"></Ionicons>
-            </Reanimated.View> */}
 
             <NuemorphicNavBar
                 onCameraPressed={cameraPressedHandler}
@@ -512,11 +489,17 @@ const DashboardScreen = (props) => {
 
             <ActionBottomSheet
                 ref={bottomSheetRef}
-                galleryID={deleteID}
-                refreshGalleryList={loadGalleries}
+                showConfirmation={showConfirmation}
             />
 
-            {/* <CustomActionSheet /> */}
+            {showConfirmationBool && (
+                <DeleteConfirmation
+                    dismissConfirmation={dismissConfirmation}
+                    onConfirmPressed={onConfirmPressed}
+                    message="This will permanently delete all of the pictures
+                            inside this gallery"
+                />
+            )}
         </ScreenWrapper>
     )
 }

@@ -48,15 +48,6 @@ import { ScrollView } from 'react-native-gesture-handler'
 const ProfileScreen = (props) => {
     //personal info
     const personalInfo = useSelector((state) => state.signupReducer.userInfo)
-    console.log(
-        '🚀 ~ file: ProfileScreen.js ~ line 51 ~ ProfileScreen ~ personalInfo',
-        personalInfo
-    )
-
-    //should refresh
-    const shouldRefreshProfile = useSelector(
-        (state) => state.signupReducer.shouldRefreshProfile
-    )
 
     //insets
     const insets = useSafeAreaInsets()
@@ -110,7 +101,7 @@ const ProfileScreen = (props) => {
             // setError(error.message)
         }
         // setLoadingGalleries(false)
-    }, [setLoadingGalleries, dispatch])
+    }, [dispatch])
 
     useEffect(() => {
         const task = InteractionManager.runAfterInteractions(() => {
@@ -267,7 +258,7 @@ const ProfileScreen = (props) => {
         }),
         []
     )
-
+    console.log('loaded profile screen')
     const keyExtractor = useCallback((item) => `${item.galleryID}`, [])
     // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><LIKED PICS<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
     const pics = useSelector((state) => state.galleryReducer.pics)

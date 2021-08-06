@@ -34,31 +34,31 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 
 //colors
-import colors from '../../constants/colors'
+import colors from '../constants/colors'
 
 //custom components
-import Button from '../../components/Button'
-import CustomHeaderBasic from '../../components/HeaderBasic'
-import ScreenWrapper from '../../components/ScreenWrapper'
-import ModalContent from '../../components/EventCreation/ModalContent'
-import FriendSelectionCell from '../../components/EventCreation/FriendSelectionCell'
-import SavedFriendsCell from '../../components/EventCreation/SavedFriendsCell'
+import Button from '../components/Button'
+import CustomHeaderBasic from '../components/HeaderBasic'
+import ScreenWrapper from '../components/ScreenWrapper'
+import FriendSelectionCell from '../components/EventCreation/FriendSelectionCell'
+import SavedFriendsCell from '../components/EventCreation/SavedFriendsCell'
+import CustomInput from '../components/CustomInput'
 
 const { height, width } = Dimensions.get('screen')
 
 //redux
-import { addGallery, shouldRefreshSet } from '../../store/event/action'
+import { addGallery, shouldRefreshSet } from '../store/event/action'
 import {
     loadFollowing,
     setShouldRefreshProfile,
-} from '../../store/signup-auth/actions'
+} from '../store/signup-auth/actions'
 import { useDispatch, useSelector } from 'react-redux'
 
 //models
-import { FriendModel } from '../../models/FriendModel'
+import { FriendModel } from '../models/FriendModel'
 
 //formik
-import { Formik, useFormikContext } from 'formik'
+import { Formik } from 'formik'
 import * as yup from 'yup'
 
 const CustomHandleComponent = () => {
@@ -71,12 +71,14 @@ let selectedPeopleIDs = []
 const SEARCH_CONT_HEIGHT = 70
 const BOTTOM_CONT_HEIGHT = 75
 
-const CreateEventScreen = (props) => {
+const EditGalleryScreen = ({ route, ...props }) => {
     //dispatch
     const dispatch = useDispatch()
 
     // insets
     const insets = useSafeAreaInsets()
+
+    const { galName } = route.params
 
     // useEffect(() => {
     //     setTimeout(() => {
@@ -94,10 +96,8 @@ const CreateEventScreen = (props) => {
     }
 
     //------------------------------------------------------------FORMIK LOGIC------------------------------------------------------------
-    //formik ref
     const formRef = useRef()
 
-    //input ref
     const inputRef = useRef()
 
     const validationSchema = yup.object().shape({
@@ -146,7 +146,7 @@ const CreateEventScreen = (props) => {
         }
     }
 
-    const onCreatePressed = useCallback(() => {
+    const onSavePressed = useCallback(() => {
         Keyboard.dismiss()
         httpError ? setHttpError(null) : null
         handleSubmit()
@@ -271,6 +271,12 @@ const CreateEventScreen = (props) => {
     const keyExtractor = useCallback((item) => item.userID, [savedPeople])
 
     //------------------------------------------------------------FLATLIST FUNCTIONS-----------------------------------------------------------
+
+    //----------------------------------------------------------------X PRESSED----------------------------------------------------------------
+    const xPressed = useCallback((setFieldValue) => {
+        setFieldValue('eventName', '')
+    }, [])
+    //----------------------------------------------------------------X PRESSED----------------------------------------------------------------
 
     //NEW STUFF
     // ref
@@ -519,21 +525,17 @@ const CreateEventScreen = (props) => {
         <View style={{ flex: 1 }}>
             <ScreenWrapper>
                 <CustomHeaderBasic
+                    iconName="chevron-down-outline"
                     goBack={() => {
                         props.navigation.goBack()
                     }}
+                    header="Edit Gallery"
+                    headerColor={{ color: colors.darkestColorP1 }}
                     rightButtonWithText
-                    rightButtonText="Create"
-                    onRightButtonPressed={onCreatePressed}
-                ></CustomHeaderBasic>
-                <View style={styles.titleCont}>
-                    <Text
-                        style={styles.title}
-                        maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
-                    >
-                        Add Gallery Name
-                    </Text>
-                </View>
+                    rightButtonText="Save"
+                    onRightButtonPressed={onSavePressed}
+                />
+
                 {/* <TouchableWithoutFeedback onPress={hideKeyboard}> */}
                 <View style={{ flex: 1 }}>
                     <View style={styles.formikCont}>
@@ -541,7 +543,7 @@ const CreateEventScreen = (props) => {
                             innerRef={formRef}
                             validationSchema={validationSchema}
                             initialValues={{
-                                eventName: '',
+                                eventName: galName,
                             }}
                             initialTouched={{
                                 eventName: false,
@@ -560,53 +562,43 @@ const CreateEventScreen = (props) => {
                                 errors,
                                 setFieldValue,
                                 touched,
-                                handleSubmit,
                                 resetForm,
                             }) => (
                                 <View style={styles.formikInnerCont}>
-                                    <View style={styles.textInputCont}>
-                                        <TextInput
-                                            ref={inputRef}
-                                            placeholder="Event Name"
-                                            underlineColorAndroid="rgba(255,255,255,0)"
-                                            maxFontSizeMultiplier={
-                                                colors.maxFontSizeMultiplier
-                                            }
+                                    <View>
+                                        <CustomInput
+                                            viewStyle={styles.inputView}
                                             onChangeText={handleChange(
                                                 'eventName'
                                             )}
                                             onBlur={handleBlur('eventName')}
                                             value={values.eventName}
                                             style={styles.input}
-                                            selectionColor={colors.lightTint}
+                                            placeholder="Event Name"
                                             placeholderTextColor={
-                                                colors.placeHolder
+                                                'rgba(124,124,124,1)'
+                                            }
+                                            selectionColor={
+                                                'rgba(124,124,124,1)'
+                                            }
+                                            underlineColorAndroid="rgba(255,255,255,0)"
+                                            maxFontSizeMultiplier={
+                                                colors.maxFontSizeMultiplier
                                             }
                                             keyboardType="default"
                                             autoCapitalize="words"
                                             onFocus={() => {
                                                 setUserXOpacity(1)
                                             }}
-                                            maxLength={40}
-                                            autoFocus={true}
-                                        />
-                                        <TouchableOpacity
-                                            onPress={() => {
-                                                setErrorTextString('')
-                                                setFieldValue('eventName', '')
-                                                resetForm()
+                                            onFocus={() => {
+                                                setUserXOpacity(1)
                                             }}
-                                        >
-                                            <Ionicons
-                                                ref={userXButton}
-                                                name="close-circle"
-                                                size={20}
-                                                color={colors.mediumTint}
-                                                style={{
-                                                    opacity: 0,
-                                                }}
-                                            />
-                                        </TouchableOpacity>
+                                            maxLength={40}
+                                            onXPressed={xPressed.bind(
+                                                this,
+                                                setFieldValue
+                                            )}
+                                        />
                                     </View>
                                     <View style={styles.errorCont}>
                                         <TextInput
@@ -633,7 +625,16 @@ const CreateEventScreen = (props) => {
                                     </View>
 
                                     <View style={styles.bottomCont}>
-                                        <View style={styles.privacyCont}>
+                                        <View
+                                            style={{
+                                                minHeight: 50,
+                                                paddingVertical: 5,
+                                                flexDirection: 'row',
+                                                justifyContent: 'space-between',
+                                                width: '100%',
+                                                alignItems: 'center',
+                                            }}
+                                        >
                                             <Text style={styles.galType}>
                                                 Private Gallery
                                             </Text>
@@ -660,7 +661,6 @@ const CreateEventScreen = (props) => {
                                             />
                                         </Animated.View>
                                         <FlatList
-                                            onTouchStart={sharePressedHandler}
                                             extraData={extraData}
                                             style={styles.flatList}
                                             data={savedPeople}
@@ -821,7 +821,7 @@ const styles = StyleSheet.create({
     },
     formikCont: {
         width: '100%',
-        paddingHorizontal: '5%',
+        paddingHorizontal: 15,
     },
     input: {
         height: 50,
@@ -832,12 +832,7 @@ const styles = StyleSheet.create({
     formikInnerCont: {
         alignItems: 'center',
     },
-    textInputCont: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderBottomWidth: 1,
-        borderColor: colors.lightTint,
-    },
+
     errorCont: { width: '100%' },
     errorText: {
         marginTop: 10,
@@ -857,14 +852,6 @@ const styles = StyleSheet.create({
         height: 0,
         width: '100%',
         overflow: 'hidden',
-    },
-    privacyCont: {
-        minHeight: 50,
-        paddingVertical: 5,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '100%',
-        alignItems: 'center',
     },
     flatList: {
         minHeight: 60,
@@ -972,4 +959,4 @@ const s2 = StyleSheet.create({
     },
 })
 
-export default CreateEventScreen
+export default EditGalleryScreen

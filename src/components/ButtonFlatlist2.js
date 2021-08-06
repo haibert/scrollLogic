@@ -39,4 +39,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default ButtonFlatlist2
+export default React.memo(ButtonFlatlist2)

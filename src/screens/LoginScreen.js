@@ -33,9 +33,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { Icon } from 'react-native-elements'
 
-//blurview
-import { BlurView } from 'expo-blur'
-
 //redux
 import { login, setUserID } from '../store/signup-auth/actions'
 import { useDispatch, useSelector } from 'react-redux'

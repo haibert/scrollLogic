@@ -12,14 +12,11 @@ import {
     BottomSheetModalProvider,
     useBottomSheetTimingConfigs,
 } from '@gorhom/bottom-sheet'
-import BottomSheet from '@gorhom/bottom-sheet'
-
 import Animated, {
     Extrapolate,
     interpolate,
     useAnimatedStyle,
     useSharedValue,
-    withTiming,
 } from 'react-native-reanimated'
 import {
     TouchableOpacity,
@@ -30,16 +27,28 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 //colors
-import colors from '../constants/colors'
+import colors from '../../constants/colors'
+
+//redux
+//redux
+import { removeFriend } from '../../store/signup-auth/actions'
+import { useDispatch } from 'react-redux'
 
 const CustomHandleComponent = () => {
     return <View style={{ borderRadius: 20, width: '100%', height: 15 }}></View>
 }
-const ActionBottomSheet = forwardRef((props, ref) => {
-    //bottom sheet ref
+const FollowsActionSheet = forwardRef((props, ref) => {
+    //dispatch
+    const dispatch = useDispatch()
+
+    //insets
+    const insets = useSafeAreaInsets()
+
+    //sheet ref
     const bottomSheetModalRef = useRef()
 
-    const snapPoints = useMemo(() => [150, 150], [])
+    //snap points
+    const snapPoints = useMemo(() => [150, 150, 200], [])
     useImperativeHandle(ref, () => ({
         handlePresentModalPress: () => {
             bottomSheetModalRef.current.present()
@@ -86,13 +95,17 @@ const ActionBottomSheet = forwardRef((props, ref) => {
     }, [])
     //----------------------------------------------------------------BACKDROP COMPONENT----------------------------------------------------------------
 
-    //----------------------------------------------------------------DELETING GALLERY----------------------------------------------------------------
-    const deleteGalleryHandler = useCallback(() => {
-        bottomSheetModalRef.current?.close()
-        props.showConfirmation()
-    }, [])
-    //----------------------------------------------------------------DELETING GALLERY----------------------------------------------------------------
-
+    //----------------------------------------------------------------CANCEL----------------------------------------------------------------
+    const removePressedHandler = useCallback(async () => {
+        try {
+            await dispatch(removeFriend(props.followerID))
+        } catch (err) {
+            console.log('🚨  Error in followPressedHandler', err)
+            // setError(error.message)
+        }
+        bottomSheetModalRef.current.close()
+    }, [props.followerID])
+    //----------------------------------------------------------------CANCEL----------------------------------------------------------------
     //----------------------------------------------------------------CANCEL----------------------------------------------------------------
     const cancelPressedHandler = useCallback(() => {
         bottomSheetModalRef.current.close()
@@ -114,14 +127,14 @@ const ActionBottomSheet = forwardRef((props, ref) => {
             >
                 <View style={styles.container}>
                     <Pressable
-                        onPress={deleteGalleryHandler}
+                        onPress={removePressedHandler}
                         style={styles.removeButton}
                     >
                         <Text
                             style={styles.removeText}
                             maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
                         >
-                            Delete Gallery
+                            Remove Follower
                         </Text>
                     </Pressable>
 
@@ -151,8 +164,9 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         height: 55,
         borderRadius: 10,
-        backgroundColor: 'white',
+        backgroundColor: colors.inputBorderColor,
     },
+
     cancelButton: {
         alignItems: 'center',
         justifyContent: 'center',
@@ -162,8 +176,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     removeText: {
-        // color: colors.iOSBlue,
-        color: 'red',
+        color: colors.iOSBlue,
         fontSize: 20,
     },
     cancelText: {
@@ -173,4 +186,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default ActionBottomSheet
+export default FollowsActionSheet

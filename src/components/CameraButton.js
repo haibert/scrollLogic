@@ -15,6 +15,7 @@ import Animated, {
     cancelAnimation,
     useAnimatedStyle,
     withSequence,
+    runOnJS,
 } from 'react-native-reanimated'
 import Svg, { Circle, G } from 'react-native-svg'
 
@@ -48,9 +49,18 @@ const CameraButton = (props) => {
         animatedValue.value = circleCircumference
         const toValue =
             circleCircumference - (circleCircumference * maxValue) / 100
-        animatedValue.value = withTiming(toValue, {
-            duration: 10000,
-        })
+        animatedValue.value = withTiming(
+            toValue,
+            {
+                duration: 9500,
+            },
+            (finished) => {
+                if (finished) {
+                    console.log('ANIMATION ENDED')
+                    stopRecording()
+                }
+            }
+        )
         animatedScale.value = withSequence(
             withTiming(0.9, {
                 duration: 100,
@@ -59,6 +69,10 @@ const CameraButton = (props) => {
                 duration: 300,
             })
         )
+    }
+    const stopRecording = () => {
+        'worklet'
+        runOnJS(props.onEndPress)()
     }
     const stopAnim = () => {
         cancelAnimation(animatedValue)
@@ -77,7 +91,7 @@ const CameraButton = (props) => {
         }
     })
     // Gesture Handlers
-    const onTapStateChange = (event: TapGestureHandlerStateChangeEvent) => {
+    const onTapStateChange = (event) => {
         if (event.nativeEvent.state === State.ACTIVE) {
             console.log('Tap active')
         }
@@ -87,9 +101,7 @@ const CameraButton = (props) => {
             props.onTap()
         }
     }
-    const onLongStateChange = (
-        event: LongPressGestureHandlerStateChangeEvent
-    ) => {
+    const onLongStateChange = (event, duration) => {
         if (event.nativeEvent.state === State.ACTIVE) {
             props.onLongPress()
             startAnim()

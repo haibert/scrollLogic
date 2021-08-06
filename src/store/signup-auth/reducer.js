@@ -22,6 +22,8 @@ import {
     FOLLOW_RESPONSE,
     SHOULD_REFRESH_PROFILE,
     UPDATE_USER_STATS,
+    REMOVE_FRIEND,
+    LOAD_FOLLOWING,
 } from './actions'
 
 //async storage
@@ -58,9 +60,11 @@ const initialState = {
     searches: [],
     loadedProfile: {},
     followings: [],
+    following: [],
     followers: [],
     friendRequests: [],
     shouldRefreshProfile: false,
+    selectedFriendsForSharing: [],
 }
 
 const signupReducer = (state = initialState, action) => {
@@ -210,6 +214,13 @@ const signupReducer = (state = initialState, action) => {
                 followings: action.followings,
             }
         }
+        case LOAD_FOLLOWING: {
+            return {
+                ...state,
+                following: action.following,
+            }
+        }
+
         case EDIT_PROFILE: {
             return {
                 ...state,
@@ -252,6 +263,19 @@ const signupReducer = (state = initialState, action) => {
                 friendRequests: filteredArray,
             }
         }
+        case REMOVE_FRIEND: {
+            const filteredArray = state.followings.filter(function (obj) {
+                return obj.userID !== action.userID
+            })
+            console.log(
+                '🚀 ~ file: reducer.js ~ line 260 ~ filteredArray ~ filteredArray',
+                filteredArray
+            )
+            return {
+                ...state,
+                followings: filteredArray,
+            }
+        }
         case SHOULD_REFRESH_PROFILE: {
             return {
                 ...state,
@@ -268,7 +292,6 @@ const signupReducer = (state = initialState, action) => {
                 },
             }
         }
-
         default:
             return state
     }

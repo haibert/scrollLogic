@@ -27,10 +27,8 @@ import { snapPoint } from 'react-native-redash'
 
 //custom components
 import ScreenWrapper from '../components/ScreenWrapper'
-import HeaderBasic from '../components/HeaderBasic'
+import CustomHeaderBasic from '../components/HeaderBasic'
 import ThumbnailSmall from '../components/ThumbnailSmall'
-import CachedImageGalleryView from '../components/CachedImageGalleryView'
-import GalDetailBottomSheet from '../screens/GalDetailBottomSheet'
 
 //hooks
 import useDidMountEffect from '../hooks/useDidMountEffect'
@@ -91,13 +89,6 @@ const GalleryView = ({ route, navigation }) => {
     //isFocused?
     const isFocused = useIsFocused()
 
-    // pan gesture handler
-    // const enable = useSharedValue(false).value
-    const [enable, setEnabled] = useState()
-    const translateX = useSharedValue(0)
-    const translateY = useSharedValue(0)
-    const isGestureActive = useSharedValue(false)
-
     let tabBarBottomPosition = insets.bottom > 0 ? insets.bottom / 2 + 2 : 10
 
     if (tabBarBottomPosition === 10 && Platform.OS === 'android') {
@@ -123,6 +114,13 @@ const GalleryView = ({ route, navigation }) => {
     }, [])
 
     //----------------------------------------------------------------PAN ANIMATION LOGIC----------------------------------------------------------------
+    // pan gesture handler
+    // const enable = useSharedValue(false).value
+    const [enable, setEnabled] = useState()
+    const translateX = useSharedValue(0)
+    const translateY = useSharedValue(0)
+    const isGestureActive = useSharedValue(false)
+
     const panViewRef = useRef()
     const scrollViewRef = useRef()
     let offset = 0
@@ -171,7 +169,7 @@ const GalleryView = ({ route, navigation }) => {
     }
 
     const onGestureEvent = useAnimatedGestureHandler({
-        onStart: ({ translationY }) => {
+        onStart: () => {
             if (!enable) return
             isGestureActive.value = true
         },
@@ -180,7 +178,7 @@ const GalleryView = ({ route, navigation }) => {
             translateY.value = translationY
             translateX.value = translationX
         },
-        onEnd: ({ velocityX, velocityY }) => {
+        onEnd: ({ velocityY }) => {
             if (!enable) return
             const goBack =
                 snapPoint(translateY.value, velocityY, [
@@ -238,16 +236,13 @@ const GalleryView = ({ route, navigation }) => {
             opacity: loadingOpacity.value,
         }
     })
-    const startOpacityAnim = useCallback(() => {
-        loadingOpacity.value = withTiming(0, { duration: 0 })
-    }, [])
 
     const loadPics = useCallback(async () => {
         loadingOpacity.value = 1
         try {
             await dispatch(setPics(null, galleryID))
         } catch (error) {}
-        startOpacityAnim()
+        loadingOpacity.value = 0
     }, [])
 
     useFocusEffect(() => {
@@ -267,9 +262,9 @@ const GalleryView = ({ route, navigation }) => {
         return () => task.cancel()
     }, [])
 
-    //-----------------------------------------------------LOAD PICS--------------------------------------------------------
+    //----------------------------------------------------------------LOAD PICS--------------------------------------------------------
 
-    //-----------------------------------------------------PERMISSION CHECKER--------------------------------------------------------
+    //----------------------------------------------------------------PERMISSION CHECKER--------------------------------------------------------
     const greenLightOnPermissions = useSelector(
         (state) => state.permissionsReducer.permissions.camera
     )
@@ -363,14 +358,20 @@ const GalleryView = ({ route, navigation }) => {
             }
         }
     }, [greenLightOnPermissions])
-    //-----------------------------------------------------PERMISSION CHECKER--------------------------------------------------------
+    //----------------------------------------------------------------PERMISSION CHECKER--------------------------------------------------------
+
+    //----------------------------------------------------------------EDIT GALLERY PRESSED--------------------------------------------------------
+    const editGalleryPressedHandler = useCallback(() => {
+        navigation.navigate('EditGalleryScreen', { galleryID, galName })
+    }, [])
+    //----------------------------------------------------------------EDIT GALLERY PRESSED--------------------------------------------------------
 
     const goBack = useCallback(() => {
         navigation.goBack()
         dispatch(emptyPicsArray())
     }, [])
 
-    //----------------------------------------------------FLAT LIST OPTIMIZATION--------------------------------------------------------
+    //----------------------------------------------------------------FLAT LIST OPTIMIZATION--------------------------------------------------------
     const ListEmptyComponent = useCallback(() => {
         return (
             <View
@@ -417,7 +418,7 @@ const GalleryView = ({ route, navigation }) => {
             />
         )
     }, [])
-    //----------------------------------------------------FLAT LIST OPTIMIZATION--------------------------------------------------------
+    //----------------------------------------------------------------FLAT LIST OPTIMIZATION--------------------------------------------------------
 
     //----------------------------------------------------------------have to normalize uri----------------------------------------------------------------
     const normalizedSource = useCallback(() => {
@@ -468,17 +469,19 @@ const GalleryView = ({ route, navigation }) => {
                         id={`${galleryID}${galName}`}
                         style={{
                             ...styles.sharedElementText,
-                            marginTop: insets.top,
+                            marginTop: insets.top - 3,
                         }}
                     >
                         <Text
                             style={styles.animatedTitle}
                             maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                            ellipsizeMode="tail"
+                            numberOfLines={1}
                         >
                             {galName}
                         </Text>
                     </SharedElement>
-                    <HeaderBasic
+                    <CustomHeaderBasic
                         rightButton
                         goBack={goBack}
                         headerColor={{ color: colors.darkestColorP1 }}
@@ -486,6 +489,10 @@ const GalleryView = ({ route, navigation }) => {
                         rightIcon="camera-outline"
                         rightIconSize={30}
                         onPressRight={cameraPressedHandler}
+                        secondRightButton
+                        secondRightIcon="create-outline"
+                        secondRightIconSize={28}
+                        onPressSecondRight={editGalleryPressedHandler}
                     />
                     <FlatList
                         ref={scrollViewRef}
@@ -565,6 +572,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
         color: colors.darkestColorP1,
+        width: '40%',
     },
     imageBg: {
         flex: 1,

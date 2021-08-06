@@ -30,12 +30,12 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 //colors
-import colors from '../constants/colors'
+import colors from '../../constants/colors'
 
 const CustomHandleComponent = () => {
     return <View style={{ borderRadius: 20, width: '100%', height: 15 }}></View>
 }
-const ActionBottomSheet = forwardRef((props, ref) => {
+const DeletePicBottomSheet = forwardRef((props, ref) => {
     //bottom sheet ref
     const bottomSheetModalRef = useRef()
 
@@ -121,7 +121,7 @@ const ActionBottomSheet = forwardRef((props, ref) => {
                             style={styles.removeText}
                             maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
                         >
-                            Delete Gallery
+                            Delete Photo
                         </Text>
                     </Pressable>
 
@@ -173,4 +173,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default ActionBottomSheet
+export default DeletePicBottomSheet

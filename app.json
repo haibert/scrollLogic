@@ -20,7 +20,7 @@
         "assetBundlePatterns": ["**/*"],
         "ios": {
             "supportsTablet": true,
-            "userInterfaceStyle": "dark",
+            "userInterfaceStyle": "automatic",
             "infoPlist": {
                 "NSCameraUsageDescription": "This app uses the camera to take pictures, videos and scan barcodes on from other users.",
                 "UIBackgroundModes": [
@@ -41,7 +41,7 @@
                 "backgroundColor": "#FFFFFF"
             },
 
-            "userInterfaceStyle": "dark",
+            "userInterfaceStyle": "automatic",
             "package": "com.simplyrem.GalleryShare"
         },
         "web": {

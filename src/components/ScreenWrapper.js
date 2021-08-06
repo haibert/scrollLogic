@@ -7,6 +7,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 //Linear Gradient
 import { LinearGradient } from 'expo-linear-gradient'
 
+import { useTheme } from '@react-navigation/native'
+
 //colors
 import colors from '../constants/colors'
 
@@ -18,6 +20,8 @@ const navbarHeight = screenHeight - windowHeight + StatusBar.currentHeight
 
 const ScreenWrapper = (props) => {
     const insets = useSafeAreaInsets()
+
+    // const { colors } = useTheme()
     return (
         // <View
         //     style={{

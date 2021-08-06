@@ -31,7 +31,7 @@ const ThumbNail = ({
     galleryName,
     galleryPressedHandler,
     images,
-    onActionsPressed,
+    oneEllipsisPressed,
 }) => {
     //navigation
     const navigation = useNavigation()
@@ -103,7 +103,7 @@ const ThumbNail = ({
                 size={25}
                 color="white"
                 style={styles.actionsStyle}
-                onPress={onActionsPressed}
+                onPress={oneEllipsisPressed}
             />
         </ScaleButton>
     )

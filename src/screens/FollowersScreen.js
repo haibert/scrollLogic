@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState, useRef } from 'react'
 import {
     View,
     Text,
@@ -16,8 +16,9 @@ import Animated, {
 //custom components
 import ScreenWrapper from '../components/ScreenWrapper'
 import HeaderBasic from '../components/HeaderBasic'
-import Button from '../components/Button'
-import FollowCell from '../components/FollowCell'
+import FollowingCell from '../components/FollowersScreen/FollowingCell'
+import FollowersCell from '../components/FollowersScreen/FollowersCell'
+import FollowsActionSheet from '../components/FollowersScreen/FollowsActionSheet'
 
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -53,6 +54,24 @@ const FollowersScreen = (props) => {
     // go back
     const goBack = useCallback(() => {
         props.navigation.goBack()
+    }, [])
+
+    // sheet ref
+    const bottomSheetRef = useRef()
+
+    //----------------------------------------------------------------ELLIPSIS PRESSED----------------------------------------------------------------
+    const [followerID, setFollowerID] = useState()
+    const oneEllipsisPressed = useCallback((userID) => {
+        bottomSheetRef.current?.handlePresentModalPress()
+        setFollowerID(userID)
+    }, [])
+    //----------------------------------------------------------------ELLIPSIS PRESSED----------------------------------------------------------------
+
+    //----------------------------------------------------------------CELL PRESSED----------------------------------------------------------------
+    const onCellPressed = useCallback((userID) => {
+        props.navigation.push('OtherProfileScreen', {
+            uniqueID: userID,
+        })
     }, [])
 
     //----------------------------------------------------------------LOADING ANIMATION----------------------------------------------------------------
@@ -93,6 +112,9 @@ const FollowersScreen = (props) => {
     //----------------------------------------------------------------LOAD DATA----------------------------------------------------------------
 
     //----------------------------------------------------------------ANIMATION LOGIC----------------------------------------------------------------
+    const [switchData, setSwitchData] = useState(followType)
+    const animatedSwitchData = useSharedValue(switchData)
+
     const animatedValue = useSharedValue(
         followType === 'following' ? 0 : -(width - width / 2)
     )
@@ -108,6 +130,8 @@ const FollowersScreen = (props) => {
         animatedValue.value = withTiming(-(width - width / 2), {
             duration: 100,
         })
+        animatedSwitchData.value = 'followers'
+        // setSwitchData('followers')
         await loadFollows(userID, 'followers')
     }
     const startAnimationMiddle = () => {
@@ -117,13 +141,36 @@ const FollowersScreen = (props) => {
     }
     const startAnimationLeft = async () => {
         animatedValue.value = withTiming(0, { duration: 100 })
+        animatedSwitchData.value = 'following'
+        // setSwitchData('following')
         await loadFollows(userID, 'followings')
     }
     //----------------------------------------------------------------ANIMATION LOGIC----------------------------------------------------------------
 
     //----------------------------------------------------------------FLATlIST OPTIMIZATION----------------------------------------------------------------
-    const render = useCallback(({ item, index }) => {
-        return <FollowCell data={item} />
+    const renderFollowing = useCallback(({ item, index }) => {
+        return (
+            <FollowingCell
+                data={item}
+                onPress={() => {
+                    onCellPressed(item.userID)
+                }}
+            />
+        )
+    }, [])
+
+    const renderFollowers = useCallback(({ item, index }) => {
+        return (
+            <FollowersCell
+                data={item}
+                oneEllipsisPressed={() => {
+                    oneEllipsisPressed(item.userID)
+                }}
+                onPress={() => {
+                    onCellPressed(item.userID)
+                }}
+            />
+        )
     }, [])
 
     const layOut = useCallback(
@@ -169,7 +216,11 @@ const FollowersScreen = (props) => {
             </View>
             <BigList
                 data={followingsData}
-                renderItem={render}
+                renderItem={
+                    animatedSwitchData.value === 'following'
+                        ? renderFollowing
+                        : renderFollowers
+                }
                 keyExtractor={keyExtractor}
                 itemHeight={width}
                 getItemLayout={layOut}
@@ -188,6 +239,12 @@ const FollowersScreen = (props) => {
             >
                 <ActivityIndicator color={colors.nPButton} />
             </Animated.View>
+
+            <FollowsActionSheet
+                ref={bottomSheetRef}
+                followerID={followerID}
+                // refreshGalleryList={loadGalleries}
+            />
         </ScreenWrapper>
     )
 }

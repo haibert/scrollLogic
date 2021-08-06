@@ -112,7 +112,6 @@ const SearchScreen = ({ route, ...props }) => {
     //----------------------------------------------------------------EMPTY PROFILE----------------------------------------------------------------
 
     //----------------------------------------------------------------HIDE NAVIGATION BAR ANIMATION----------------------------------------------------------------
-
     const animatedOpacity = useSharedValue(1)
 
     const bottomNavStyle = useAnimatedStyle(() => {
@@ -415,13 +414,7 @@ const SearchScreen = ({ route, ...props }) => {
                         placeholderTextColor={'rgba(124,124,124,1)'}
                         underlineColorAndroid="rgba(255,255,255,0)"
                         onFocus={startWidthAnim}
-                        // onBlur={startWidthAnim}
-                        // placeholderTextColor={colors.placeHolder}
-                        // selectionColor={colors.lightTint}
-                        // value={props.value}
-                        // autoFocus={props.autoFocus}
                         onChangeText={onChange}
-                        // onChange={onChange}
                     ></TextInput>
                 </Animated.View>
             </View>

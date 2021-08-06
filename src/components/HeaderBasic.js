@@ -6,6 +6,7 @@ import {
     Text,
     Platform,
     TouchableOpacity,
+    Pressable,
 } from 'react-native'
 import * as IosTouchable from 'react-native-gesture-handler'
 
@@ -44,8 +45,10 @@ const CustomHeaderBasic = (props) => {
                 <Text
                     style={{ ...styles.headerText, ...props.headerColor }}
                     maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                    ellipsizeMode="tail"
+                    numberOfLines={1}
                 >
-                    {props.header}
+                    {props?.header}
                 </Text>
                 {props.transitionedHeader}
             </View>
@@ -55,26 +58,72 @@ const CustomHeaderBasic = (props) => {
                     <Ionicons
                         name={props.iconName ? props.iconName : defaultIcon}
                         size={30}
-                        // color={colors.textColor}
                         color={colors.darkestColorP1}
                         style={iconStyle}
                     />
                     {/* </View> */}
                 </TouchableCmp>
-                {props.rightButton ? (
-                    <TouchableCmp onPress={props.onPressRight}>
-                        {/* <View style={styles.circle}> */}
-                        <Ionicons
-                            name={props.rightIcon ? props.rightIcon : null}
-                            size={
-                                props.rightIconSize ? props.rightIconSize : 30
-                            }
-                            // color={colors.textColor}
-                            color={colors.darkestColorP1}
-                            style={iconStyle}
-                        />
-                        {/* </View> */}
-                    </TouchableCmp>
+                {props.rightButton || props.rightButtonWithText ? (
+                    <View style={styles.rightButtonsCont}>
+                        {props.secondRightButton ? (
+                            <Pressable onPress={props.onPressSecondRight}>
+                                {/* <View style={styles.circle}> */}
+                                <Ionicons
+                                    name={
+                                        props.secondRightIcon
+                                            ? props.secondRightIcon
+                                            : null
+                                    }
+                                    size={
+                                        props.secondRightIconSize
+                                            ? props.secondRightIconSize
+                                            : 30
+                                    }
+                                    color={colors.darkestColorP1}
+                                    style={styles.rightIcons}
+                                    maxFontSizeMultiplier={
+                                        colors.maxFontSizeMultiplier
+                                    }
+                                />
+                                {/* </View> */}
+                            </Pressable>
+                        ) : null}
+                        {props.rightButton ? (
+                            <TouchableCmp onPress={props.onPressRight}>
+                                {/* <View style={styles.circle}> */}
+                                <Ionicons
+                                    name={
+                                        props.rightIcon ? props.rightIcon : null
+                                    }
+                                    size={
+                                        props.rightIconSize
+                                            ? props.rightIconSize
+                                            : 30
+                                    }
+                                    color={colors.darkestColorP1}
+                                    style={styles.rightIcons}
+                                    maxFontSizeMultiplier={
+                                        colors.maxFontSizeMultiplier
+                                    }
+                                />
+                                {/* </View> */}
+                            </TouchableCmp>
+                        ) : null}
+                        {props.rightButtonWithText ? (
+                            <TouchableCmp onPress={props.onRightButtonPressed}>
+                                <View style={styles.headerBCont}>
+                                    <Text
+                                        style={styles.rightButtonText}
+                                        maxFontSizeMultiplier={
+                                            colors.maxFontSizeMultiplier
+                                        }
+                                    >
+                                        {props.rightButtonText}
+                                    </Text>
+                                </View>
+                            </TouchableCmp>
+                        ) : null}
+                    </View>
                 ) : null}
             </View>
             <View style={styles.children}>{props.children}</View>
@@ -109,11 +158,19 @@ const styles = StyleSheet.create({
         height: 40,
         backgroundColor: 'rgba(255,255,255,0)',
     },
+    rightButtonsCont: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+    },
     headerText: {
         color: 'white',
         fontSize: 18,
         fontWeight: 'bold',
         textAlign: 'center',
+    },
+    rightIcons: {
+        marginLeft: 10,
     },
     circle: {
         height: 40,
@@ -139,6 +196,20 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         minWidth: '100%',
+    },
+
+    //right button text button styles
+    headerBCont: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 10,
+        paddingVertical: 5,
+    },
+
+    rightButtonText: {
+        textAlign: 'center',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 })
 

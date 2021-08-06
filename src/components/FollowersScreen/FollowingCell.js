@@ -1,17 +1,17 @@
 import React, { useState } from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, Pressable } from 'react-native'
 
-import colors from '../constants/colors'
+import colors from '../../constants/colors'
 
 //components
-import ButtonFlatlist2 from '../components/ButtonFlatlist2'
+import ButtonFlatlist2 from '../../components/ButtonFlatlist2'
 
 //ionicons
 import { Ionicons } from '@expo/vector-icons'
 
-const FollowCell = (props) => {
+const FollowingCell = (props) => {
     return (
-        <View onPress={() => {}} style={styles.cellOuter}>
+        <Pressable onPress={props.onPress} style={styles.cellOuter}>
             <View style={styles.imageCont}></View>
             <View style={styles.namesCont}>
                 <Text
@@ -33,7 +33,7 @@ const FollowCell = (props) => {
                 style={styles.buttonReject}
                 title="Follow"
             />
-        </View>
+        </Pressable>
     )
 }
 
@@ -87,4 +87,4 @@ const styles = StyleSheet.create({
     username: {},
 })
 
-export default FollowCell
+export default FollowingCell

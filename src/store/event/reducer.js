@@ -46,8 +46,12 @@ const galleryReducer = (state = initialState, action) => {
         }
         case DELETE_GALLERY: {
             const myArray = state.galleries.filter(function (obj) {
-                return obj.id !== action.deletedGallery.id
+                return obj.galleryID !== action.deletedGallery
             })
+            console.log(
+                '🚀 ~ file: reducer.js ~ line 51 ~ myArray ~ myArray',
+                myArray
+            )
 
             return {
                 ...state,

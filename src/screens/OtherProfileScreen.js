@@ -170,13 +170,17 @@ const OtherProfileScreen = (props) => {
     //----------------------------------------------------------------PROFILE PHOTO PRESSED----------------------------------------------------------------
 
     //----------------------------------------------------------------FOLLOWERS PRESSED HANDLER----------------------------------------------------------------
-    const followingsPressedHandler = useCallback((followType) => {
-        props.navigation.navigate('FollowersScreen', {
-            username: profileInfo.userName,
-            userID: profileInfo.uniqueID,
-            followType: followType,
-        })
-    }, [])
+    const followingsPressedHandler = useCallback(
+        (followType) => {
+            console.log(profileInfo)
+            props.navigation.push('FollowersScreen', {
+                username: profileInfo.username,
+                userID: profileInfo.uniqueID,
+                followType: followType,
+            })
+        },
+        [profileInfo]
+    )
     //----------------------------------------------------------------FOLLOWERS PRESSED HANDLER----------------------------------------------------------------
     //----------------------------------------------------------------FLAT LIST FUNCTIONS--------------------------------------------------------------
     const render = useCallback(({ item, index }) => {

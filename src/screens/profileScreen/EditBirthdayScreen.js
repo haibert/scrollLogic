@@ -99,11 +99,11 @@ const EditBirthdayScreen = ({ route, ...props }) => {
     return (
         <ScreenWrapper paddingBottom>
             <HeaderBasic
+                iconName="chevron-down-outline"
                 goBack={() => {
                     props.navigation.goBack()
                 }}
-                iconName="chevron-down-outline"
-                header="Birthday"
+                header="Name"
                 headerColor={{ color: colors.darkestColorP1 }}
             />
             <View style={styles.midCont}>
