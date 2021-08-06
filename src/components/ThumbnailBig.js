@@ -15,7 +15,7 @@ import { PinchGestureHandler } from 'react-native-gesture-handler'
 const AnimatedFastImage = Animated.createAnimatedComponent(FastImage)
 
 // expo blurview
-// import { BlurView } from 'expo-blur'
+import { BlurView, VibrancyView } from '@react-native-community/blur'
 
 //colors
 import colors from '../constants/colors'
