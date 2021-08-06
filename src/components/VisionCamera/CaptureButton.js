@@ -1,11 +1,9 @@
 // import React, { useCallback, useMemo, useRef } from 'react'
-// import { StyleSheet, View, ViewProps } from 'react-native'
+// import { StyleSheet, View } from 'react-native'
 // import {
 //     PanGestureHandler,
-//     PanGestureHandlerGestureEvent,
 //     State,
 //     TapGestureHandler,
-//     TapGestureHandlerStateChangeEvent,
 // } from 'react-native-gesture-handler'
 // import Reanimated, {
 //     cancelAnimation,
@@ -19,18 +17,8 @@
 //     useSharedValue,
 //     withRepeat,
 // } from 'react-native-reanimated'
-// import type {
-//     Camera,
-//     PhotoFile,
-//     TakePhotoOptions,
-//     TakeSnapshotOptions,
-//     VideoFile,
-// } from 'react-native-vision-camera'
-// import {
-//     CAPTURE_BUTTON_SIZE,
-//     SCREEN_HEIGHT,
-//     SCREEN_WIDTH,
-// } from './../Constants'
+
+// import { CAPTURE_BUTTON_SIZE, SCREEN_HEIGHT, SCREEN_WIDTH } from './Constants'
 
 // const PAN_GESTURE_HANDLER_FAIL_X = [-SCREEN_WIDTH, SCREEN_WIDTH]
 // const PAN_GESTURE_HANDLER_ACTIVE_Y = [-2, 2]
@@ -38,25 +26,7 @@
 // const START_RECORDING_DELAY = 200
 // const BORDER_WIDTH = CAPTURE_BUTTON_SIZE * 0.1
 
-// interface Props extends ViewProps {
-//     camera: React.RefObject<Camera>
-//     onMediaCaptured: (
-//         media: PhotoFile | VideoFile,
-//         type: 'photo' | 'video'
-//     ) => void
-
-//     minZoom: number
-//     maxZoom: number
-//     cameraZoom: Reanimated.SharedValue<number>
-
-//     flash: 'off' | 'on'
-
-//     enabled: boolean
-
-//     setIsPressingButton: (isPressingButton: boolean) => void
-// }
-
-// const _CaptureButton: React.FC<Props> = ({
+// const _CaptureButton = ({
 //     camera,
 //     onMediaCaptured,
 //     minZoom,
@@ -67,20 +37,21 @@
 //     setIsPressingButton,
 //     style,
 //     ...props
-// }): React.ReactElement => {
-//     const pressDownDate = useRef<Date | undefined>(undefined)
+// }) => {
+//     const pressDownDate = (useRef < Date) | (undefined > undefined)
 //     const isRecording = useRef(false)
 //     const recordingProgress = useSharedValue(0)
-//     const takePhotoOptions = useMemo<TakePhotoOptions & TakeSnapshotOptions>(
-//         () => ({
-//             photoCodec: 'jpeg',
-//             qualityPrioritization: 'speed',
-//             flash: flash,
-//             quality: 90,
-//             skipMetadata: true,
-//         }),
-//         [flash]
-//     )
+//     const takePhotoOptions =
+//         (useMemo < TakePhotoOptions) &
+//         (TakeSnapshotOptions >
+//             (() => ({
+//                 photoCodec: 'jpeg',
+//                 qualityPrioritization: 'speed',
+//                 flash: flash,
+//                 quality: 90,
+//                 skipMetadata: true,
+//             }),
+//             [flash]))
 //     const isPressingButton = useSharedValue(false)
 
 //     //#region Camera Capture
@@ -141,9 +112,9 @@
 //     //#endregion
 
 //     //#region Tap handler
-//     const tapHandler = useRef<TapGestureHandler>()
+//     const tapHandler = useRef()
 //     const onHandlerStateChanged = useCallback(
-//         async ({ nativeEvent: event }: TapGestureHandlerStateChangeEvent) => {
+//         async ({ nativeEvent: event }) => {
 //             // This is the gesture handler for the circular "shutter" button.
 //             // Once the finger touches the button (State.BEGAN), a photo is being taken and "capture mode" is entered. (disabled tab bar)
 //             // Also, we set `pressDownDate` to the time of the press down event, and start a 200ms timeout. If the `pressDownDate` hasn't changed
@@ -213,11 +184,8 @@
 //     )
 //     //#endregion
 //     //#region Pan handler
-//     const panHandler = useRef<PanGestureHandler>()
-//     const onPanGestureEvent = useAnimatedGestureHandler<
-//         PanGestureHandlerGestureEvent,
-//         { offsetY?: number; startY?: number }
-//     >({
+//     const panHandler = useRef()
+//     const onPanGestureEvent = useAnimatedGestureHandler({
 //         onStart: (event, context) => {
 //             context.startY = event.absoluteY
 //             const yForFullZoom = context.startY * 0.7
@@ -261,7 +229,7 @@
 //         [isPressingButton]
 //     )
 //     const buttonStyle = useAnimatedStyle(() => {
-//         let scale: number
+//         let scale
 //         if (enabled) {
 //             if (isPressingButton.value) {
 //                 scale = withRepeat(
@@ -326,8 +294,6 @@
 //     )
 // }
 
-// export const CaptureButton = React.memo(_CaptureButton)
-
 // const styles = StyleSheet.create({
 //     flex: {
 //         flex: 1,
@@ -347,3 +313,5 @@
 //         borderColor: 'white',
 //     },
 // })
+
+// export const CaptureButton = React.memo(_CaptureButton)
