@@ -49,6 +49,9 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 
 const ModalContent = (props) => {
+    //dispatch
+    const dispatch = useDispatch()
+
     isAndroid
     const isAndroid = useMemo(() => {
         if (Platform.OS === 'android') {
@@ -57,21 +60,6 @@ const ModalContent = (props) => {
             return false
         }
     }, [])
-
-    //dispatch
-    const dispatch = useDispatch()
-
-    // insets
-    const insets = useSafeAreaInsets()
-
-    // useImperativeHandle(ref, () => ({
-    //     handlePresentModalPress: () => {
-    //         bottomSheetModalRef.current?.present()
-    //     },
-    //     handleDismissModalPress: () => {
-    //         bottomSheetModalRef.current?.dismiss()
-    //     },
-    // }))
 
     //----------------------------------------------------------------CANCEL BUTTON ANIMATION----------------------------------------------------------------
     const animatedWidth = useSharedValue(width - 20)
@@ -232,81 +220,7 @@ const ModalContent = (props) => {
 
     //----------------------------------------------------------------FLAT LIST DATA----------------------------------------------------------------
 
-    return (
-        <View>
-            <View
-                style={{
-                    paddingTop: insets.top,
-                    flex: 1,
-                    paddingVertical: 10,
-                }}
-            >
-                <View style={styles.searchCont}>
-                    <View style={styles.cancelButtonCont}>
-                        <Animated.View style={[cancelStyle]}>
-                            <TouchableOpacity onPress={expandSearchBar}>
-                                <Text
-                                    style={styles.cancelButton}
-                                    maxFontSizeMultiplier={
-                                        colors.maxFontSizeMultiplier
-                                    }
-                                >
-                                    Cancel
-                                </Text>
-                            </TouchableOpacity>
-                        </Animated.View>
-                    </View>
-                    <Animated.View
-                        style={[styles.searchCompCont, searchContStyle]}
-                    >
-                        <Ionicons
-                            name="search-outline"
-                            size={20}
-                            color={'rgba(124,124,124,1)'}
-                            maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
-                        />
-                        <TextInput
-                            maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
-                            style={styles.input}
-                            placeholder="Search"
-                            placeholderTextColor={'rgba(124,124,124,1)'}
-                            underlineColorAndroid="rgba(255,255,255,0)"
-                            onFocus={startWidthAnim}
-                            onChangeText={onChange}
-                        ></TextInput>
-                    </Animated.View>
-                </View>
-                <BottomSheetFlatList
-                    style={styles.flatList}
-                    data={friends}
-                    keyExtractor={keyExtractor}
-                    renderItem={renderItem}
-                    showsVerticalScrollIndicator={false}
-                    // ListEmptyComponent
-                />
-            </View>
-            <View
-                style={{
-                    ...styles.bottomActions,
-                    height: 60 + insets.bottom,
-                }}
-            >
-                <View style={styles.bottomButtonsCont}>
-                    <TouchableOpacity
-                        onPress={() => {}}
-                        style={styles.doneButton}
-                    >
-                        <Text
-                            maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
-                            style={styles.doneText}
-                        >
-                            Done
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-        </View>
-    )
+    return <View></View>
 }
 const styles = StyleSheet.create({
     container: {

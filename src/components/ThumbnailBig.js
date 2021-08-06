@@ -1,5 +1,12 @@
 import React, { useCallback, useMemo } from 'react'
-import { StyleSheet, View, Text, Dimensions, Pressable } from 'react-native'
+import {
+    StyleSheet,
+    View,
+    Text,
+    Dimensions,
+    Pressable,
+    Platform,
+} from 'react-native'
 import Animated, {
     useSharedValue,
     withTiming,
@@ -39,6 +46,15 @@ import FastImage from 'react-native-fast-image'
 const ThumbnailBig = (props) => {
     //insets
     const insets = useSafeAreaInsets()
+
+    //isAndroid
+    const isAndroid = useMemo(() => {
+        if (Platform.OS === 'android') {
+            return true
+        } else {
+            return false
+        }
+    }, [])
 
     //----------------------------------------------------------------ROW HEIGHT CALCS----------------------------------------------------------------
     const rowHeightAdjusted = useMemo(() => {
@@ -173,7 +189,22 @@ const ThumbnailBig = (props) => {
                             />
                         </Animated.View>
                         <Animated.View style={[styles.wholeCont, bigContStyle]}>
-                            <View style={styles.actionBar} />
+                            <View style={styles.actionBar}>
+                                {isAndroid ? (
+                                    <View style={styles.androidActionBar} />
+                                ) : (
+                                    <BlurView
+                                        style={styles.blurView}
+                                        blurType={
+                                            Platform.OS === 'android'
+                                                ? 'light'
+                                                : 'light'
+                                        }
+                                        blurAmount={13}
+                                        reducedTransparencyFallbackColor="white"
+                                    />
+                                )}
+                            </View>
 
                             <Ionicons
                                 name="ellipsis-horizontal"
@@ -236,11 +267,18 @@ const styles = StyleSheet.create({
     },
     actionBar: {
         height: 60,
-        backgroundColor: colors.backgroundBlurLight,
         position: 'absolute',
         bottom: 15,
         width: '100%',
         borderRadius: 13,
+        overflow: 'hidden',
+    },
+    blurView: {
+        flex: 1,
+    },
+    androidActionBar: {
+        backgroundColor: colors.backgroundBlurLight,
+        flex: 1,
         overflow: 'hidden',
     },
     deleteIcon: {

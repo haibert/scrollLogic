@@ -42,7 +42,6 @@ const EditPhoneScreen = ({ route, ...props }) => {
     const xPressed = useCallback((setFieldValue) => {
         setFieldValue('phone', '')
     }, [])
-
     //----------------------------------------------------------------X PRESSED----------------------------------------------------------------
 
     return (

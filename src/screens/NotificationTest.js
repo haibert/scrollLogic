@@ -14,63 +14,63 @@ Notifications.setNotificationHandler({
 })
 
 export default function NotificationTest() {
-    const [expoPushToken, setExpoPushToken] = useState('')
-    const [notification, setNotification] = useState(false)
-    const notificationListener = useRef()
-    const responseListener = useRef()
-    const navigation = useNavigation()
+    // const [expoPushToken, setExpoPushToken] = useState('')
+    // const [notification, setNotification] = useState(false)
+    // const notificationListener = useRef()
+    // const responseListener = useRef()
+    // const navigation = useNavigation()
 
-    const navigateToNotifications = useCallback(() => {
-        navigation.dispatch(
-            CommonActions.reset({
-                index: 1,
-                routes: [
-                    {
-                        name: 'DashboardScreen',
-                    },
-                    {
-                        name: 'ProfileScreen',
-                    },
-                    {
-                        name: 'NotificationsScreen',
-                    },
-                ],
-            })
-        )
-        navigation.navigate('NotificationsScreen', {})
-    }, [])
+    // const navigateToNotifications = useCallback(() => {
+    //     navigation.dispatch(
+    //         CommonActions.reset({
+    //             index: 1,
+    //             routes: [
+    //                 {
+    //                     name: 'DashboardScreen',
+    //                 },
+    //                 {
+    //                     name: 'ProfileScreen',
+    //                 },
+    //                 {
+    //                     name: 'NotificationsScreen',
+    //                 },
+    //             ],
+    //         })
+    //     )
+    //     navigation.navigate('NotificationsScreen', {})
+    // }, [])
 
-    useEffect(() => {
-        // getPermission()
-        registerForPushNotificationsAsync().then((token) => {
-            setExpoPushToken(token.data)
-            console.log(token.data)
-        })
+    // useEffect(() => {
+    //     // getPermission()
+    //     registerForPushNotificationsAsync().then((token) => {
+    //         setExpoPushToken(token.data)
+    //         console.log(token.data)
+    //     })
 
-        // This listener is fired whenever a notification is received while the app is foregrounded
-        notificationListener.current =
-            Notifications.addNotificationReceivedListener((notification) => {
-                setNotification(notification)
-            })
+    //     // This listener is fired whenever a notification is received while the app is foregrounded
+    //     notificationListener.current =
+    //         Notifications.addNotificationReceivedListener((notification) => {
+    //             setNotification(notification)
+    //         })
 
-        // This listener is fired whenever a user taps on or interacts with a notification (works when app is foregrounded, backgrounded, or killed)
-        responseListener.current =
-            Notifications.addNotificationResponseReceivedListener(
-                (response) => {
-                    // console.log(response)
-                    // navigateToNotifications()
-                }
-            )
+    //     // This listener is fired whenever a user taps on or interacts with a notification (works when app is foregrounded, backgrounded, or killed)
+    //     responseListener.current =
+    //         Notifications.addNotificationResponseReceivedListener(
+    //             (response) => {
+    //                 // console.log(response)
+    //                 // navigateToNotifications()
+    //             }
+    //         )
 
-        return () => {
-            Notifications.removeNotificationSubscription(
-                notificationListener.current
-            )
-            Notifications.removeNotificationSubscription(
-                responseListener.current
-            )
-        }
-    }, [])
+    //     return () => {
+    //         Notifications.removeNotificationSubscription(
+    //             notificationListener.current
+    //         )
+    //         Notifications.removeNotificationSubscription(
+    //             responseListener.current
+    //         )
+    //     }
+    // }, [])
 
     return (
         <View
@@ -80,7 +80,7 @@ export default function NotificationTest() {
                 justifyContent: 'space-around',
             }}
         >
-            <Text>Your expo push token: {expoPushToken}</Text>
+            {/* <Text>Your expo push token: {expoPushToken}</Text>
             <View style={{ alignItems: 'center', justifyContent: 'center' }}>
                 <Text>
                     Title: {notification && notification.request.content.title}{' '}
@@ -99,7 +99,7 @@ export default function NotificationTest() {
                 onPress={async () => {
                     await sendPushNotification(expoPushToken)
                 }}
-            />
+            /> */}
         </View>
     )
 }
@@ -187,55 +187,3 @@ async function registerForPushNotificationsAsync() {
 
     return token
 }
-
-// const hasNotificationPermission = useCallback(async () => {
-//     try {
-//         const { status: existingStatus } =
-//             await Notifications.requestPermissionsAsync()
-//         let finalStatus = existingStatus
-
-//         if (existingStatus !== 'granted') {
-//             const { status } = await Notifications.requestPermissionsAsync()
-//             finalStatus = status
-//         }
-
-//         if (finalStatus === 'granted') return true
-
-//         if (finalStatus !== 'granted') {
-//             Alert.alert(
-//                 'Warning',
-//                 'You will not receive reminders if you do not enable push notifications. If you would like to receive reminders, please enable push notifications for Fin in your settings.',
-//                 [
-//                     { text: 'Cancel' },
-//                     {
-//                         text: 'Enable Notifications',
-//                         onPress: () =>
-//                             Platform.OS === 'ios'
-//                                 ? Linking.openURL('app-settings:')
-//                                 : Linking.openSettings(),
-//                     },
-//                 ]
-//             )
-//             return false
-//         }
-//     } catch (error) {
-//         Alert.alert(
-//             'Error',
-//             'Something went wrong while check your notification permissions, please try again later.'
-//         )
-//         return false
-//     }
-// }, [])
-
-// const doNotificationLogic = useCallback(async () => {
-//     const hasPermission = await hasNotificationPermission()
-//     if (hasPermission) {
-//         const token = await getPushToken()
-//         dispatch(updatePushToken(firebaseUser, token))
-//         return
-//     }
-// }, [])
-
-// useEffect(() => {
-//     doNotificationLogic()
-// }, [])

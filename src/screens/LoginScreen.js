@@ -48,6 +48,9 @@ import { StatusBar } from 'expo-status-bar'
 //async AsyncStorage
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
+//blur view
+import { BlurView, VibrancyView } from '@react-native-community/blur'
+
 const { height, width } = Dimensions.get('screen')
 
 function hideKeyboard() {

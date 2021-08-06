@@ -1,23 +1,14 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import {
     View,
-    Text,
     StyleSheet,
     Dimensions,
-    Modal,
     FlatList,
     Alert,
     Linking,
     Platform,
     BackHandler,
 } from 'react-native'
-import Reanimated, {
-    useSharedValue,
-    withTiming,
-    useAnimatedStyle,
-    interpolate,
-    withSequence,
-} from 'react-native-reanimated'
 
 import { StatusBar } from 'expo-status-bar'
 
@@ -76,94 +67,7 @@ import BigList from 'react-native-big-list'
 //dimensions
 const { height, width } = Dimensions.get('screen')
 
-import Constants from 'expo-constants'
-import * as Notifications from 'expo-notifications'
-import * as TaskManager from 'expo-task-manager'
-
-const BACKGROUND_NOTIFICATION_TASK = 'BACKGROUND-NOTIFICATION-TASK'
-
-TaskManager.defineTask(
-    BACKGROUND_NOTIFICATION_TASK,
-    ({ data, error, executionInfo }) => {
-        console.log('Received a notification in the background!')
-        console.log(data)
-        // Do something with the notification data
-    }
-)
-
-Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK)
-
-import { CommonActions, useNavigation } from '@react-navigation/native'
-
-//-------------------------------------------------------------------NOTIFICATIONS LOGIC-------------------------------------------------------------------
-// get notifications permission and send token to server
-
-//-------------------------------------------------------------------NOTIFICATIONS LOGIC-------------------------------------------------------------------
-
 const DashboardScreen = (props) => {
-    const notificationListener = useRef()
-    const responseListener = useRef()
-
-    const navigateToNotifications = useCallback(() => {
-        Notifications.setBadgeCountAsync(0)
-        //resetting navigation state didn't work so.. work around.
-        props.navigation.dispatch(
-            CommonActions.navigate({
-                name: 'ProfileScreen',
-            })
-        )
-        props.navigation.dispatch(
-            CommonActions.navigate({
-                name: 'NotificationsScreen',
-            })
-        )
-    }, [props.navigation])
-
-    useEffect(() => {
-        const runAsync = async () => {
-            const test = await TaskManager.getRegisteredTasksAsync()
-            console.log(test)
-        }
-        runAsync()
-        const runAsync2 = async () => {
-            const test = await TaskManager.isAvailableAsync()
-        }
-        runAsync2()
-    }, [])
-
-    useEffect(() => {
-        console.log('added notifications listener')
-        notificationListener.current =
-            Notifications.addNotificationReceivedListener(
-                async (notification) => {
-                    console.log(
-                        'got notification while the app is in the foreground'
-                    )
-                    const currentBadgeCount =
-                        await Notifications.getBadgeCountAsync()
-
-                    Notifications.setBadgeCountAsync(currentBadgeCount + 1)
-                }
-            )
-
-        responseListener.current =
-            Notifications.addNotificationResponseReceivedListener(
-                (response) => {
-                    // console.log(response)
-                    navigateToNotifications()
-                }
-            )
-
-        return () => {
-            Notifications.removeNotificationSubscription(
-                notificationListener.current
-            )
-            Notifications.removeNotificationSubscription(
-                responseListener.current
-            )
-        }
-    }, [])
-
     //insets
     const insets = useSafeAreaInsets()
 

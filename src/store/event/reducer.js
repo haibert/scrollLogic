@@ -52,7 +52,6 @@ const galleryReducer = (state = initialState, action) => {
                 '🚀 ~ file: reducer.js ~ line 51 ~ myArray ~ myArray',
                 myArray
             )
-
             return {
                 ...state,
                 galleries: myArray,
