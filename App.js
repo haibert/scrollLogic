@@ -117,11 +117,11 @@ TaskManager.defineTask(
         // Do something with the notification data
     }
 )
+Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK)
 
 const doNotificationLogic = async () => {
     const hasPermission = await hasNotificationPermission()
     if (hasPermission) {
-        Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK)
         const token = await getPushToken()
         console.log(
             '🚀 ~ file: App.js ~ line 122 ~ doNotificationLogic ~ token',

@@ -186,56 +186,90 @@ const DashboardScreen = (props) => {
     // const { appStateVisible } = useAppState(checkPermissionsAppState)
 
     // opening app settings
-    const openSettings = useCallback(async () => {
-        Platform.OS === 'android' ? Linking.openSettings() : null
-        if (Platform.OS === 'ios') {
-            const supported = await Linking.canOpenURL('app-settings:')
-            try {
-                if (!supported) {
-                    console.log("Can't handle settings url")
-                } else {
-                    return Linking.openURL('app-settings:')
+    const openSettings = useCallback(
+        Platform.select({
+            ios: async () => {
+                const supported = await Linking.canOpenURL('app-settings:')
+                try {
+                    if (!supported) {
+                        //Can't handle settings url
+                        Alert.alert(
+                            'Failed to Open Settings',
+                            'Please go to this app settings manually.',
+                            [
+                                {
+                                    text: 'Cancel',
+                                    style: 'cancel',
+                                },
+                            ]
+                        )
+                    } else {
+                        return Linking.openURL('app-settings:')
+                    }
+                } catch (err) {
+                    Alert.alert(
+                        'Something Went Wrong.',
+                        'Please try again later.',
+                        [
+                            {
+                                text: 'Cancel',
+                                style: 'cancel',
+                            },
+                        ]
+                    )
                 }
-            } catch (err) {
-                console.error('An error occurred', err)
-            }
-        }
-    }, [])
+            },
+            android: () => {
+                Linking.openSettings()
+            },
+        }),
+        []
+    )
 
-    function sendUserToSettingsHandler() {
-        const alertMessage =
-            'Turn On Camera Permissions to Allow Event Share to Scan QR Codes'
-        Platform.OS === 'android' ? androidAlert() : IOSAlert()
+    const alertMessage =
+        'Turn on camera permissions to allow EventShare to take pictures, videos, and scan QR codes.'
 
-        function IOSAlert() {
-            Alert.alert(alertMessage, '', [
-                {
-                    text: 'Cancel',
-                    style: 'cancel',
-                },
-                {
-                    text: 'Settings',
-                    onPress: () => {
-                        openSettings()
-                    },
-                },
-            ])
-        }
-        function androidAlert() {
-            Alert.alert('', alertMessage, [
-                {
-                    text: 'Cancel',
-                    style: 'cancel',
-                },
-                {
-                    text: 'Settings',
-                    onPress: () => {
-                        openSettings()
-                    },
-                },
-            ])
-        }
-    }
+    const sendUserToSettingsHandler = useCallback(
+        Platform.select({
+            ios: () => {
+                Alert.alert(
+                    'EventShare Needs Access to Your Camera',
+                    alertMessage,
+                    [
+                        {
+                            text: 'Cancel',
+                            style: 'cancel',
+                        },
+                        {
+                            text: 'Settings',
+                            onPress: () => {
+                                openSettings()
+                            },
+                        },
+                    ]
+                )
+            },
+            android: () => {
+                Alert.alert(
+                    'EventShare Needs Access to Your Camera',
+                    alertMessage,
+                    [
+                        {
+                            text: 'Cancel',
+                            style: 'cancel',
+                        },
+                        {
+                            text: 'Settings',
+                            onPress: () => {
+                                openSettings()
+                            },
+                        },
+                    ]
+                )
+            },
+        }),
+        []
+    )
 
     //----------------------------------------------------------------ACTION SHEET LOGIC---------------------------------------------------------------
     const [showConfirmationBool, setShowConfirmationBool] = useState()
@@ -348,7 +382,7 @@ const DashboardScreen = (props) => {
                 layOut={layOut}
                 keyExtractor={keyExtractor}
                 contentContainerStyle={{
-                    paddingBottom: tabBarBottomPosition + 80,
+                    paddingBottom: tabBarBottomPosition,
                 }}
                 showsVerticalScrollIndicator={false}
                 numColumns={2}

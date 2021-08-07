@@ -39,7 +39,13 @@ const DeletePicBottomSheet = forwardRef((props, ref) => {
     //bottom sheet ref
     const bottomSheetModalRef = useRef()
 
-    const snapPoints = useMemo(() => [150, 150], [])
+    //insets
+    const insets = useSafeAreaInsets()
+
+    const snapPoints = useMemo(
+        () => [150 + insets.bottom, 150 + insets.bottom],
+        []
+    )
     useImperativeHandle(ref, () => ({
         handlePresentModalPress: () => {
             bottomSheetModalRef.current.present()

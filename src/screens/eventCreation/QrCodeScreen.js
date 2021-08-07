@@ -1,15 +1,5 @@
 import React, { useCallback, useEffect, useState, useMemo } from 'react'
-import {
-    View,
-    Text,
-    StyleSheet,
-    Dimensions,
-    TouchableOpacity,
-    TextInput,
-    TouchableWithoutFeedback,
-    Keyboard,
-    Share,
-} from 'react-native'
+import { View, Text, StyleSheet, Dimensions, Share, Alert } from 'react-native'
 
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -35,9 +25,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 //redux
 import { shouldRefreshSet } from '../../store/event/action'
 import { useSelector, useDispatch } from 'react-redux'
-
-// navigation actions
-import { CommonActions } from '@react-navigation/native'
 
 //expo camera
 import { Camera } from 'expo-camera'
@@ -90,6 +77,17 @@ const QrCodeScreen = ({ navigation, route }) => {
 
     // let base64Logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAA..';
 
+    //----------------------------------------------------------------HEADER BUTTON-----------------------------------------------------------------
+    const onXPressed = useCallback(async () => {
+        await dispatch(shouldRefreshSet(true))
+        navigation.navigate('DashboardScreen')
+    }, [])
+
+    const goBackPressed = useCallback(() => {
+        navigation.goBack()
+    }, [])
+    //----------------------------------------------------------------HEADER BUTTON-----------------------------------------------------------------
+
     //----------------------------------------------------------------PERMISSIONS LOGIC----------------------------------------------------------------
     const greenLightOnPermissions = useSelector(
         (state) => state.permissionsReducer.permissions.camera
@@ -102,7 +100,7 @@ const QrCodeScreen = ({ navigation, route }) => {
         })
     }, [])
 
-    const addPhotoHandler = useCallback(async () => {
+    const cameraPressedHandler = useCallback(async () => {
         if (greenLightOnPermissions === 'granted') {
             navigateToCamera()
         } else {
@@ -133,20 +131,100 @@ const QrCodeScreen = ({ navigation, route }) => {
             }
         }
     }, [])
+
+    const openSettings = useCallback(
+        Platform.select({
+            ios: async () => {
+                const supported = await Linking.canOpenURL('app-settings:')
+                try {
+                    if (!supported) {
+                        //Can't handle settings url
+                        Alert.alert(
+                            'Failed to Open Settings',
+                            'Please go to this app settings manually.',
+                            [
+                                {
+                                    text: 'Cancel',
+                                    style: 'cancel',
+                                },
+                            ]
+                        )
+                    } else {
+                        return Linking.openURL('app-settings:')
+                    }
+                } catch (err) {
+                    Alert.alert(
+                        'Something Went Wrong.',
+                        'Please try again later.',
+                        [
+                            {
+                                text: 'Cancel',
+                                style: 'cancel',
+                            },
+                        ]
+                    )
+                }
+            },
+            android: () => {
+                Linking.openSettings()
+            },
+        }),
+        []
+    )
+
+    const alertMessage =
+        'Turn on camera permissions to allow EventShare to take pictures, videos, and scan QR codes.'
+
+    const sendUserToSettingsHandler = useCallback(
+        Platform.select({
+            ios: () => {
+                Alert.alert(
+                    'EventShare Needs Access to Your Camera',
+                    alertMessage,
+                    [
+                        {
+                            text: 'Cancel',
+                            style: 'cancel',
+                        },
+                        {
+                            text: 'Settings',
+                            onPress: () => {
+                                openSettings()
+                            },
+                        },
+                    ]
+                )
+            },
+            android: () => {
+                Alert.alert(
+                    'EventShare Needs Access to Your Camera',
+                    alertMessage,
+                    [
+                        {
+                            text: 'Cancel',
+                            style: 'cancel',
+                        },
+                        {
+                            text: 'Settings',
+                            onPress: () => {
+                                openSettings()
+                            },
+                        },
+                    ]
+                )
+            },
+        }),
+        []
+    )
     //----------------------------------------------------------------PERMISSIONS LOGIC----------------------------------------------------------------
     return (
-        <ScreenWrapper>
+        <ScreenWrapper paddingBottom>
             <CustomHeaderBasic
                 // iconName="chevron-back-outline"
-                goBack={() => {
-                    navigation.goBack()
-                }}
+                goBack={goBackPressed}
                 rightButton
                 rightIcon="close"
-                onPressRight={async () => {
-                    await dispatch(shouldRefreshSet(true))
-                    navigation.navigate('DashboardScreen')
-                }}
+                onPressRight={onXPressed}
             />
             <View style={styles.outerCont}>
                 <Text
@@ -194,7 +272,7 @@ const QrCodeScreen = ({ navigation, route }) => {
                 <Button
                     text="Add Photos to Gallery"
                     style={styles.button}
-                    onPress={addPhotoHandler}
+                    onPress={cameraPressedHandler}
                 />
             </View>
         </ScreenWrapper>
@@ -234,7 +312,6 @@ const styles = StyleSheet.create({
     bottomCont: {
         alignItems: 'center',
         justifyContent: 'flex-end',
-        paddingBottom: 20,
     },
 
     button: {

@@ -20,7 +20,7 @@ import FloatingButton from './FloatingButton'
 import { BarCodeScanner } from 'expo-barcode-scanner'
 
 //nav hooks
-import { useFocusEffect, useNavigation } from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 
 const NuemorphicNavBar = (props) => {
     //insets

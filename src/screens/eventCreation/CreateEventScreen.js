@@ -132,7 +132,7 @@ const CreateEventScreen = (props) => {
             Keyboard.dismiss()
             setTimeout(() => {
                 bottomSheetModalRef.current?.present()
-            }, 40)
+            }, 5)
             return
         }
         Keyboard.dismiss()
@@ -502,18 +502,6 @@ const CreateEventScreen = (props) => {
         )
     }, [])
 
-    const bottomFlatlistStyle = {
-        height:
-            Platform.OS === 'android'
-                ? null
-                : height -
-                  insets.top -
-                  insets.bottom -
-                  SEARCH_CONT_HEIGHT -
-                  BOTTOM_CONT_HEIGHT,
-        flex: Platform.OS === 'android' ? 1 : null,
-    }
-
     //----------------------------------------------------------------FLAT LIST FUNCTIONS----------------------------------------------------------------
     return (
         <View style={{ flex: 1 }}>
@@ -745,16 +733,14 @@ const CreateEventScreen = (props) => {
                             ></TextInput>
                         </Animated.View>
                     </View>
-                    <View style={bottomFlatlistStyle}>
-                        <BottomSheetFlatList
-                            style={s2.flatList}
-                            data={friends}
-                            keyExtractor={keyExtractor2}
-                            renderItem={renderItem2}
-                            showsVerticalScrollIndicator={false}
-                            ListEmptyComponent={NoFriendsContent}
-                        />
-                    </View>
+                    <BottomSheetFlatList
+                        style={s2.flatList}
+                        data={friends}
+                        keyExtractor={keyExtractor2}
+                        renderItem={renderItem2}
+                        showsVerticalScrollIndicator={false}
+                        ListEmptyComponent={NoFriendsContent}
+                    />
                     <View
                         style={{
                             ...s2.bottomActions,
@@ -886,7 +872,6 @@ const s2 = StyleSheet.create({
     searchCont: {
         width: '100%',
         padding: 10,
-        height: 70,
     },
     searchCompCont: {
         backgroundColor: 'rgba(233,233,233,1)',

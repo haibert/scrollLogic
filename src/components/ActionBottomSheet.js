@@ -39,7 +39,13 @@ const ActionBottomSheet = forwardRef((props, ref) => {
     //bottom sheet ref
     const bottomSheetModalRef = useRef()
 
-    const snapPoints = useMemo(() => [150, 150], [])
+    //insets
+    const insets = useSafeAreaInsets()
+
+    const snapPoints = useMemo(
+        () => [150 + insets.bottom, 150 + insets.bottom],
+        []
+    )
     useImperativeHandle(ref, () => ({
         handlePresentModalPress: () => {
             bottomSheetModalRef.current.present()
@@ -110,9 +116,12 @@ const ActionBottomSheet = forwardRef((props, ref) => {
                 backdropComponent={backdropComponent}
                 dismissOnPanDown={true}
                 handleComponent={CustomHandleComponent}
-                style={{ backgroundColor: 'transparent' }}
             >
-                <View style={styles.container}>
+                <View
+                    style={{
+                        ...styles.container,
+                    }}
+                >
                     <Pressable
                         onPress={deleteGalleryHandler}
                         style={styles.removeButton}
