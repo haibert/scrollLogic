@@ -34,18 +34,9 @@ const Heart = (props) => {
             style={{ ...styles.cont, ...props.style }}
             onPress={changeOpacity}
         >
-            <Ionicons
-                name="heart-outline"
-                size={30}
-                color={colors.darkestColorP1}
-                style={styles.heart}
-            />
+            <Ionicons name="heart-outline" size={25} color={'red'} />
             <Animated.View style={[styles.heart, opacity]}>
-                <Ionicons
-                    name="heart"
-                    size={30}
-                    color={colors.darkestColorP1}
-                />
+                <Ionicons name="heart" size={25} color={'red'} />
             </Animated.View>
         </Pressable>
     )
@@ -53,14 +44,12 @@ const Heart = (props) => {
 
 const styles = StyleSheet.create({
     cont: {
-        width: 40,
-        height: 40,
         backgroundColor: 'transparent',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     heart: {
         position: 'absolute',
-        top: 0,
-        left: 0,
     },
 })
 

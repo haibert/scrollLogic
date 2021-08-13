@@ -55,10 +55,10 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 
 //models
-import { FriendModel } from '../../models/FriendModel'
+import { SelectedFriendModel } from '../../models/SelectedFriendModel'
 
 //formik
-import { Formik, useFormikContext } from 'formik'
+import { Formik } from 'formik'
 import * as yup from 'yup'
 
 const CustomHandleComponent = () => {
@@ -203,7 +203,7 @@ const CreateEventScreen = (props) => {
                         values.eventName,
                         privacy,
                         'none',
-                        selectedPeople
+                        selectedPeopleIDs
                     )
                 )
                 await dispatch(shouldRefreshSet(true))
@@ -431,7 +431,7 @@ const CreateEventScreen = (props) => {
                 }
             } else {
                 selectedPeople.push(
-                    new FriendModel(
+                    new SelectedFriendModel(
                         item.firstName,
                         item.lastName,
                         item.userID,
@@ -787,12 +787,14 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 25,
         color: colors.placeHolder,
+        fontFamily: colors.font,
     },
     underTitle: {
         color: colors.mediumTint,
         fontSize: 15,
         textAlign: 'center',
         marginTop: 15,
+        fontFamily: colors.font,
     },
     bottomCont: {
         flex: 1,
@@ -814,6 +816,7 @@ const styles = StyleSheet.create({
         flex: 1,
         color: colors.textColor,
         fontSize: 17,
+        fontFamily: colors.font,
     },
     formikInnerCont: {
         alignItems: 'center',
@@ -829,6 +832,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
         color: colors.lightTint,
         fontSize: 15,
+        fontFamily: colors.font,
     },
     loadingView: {
         backgroundColor: 'rgba(0,0,0,0.4)',
@@ -838,6 +842,7 @@ const styles = StyleSheet.create({
     galType: {
         fontSize: 15,
         color: colors.textColor,
+        fontFamily: colors.font,
     },
     hiddenView: {
         height: 0,
@@ -887,6 +892,7 @@ const s2 = StyleSheet.create({
         height: 50,
         padding: 5,
         backgroundColor: 'rgba(233,233,233,1)',
+        fontFamily: colors.font,
     },
     cancelButtonCont: {
         position: 'absolute',
@@ -902,6 +908,7 @@ const s2 = StyleSheet.create({
     cancelButton: {
         color: colors.darkColorP1,
         fontSize: 15,
+        fontFamily: colors.font,
     },
     shadowView: {
         flex: 1,
@@ -954,6 +961,7 @@ const s2 = StyleSheet.create({
     },
     doneText: {
         fontSize: 16,
+        fontFamily: colors.font,
     },
 })
 

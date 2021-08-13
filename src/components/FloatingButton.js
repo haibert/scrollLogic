@@ -28,6 +28,9 @@ import { Icon } from 'react-native-elements'
 import NeumorphicButton from './NeumorphicButton'
 import ScaleButton from './TouchableScale'
 
+//SVG
+import PlusSVG from './animatedNavBarTest/PlusSVG'
+
 //Linear Gradient
 import { LinearGradient } from 'expo-linear-gradient'
 
@@ -182,26 +185,7 @@ const FloatingButton = (props) => {
                 onPress={reToggleOpen}
                 contentContainerStyle={[styles.button, styles.pay]}
             >
-                <LinearGradient
-                    colors={[colors.mainColorP3, colors.nPButton]}
-                    style={styles.buttonBorder}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 0.3, y: 0.3 }}
-                >
-                    <LinearGradient
-                        colors={[colors.mainColorP3, colors.nPButton]}
-                        style={styles.button}
-                        start={{ x: 1, y: 1 }}
-                        end={{ x: 0.3, y: 0.3 }}
-                    >
-                        <Icon
-                            name="plus"
-                            type="material-community"
-                            size={38}
-                            color={'white'}
-                        />
-                    </LinearGradient>
-                </LinearGradient>
+                <PlusSVG size={35} color="blue" color={colors.darkGrey} />
             </ScaleButton>
         </View>
     )
@@ -213,31 +197,31 @@ const styles = StyleSheet.create({
     },
     background: {
         backgroundColor: 'rgba(0,0,0,.5)',
-        width: 60,
-        height: 60,
-        borderRadius: 30,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
     },
     button: {
-        width: 54,
-        height: 54,
-        borderRadius: 27,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
         alignItems: 'center',
         justifyContent: 'center',
         position: 'absolute',
-        shadowColor: 'black',
-        shadowRadius: 5,
-        shadowOpacity: 1,
-        backgroundColor: 'white',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        elevation: 5,
+        // shadowColor: 'black',
+        // shadowRadius: 5,
+        // shadowOpacity: 1,
+        // backgroundColor: 'white',
+        // shadowOffset: {
+        //     width: 0,
+        //     height: 2,
+        // },
+        // elevation: 5,
     },
     buttonBorder: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
         alignItems: 'center',
         justifyContent: 'center',
         shadowColor: '#333',
@@ -252,15 +236,15 @@ const styles = StyleSheet.create({
         color: '#FFF',
     },
     pay: {
-        backgroundColor: colors.nPButton,
-        shadowColor: 'black',
-        shadowRadius: 14,
-        shadowOpacity: 0.26,
-        shadowOffset: {
-            width: 14,
-            height: 14,
-        },
-        elevation: 14,
+        // backgroundColor: colors.grey,
+        // shadowColor: 'black',
+        // shadowRadius: 14,
+        // shadowOpacity: 0.26,
+        // shadowOffset: {
+        //     width: 0,
+        //     height: 14,
+        // },
+        // elevation: 14,
     },
     label: {
         color: 'white',

@@ -21,6 +21,7 @@ import colors from '../constants/colors'
 // custom components
 import Button from '../components/Button'
 import Thumbnail from '../components/Thumbnail'
+import FeedCell from '../components/FeedScreen/FeedCell'
 import CustomHeaderBasic from '../components/HeaderBasic'
 import ScreenWrapper from '../components/ScreenWrapper'
 import BottomNavBar from '../components/BottomNavBar'
@@ -69,7 +70,7 @@ const { height, width } = Dimensions.get('screen')
 const loadNumber = 15
 let page = 1
 
-const DashboardScreen = (props) => {
+const FeedScreen = (props) => {
     //insets
     const insets = useSafeAreaInsets()
 
@@ -317,44 +318,43 @@ const DashboardScreen = (props) => {
     //----------------------------------------------------------------NAV BAR FUNCTIONS----------------------------------------------------------------
 
     //----------------------------------------------------------------FLAT LIST FUNCTIONS--------------------------------------------------------------
-    const render = useCallback(({ item, index }) => {
-        return (
-            <Thumbnail
-                images={item}
-                galleryPressedHandler={() => {
-                    galleryPressedHandler(
-                        item.galleryID,
-                        item.thumbnail,
-                        item.galleryName
-                    )
-                    
-                }}
-                galleryName={item.galleryName}
-                oneEllipsisPressed={() => {
-                    oneEllipsisPressed(item.galleryID, index)
-                }}
-                key={item.galleryID}
-            />
-        )
-    }, [])
-
-    const galleryPressedHandler = useCallback(
-        (galleryID, thumbnail, galName) => {
-            props.navigation.navigate('GalleryView', {
-                galleryID,
-                thumbnail,
-                galName,
-            })
+    const render = useCallback(
+        ({ item, index }) => {
+            return (
+                <FeedCell
+                    galleryData={item}
+                    galleryPressedHandler={() => {
+                        galleryPressedHandler(
+                            item.galleryID,
+                            item.thumbnail,
+                            index
+                        )
+                    }}
+                    galleryName={item.galleryName}
+                    oneEllipsisPressed={() => {
+                        oneEllipsisPressed(item.galleryID, index)
+                    }}
+                    key={item.galleryID}
+                />
+            )
         },
-        []
+        [galleries]
     )
+
+    const galleryPressedHandler = useCallback((galleryID, thumbnail, index) => {
+        props.navigation.navigate('OtherGalleryView', {
+            galleryID,
+            thumbnail,
+            index,
+        })
+    }, [])
 
     const oneEllipsisPressed = useCallback((galleryID, index) => {
         bottomSheetRef.current?.handlePresentModalPress()
         setDeleteID({ id: galleryID, index: index })
     }, [])
 
-    const itemHeight = useMemo(() => width / 2 - 5, [])
+    const itemHeight = useMemo(() => width + 20, [])
 
     const layOut = useCallback(
         (data, index) => ({
@@ -399,7 +399,6 @@ const DashboardScreen = (props) => {
                     paddingBottom: tabBarBottomPosition,
                 }}
                 showsVerticalScrollIndicator={false}
-                numColumns={2}
                 onRefresh={loadGalleries}
                 refreshing={loadingGalleries}
                 removeClippedSubviews={Platform.OS === 'android' ? true : false}
@@ -417,12 +416,8 @@ const DashboardScreen = (props) => {
                 keyExtractor={keyExtractor}
                 showsVerticalScrollIndicator={false}
                 numColumns={2}
-                // columnWrapperStyle={{
-                //     marginLeft: 10,
-                // }}
                 contentContainerStyle={{
-                    ...styles.bigListContentCont,
-                    paddingBottom: tabBarBottomPosition + 80,
+                    paddingBottom: tabBarBottomPosition,
                 }}
                 initialNumToRender={6}
                 maxToRenderPerBatch={6}
@@ -500,4 +495,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default DashboardScreen
+export default FeedScreen

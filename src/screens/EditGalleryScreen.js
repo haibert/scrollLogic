@@ -47,7 +47,11 @@ import CustomInput from '../components/CustomInput'
 const { height, width } = Dimensions.get('screen')
 
 //redux
-import { addGallery, shouldRefreshSet } from '../store/event/action'
+import {
+    addGallery,
+    shouldRefreshSet,
+    editGallery,
+} from '../store/event/action'
 import {
     loadFollowing,
     setShouldRefreshProfile,
@@ -55,7 +59,8 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 
 //models
-import { FriendModel } from '../models/FriendModel'
+import { SelectedFriendModel } from '../models/SelectedFriendModel'
+import { AllowedFriends } from '../models/AllowedFriends'
 
 //formik
 import { Formik } from 'formik'
@@ -78,7 +83,7 @@ const EditGalleryScreen = ({ route, ...props }) => {
     // insets
     const insets = useSafeAreaInsets()
 
-    const { galName } = route.params
+    const { galName, galleryID } = route.params
 
     // useEffect(() => {
     //     setTimeout(() => {
@@ -94,6 +99,37 @@ const EditGalleryScreen = ({ route, ...props }) => {
     function hideKeyboard() {
         Keyboard.dismiss()
     }
+
+    const userIDsAlreadyAdded = useSelector(
+        (state) => state.galleryReducer.galleryInfo.allowedFriendsIDs
+    )
+    console.log(
+        '🚀 ~ file: EditGalleryScreen.js ~ line 106 ~ EditGalleryScreen ~ userIDsAlreadyAdded',
+        userIDsAlreadyAdded
+    )
+
+    const userNamesAlreadyAdded = useSelector(
+        (state) => state.galleryReducer.galleryInfo.allowedFriendsUsernames
+    )
+    console.log(
+        '🚀 ~ file: EditGalleryScreen.js ~ line 111 ~ EditGalleryScreen ~ userNamesAlreadyAdded',
+        userNamesAlreadyAdded
+    )
+
+    const privacySetting = useSelector(
+        (state) => state.galleryReducer.galleryInfo.privacySetting
+    )
+
+    useEffect(() => {
+        for (const key in userIDsAlreadyAdded) {
+            selectedPeopleIDs.push(userIDsAlreadyAdded[key])
+        }
+        for (const key in userNamesAlreadyAdded) {
+            selectedPeople.push(
+                new AllowedFriends(userNamesAlreadyAdded[key].userName)
+            )
+        }
+    }, [])
 
     //------------------------------------------------------------FORMIK LOGIC------------------------------------------------------------
     const formRef = useRef()
@@ -152,7 +188,9 @@ const EditGalleryScreen = ({ route, ...props }) => {
         handleSubmit()
     }, [])
 
-    const [isPrivate, setIsPrivate] = useState(false)
+    const [isPrivate, setIsPrivate] = useState(
+        privacySetting === 'private' || 'specific_friends' ? true : false
+    )
 
     const onSwitchChanged = (newValue) => {
         setIsPrivate(newValue)
@@ -199,18 +237,18 @@ const EditGalleryScreen = ({ route, ...props }) => {
             }
             try {
                 await dispatch(
-                    addGallery(
+                    editGallery(
+                        galleryID,
                         values.eventName,
                         privacy,
                         'none',
+                        selectedPeopleIDs,
                         selectedPeople
                     )
                 )
                 await dispatch(shouldRefreshSet(true))
                 setIsLoading(false)
-                props.navigation.navigate('QrCodeScreen', {
-                    qrCodePortion: noSpaceString,
-                })
+                props.navigation.goBack()
             } catch (error) {
                 setHttpError(error.message)
                 setIsLoading(false)
@@ -261,14 +299,14 @@ const EditGalleryScreen = ({ route, ...props }) => {
 
     //------------------------------------------------------------FLATLIST FUNCTIONS-----------------------------------------------------------
 
-    const renderItem = useCallback(
+    const renderAllowedFriends = useCallback(
         ({ item }) => {
             return <SavedFriendsCell username={item.userName} />
         },
         [savedPeople]
     )
 
-    const keyExtractor = useCallback((item) => item.userID, [savedPeople])
+    const keyExtractor = useCallback((item) => item.userName, [savedPeople])
 
     //------------------------------------------------------------FLATLIST FUNCTIONS-----------------------------------------------------------
 
@@ -396,7 +434,7 @@ const EditGalleryScreen = ({ route, ...props }) => {
     //----------------------------------------------------------------LOAD FOLLOWING----------------------------------------------------------------
 
     //----------------------------------------------------------------SELECT DESELECT FRIENDS LOGIC----------------------------------------------------------------
-    const [savedPeople, setSavedPeople] = useState([])
+    const [savedPeople, setSavedPeople] = useState(userNamesAlreadyAdded)
     console.log(
         '🚀 ~ file: CreateEventScreen.js ~ line 331 ~ CreateEventScreen ~ savedPeople',
         savedPeople
@@ -418,6 +456,10 @@ const EditGalleryScreen = ({ route, ...props }) => {
 
     const onSelect = useCallback(
         (item) => {
+            console.log(
+                '🚀 ~ file: EditGalleryScreen.js ~ line 471 ~ EditGalleryScreen ~ selectedPeople',
+                selectedPeople
+            )
             const exists = selectedPeopleIDs.includes(item.userID)
             // const exists = await selectedPeople.some((user) => {
             //     user.userID === item.userID
@@ -430,26 +472,29 @@ const EditGalleryScreen = ({ route, ...props }) => {
                     ),
                     1
                 )
-
+                // console.log(
+                //     '🚀 ~ file: EditGalleryScreen.js ~ line 798 ~ EditGalleryScreen ~ selectedPeople',
+                //     selectedPeople
+                // )
                 const index = selectedPeopleIDs.indexOf(item.userID)
                 if (index > -1) {
                     selectedPeopleIDs.splice(index, 1)
                 }
             } else {
-                selectedPeople.push(
-                    new FriendModel(
-                        item.firstName,
-                        item.lastName,
-                        item.userID,
-                        item.userName
-                    )
-                )
+                selectedPeople.push(new AllowedFriends(item.userName))
+                // item.firstName,
+                // item.lastName,
+                // item.userID,
                 selectedPeopleIDs.push(item.userID)
+                // console.log(
+                //     '🚀 ~ file: EditGalleryScreen.js ~ line 798 ~ EditGalleryScreen ~ selectedPeople',
+                //     selectedPeople
+                // )
             }
         },
         [selectedPeopleIDs, selectedPeople]
     )
-
+    selectedPeople
     const [extraData, setExtraData] = useState(false)
     const donePressedHandler = useCallback(() => {
         setSavedPeople(selectedPeople)
@@ -479,7 +524,7 @@ const EditGalleryScreen = ({ route, ...props }) => {
     const renderItem2 = useCallback(
         ({ item }) => (
             <FriendSelectionCell
-                key={item.userID}
+                key={item.userName}
                 username={item.userName}
                 userID={item.userID}
                 avatar={item.avatarThumbPath}
@@ -664,7 +709,7 @@ const EditGalleryScreen = ({ route, ...props }) => {
                                             extraData={extraData}
                                             style={styles.flatList}
                                             data={savedPeople}
-                                            renderItem={renderItem}
+                                            renderItem={renderAllowedFriends}
                                             keyExtractor={keyExtractor}
                                             contentContainerStyle={
                                                 styles.friendsContentCont

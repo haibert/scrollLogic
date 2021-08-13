@@ -24,6 +24,7 @@ import {
     UPDATE_USER_STATS,
     REMOVE_FRIEND,
     LOAD_FOLLOWING,
+    SET_GALLERY_INFO
 } from './actions'
 
 //async storage

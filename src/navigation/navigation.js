@@ -28,6 +28,7 @@ import FUserName from '../screens/signupScreens/FUserName'
 //screens
 import LoginScreen from '../screens/LoginScreen'
 import DashboardScreen from '../screens/DashboardScreen'
+import FeedScreen from '../screens/FeedScreen'
 import CameraScreen from '../screens/CameraScreen'
 import GalleryView from '../screens/GalleryView'
 import GalleryDetailScreen from '../screens/GalleryDetailScreen'
@@ -197,7 +198,7 @@ const DashModalStack = () => {
         >
             <DashStackShared.Screen
                 name="DashboardScreen"
-                component={DashboardScreen}
+                component={FeedScreen}
                 options={{
                     headerShown: false,
                     animationEnabled: false,
@@ -212,15 +213,15 @@ const DashModalStack = () => {
                     cardStyle: {
                         backgroundColor: 'transparent',
                     },
-                    gestureResponseDistance: gestureResponseVertical,
-                    gestureDirection: gestureDirectionVertical,
+                    // gestureResponseDistance: gestureResponseVertical,
+                    // gestureDirection: gestureDirectionVertical,
                     cardStyleInterpolator: cardStyleInterpolatorFunc,
                 })}
                 sharedElementsConfig={(route) => {
                     const { galleryID, galName } = route.params
                     return [
                         {
-                            id: [galleryID],
+                            id: galleryID,
                             animation:
                                 Platform.OS === 'android' ? 'fade-out' : 'move',
                             resize: 'auto',
@@ -581,6 +582,25 @@ function DrawerNav({ navigation, route }) {
                     drawerIcon: (config) => (
                         <Ionicons
                             name="home-outline"
+                            color={config.color}
+                            size={config.size}
+                        />
+                    ),
+                    // unmountOnBlur: true
+                    /*Whether this screen should be unmounted when navigating away from it.
+                    Unmounting a screen resets any local state in the screen as well as state
+                    of nested navigators in the screen. Defaults to false.*/
+                    swipeEnabled: getDrawerState(route),
+                })}
+            />
+            <Drawer.Screen
+                name="FeedScreen"
+                component={FeedScreen}
+                options={({ route }) => ({
+                    drawerLabel: 'Design',
+                    drawerIcon: (config) => (
+                        <Ionicons
+                            name="analytics-outline"
                             color={config.color}
                             size={config.size}
                         />

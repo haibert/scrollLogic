@@ -6,7 +6,12 @@ import {
     SHOULD_REFRESH,
     DELETE_PHOTO,
     EMPTY_PICS_ARRAY,
+    SET_INITIAL_GALLERIES,
     SET_OTHER_GALLERIES,
+    SET_INITIAL_OTHER_GALLERIES,
+    EMPTY_OTHER_GALLERIES,
+    SET_GALLERY_INFO,
+    EDIT_GALLERY,
 } from './action'
 
 const initialState = {
@@ -14,8 +19,17 @@ const initialState = {
     galleries: [],
     otherGalleries: [],
     pics: [],
+    galleryTitles: [],
     newGalleryID: '',
     shouldRefresh: false,
+    galleryInfo: {
+        allowedFriendsIDs: [],
+        allowedFriendsUsernames: [],
+        privacySetting: '',
+        eventName: '',
+        eventType: '',
+        thumbnail: '',
+    },
 }
 
 const galleryReducer = (state = initialState, action) => {
@@ -29,13 +43,28 @@ const galleryReducer = (state = initialState, action) => {
         case SET_GALLERIES: {
             return {
                 ...state,
+                galleries: [...state.galleries, ...action.galleries],
+            }
+        }
+        case SET_INITIAL_GALLERIES: {
+            return {
+                ...state,
                 galleries: action.galleries,
+            }
+        }
+        case SET_INITIAL_OTHER_GALLERIES: {
+            return {
+                ...state,
+                otherGalleries: action.otherGalleries,
             }
         }
         case SET_OTHER_GALLERIES: {
             return {
                 ...state,
-                otherGalleries: action.otherGalleries,
+                otherGalleries: [
+                    ...state.otherGalleries,
+                    ...action.otherGalleries,
+                ],
             }
         }
         case SET_PICS: {
@@ -81,7 +110,40 @@ const galleryReducer = (state = initialState, action) => {
                 pics: [],
             }
         }
-
+        case EMPTY_OTHER_GALLERIES: {
+            return {
+                ...state,
+                otherGalleries: [],
+            }
+        }
+        case SET_GALLERY_INFO: {
+            return {
+                ...state,
+                galleryInfo: {
+                    allowedFriendsIDs: action.allowedFriendsIDs,
+                    allowedFriendsUsernames: action.allowedFriendsUsernames,
+                    privacySetting: action.privacySetting,
+                    eventName: action.eventName,
+                    eventType: action.eventType,
+                    thumbnail: action.thumbnail,
+                },
+            }
+        }
+        case EDIT_GALLERY: {
+            const editedGalleryIndex = state.galleries.findIndex(
+                (element) => element.galleryID == action.galleryID
+            )
+            const newGalleriesArray = state.galleries
+            state.galleries[editedGalleryIndex] = {
+                ...state.galleries[editedGalleryIndex],
+                galleryName: action.eventName,
+                thumbnail: action.thumbnail,
+            }
+            return {
+                ...state,
+                galleries: newGalleriesArray,
+            }
+        }
         default:
             return state
     }

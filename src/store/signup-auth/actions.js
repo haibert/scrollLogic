@@ -199,7 +199,7 @@ export const login = (username, password) => {
                     fullInfo: userInfo,
                 })
 
-                dispatch(setGalleries(null))
+                dispatch(setGalleries(null, 15, 1, true))
 
                 await storeCredentials(
                     credentials.userName,

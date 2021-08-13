@@ -40,7 +40,7 @@ const ScreenWrapper = (props) => {
                         ? insets.top
                         : null,
                 paddingBottom: props.paddingBottom ? insets.bottom : null,
-                backgroundColor: colors.overallBackground,
+                backgroundColor: 'white',
             }}
             // start={{ x: 0, y: 0 }}
             // end={{ x: 1, y: 0 }}

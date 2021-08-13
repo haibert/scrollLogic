@@ -4,11 +4,11 @@ import {
     Text,
     StyleSheet,
     Dimensions,
-    ImageBackground,
     Platform,
     Linking,
     Image,
     ActivityIndicator,
+    Alert,
 } from 'react-native'
 //shared elements
 import { SharedElement } from 'react-navigation-shared-element'
@@ -21,15 +21,13 @@ import Animated, {
     runOnJS,
     Extrapolate,
     interpolate,
-    withDelay,
 } from 'react-native-reanimated'
 import { snapPoint } from 'react-native-redash'
 
 //custom components
 import ScreenWrapper from '../components/ScreenWrapper'
-import HeaderBasic from '../components/HeaderBasic'
+import CustomHeaderBasic from '../components/HeaderBasic'
 import ThumbnailSmall from '../components/ThumbnailSmall'
-import GalDetailBottomSheet from '../screens/GalDetailBottomSheet'
 
 //hooks
 import useDidMountEffect from '../hooks/useDidMountEffect'
@@ -44,8 +42,6 @@ import colors from '../constants/colors'
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-const { width, height } = Dimensions.get('window')
-
 //ionicons
 import { Ionicons } from '@expo/vector-icons'
 import { Icon } from 'react-native-elements'
@@ -58,6 +54,7 @@ import {
     setPics,
     shouldRefreshSet,
     emptyPicsArray,
+    getGalleryInfo,
 } from '../store/event/action'
 
 import {
@@ -73,13 +70,14 @@ import { Audio } from 'expo-av'
 //fast image
 import FastImage from 'react-native-fast-image'
 
-const OtherGalleryView = ({ route, navigation }) => {
-    const { galleryID, thumbnail, galName, userID } = route.params
-    console.log(
-        '🚀 ~ file: OtherGalleryView.js ~ line 78 ~ OtherGalleryView ~ galleryID',
-        galleryID
-    )
+const { width, height } = Dimensions.get('window')
 
+const OtherGalleryView = ({ route, navigation }) => {
+    const { galleryID, thumbnail, index } = route.params
+
+    const galName = useSelector(
+        (state) => state.galleryReducer.galleries[index].galleryName
+    )
     // shouldRefresh
     const shouldRefresh = useSelector(
         (state) => state.galleryReducer.shouldRefresh
@@ -94,13 +92,6 @@ const OtherGalleryView = ({ route, navigation }) => {
     //isFocused?
     const isFocused = useIsFocused()
 
-    // pan gesture handler
-    // const enable = useSharedValue(false).value
-    const [enable, setEnabled] = useState()
-    const translateX = useSharedValue(0)
-    const translateY = useSharedValue(0)
-    const isGestureActive = useSharedValue(false)
-
     let tabBarBottomPosition = insets.bottom > 0 ? insets.bottom / 2 + 2 : 10
 
     if (tabBarBottomPosition === 10 && Platform.OS === 'android') {
@@ -108,9 +99,8 @@ const OtherGalleryView = ({ route, navigation }) => {
     }
 
     const picturePressedHandler = useCallback(
-        (image, scrollIndex, picID, fullPathNav) => {
+        (scrollIndex, picID, fullPathNav) => {
             navigation.navigate('GalleryDetailScreen', {
-                image,
                 scrollIndex,
                 picID,
                 fullPathNav,
@@ -119,7 +109,6 @@ const OtherGalleryView = ({ route, navigation }) => {
         []
     )
 
-    //old way of handling gesture event
     const handleScroll = useCallback((event) => {
         if (event.nativeEvent.contentOffset.y <= 0) {
             Platform.OS === 'android' ? navigation.goBack() : null
@@ -127,6 +116,13 @@ const OtherGalleryView = ({ route, navigation }) => {
     }, [])
 
     //----------------------------------------------------------------PAN ANIMATION LOGIC----------------------------------------------------------------
+    // pan gesture handler
+    // const enable = useSharedValue(false).value
+    const [enable, setEnabled] = useState()
+    const translateX = useSharedValue(0)
+    const translateY = useSharedValue(0)
+    const isGestureActive = useSharedValue(false)
+
     const panViewRef = useRef()
     const scrollViewRef = useRef()
     let offset = 0
@@ -175,7 +171,7 @@ const OtherGalleryView = ({ route, navigation }) => {
     }
 
     const onGestureEvent = useAnimatedGestureHandler({
-        onStart: ({ translationY }) => {
+        onStart: () => {
             if (!enable) return
             isGestureActive.value = true
         },
@@ -184,7 +180,7 @@ const OtherGalleryView = ({ route, navigation }) => {
             translateY.value = translationY
             translateX.value = translationX
         },
-        onEnd: ({ velocityX, velocityY }) => {
+        onEnd: ({ velocityY }) => {
             if (!enable) return
             const goBack =
                 snapPoint(translateY.value, velocityY, [
@@ -233,12 +229,7 @@ const OtherGalleryView = ({ route, navigation }) => {
 
     //----------------------------------------------------------------LOAD PICS--------------------------------------------------------
     const pics = useSelector((state) => state.galleryReducer.pics)
-    console.log(
-        '🚀 ~ file: OtherGalleryView.js ~ line 232 ~ OtherGalleryView ~ pics',
-        pics
-    )
 
-    console.log('Other Gallery Screen Rendered')
     const [loadingPics, setLoadingPics] = useState()
 
     const loadingOpacity = useSharedValue(1)
@@ -247,17 +238,22 @@ const OtherGalleryView = ({ route, navigation }) => {
             opacity: loadingOpacity.value,
         }
     })
-    const startOpacityAnim = useCallback(() => {
-        loadingOpacity.value = withTiming(0, { duration: 0 })
-    }, [])
 
     const loadPics = useCallback(async () => {
         loadingOpacity.value = 1
         try {
-            await dispatch(setPics(userID, galleryID))
+            await dispatch(setPics(null, galleryID))
         } catch (error) {}
-        startOpacityAnim()
-    }, [setPics, galleryID, userID])
+        loadingOpacity.value = 0
+    }, [])
+
+    const loadGalleryInfo = useCallback(async () => {
+        try {
+            await dispatch(getGalleryInfo(galleryID))
+        } catch (error) {
+            console.log(error)
+        }
+    }, [galleryID])
 
     useFocusEffect(() => {
         const refreshConditionally = async () => {
@@ -272,65 +268,102 @@ const OtherGalleryView = ({ route, navigation }) => {
     useEffect(() => {
         const task = InteractionManager.runAfterInteractions(() => {
             loadPics()
+            loadGalleryInfo()
         })
         return () => task.cancel()
     }, [])
 
-    //-----------------------------------------------------LOAD PICS--------------------------------------------------------
+    //----------------------------------------------------------------LOAD PICS--------------------------------------------------------
 
-    //-----------------------------------------------------PERMISSION CHECKER--------------------------------------------------------
+    //----------------------------------------------------------------PERMISSION CHECKER--------------------------------------------------------
     const greenLightOnPermissions = useSelector(
         (state) => state.permissionsReducer.permissions.camera
     )
 
-    function openSettings() {
-        Platform.OS === 'android'
-            ? Linking.openSettings()
-            : Linking.canOpenURL('app-settings:')
-                  .then((supported) => {
-                      if (!supported) {
-                          console.log("Can't handle settings url")
-                      } else {
-                          return Linking.openURL('app-settings:')
-                      }
-                  })
-                  .catch((err) => console.error('An error occurred', err))
-    }
+    const openSettings = useCallback(
+        Platform.select({
+            ios: async () => {
+                const supported = await Linking.canOpenURL('app-settings:')
+                try {
+                    if (!supported) {
+                        //Can't handle settings url
+                        Alert.alert(
+                            'Failed to Open Settings',
+                            'Please go to this app settings manually.',
+                            [
+                                {
+                                    text: 'Cancel',
+                                    style: 'cancel',
+                                },
+                            ]
+                        )
+                    } else {
+                        return Linking.openURL('app-settings:')
+                    }
+                } catch (err) {
+                    Alert.alert(
+                        'Something Went Wrong.',
+                        'Please try again later.',
+                        [
+                            {
+                                text: 'Cancel',
+                                style: 'cancel',
+                            },
+                        ]
+                    )
+                }
+            },
+            android: () => {
+                Linking.openSettings()
+            },
+        }),
+        []
+    )
 
-    const sendUserToSettingsHandler = useCallback(() => {
-        const alertMessage =
-            'Turn On Camera Permissions to Allow Event Share to Scan QR Codes'
-        Platform.OS === 'android' ? androidAlert() : IOSAlert()
+    const alertMessage =
+        'Turn on camera permissions to allow EventShare to take pictures, videos, and scan QR codes.'
 
-        function IOSAlert() {
-            Alert.alert(alertMessage, '', [
-                {
-                    text: 'Cancel',
-                    style: 'cancel',
-                },
-                {
-                    text: 'Settings',
-                    onPress: () => {
-                        openSettings()
-                    },
-                },
-            ])
-        }
-        function androidAlert() {
-            Alert.alert('', alertMessage, [
-                {
-                    text: 'Cancel',
-                    style: 'cancel',
-                },
-                {
-                    text: 'Settings',
-                    onPress: () => {
-                        openSettings()
-                    },
-                },
-            ])
-        }
-    }, [])
+    const sendUserToSettingsHandler = useCallback(
+        Platform.select({
+            ios: () => {
+                Alert.alert(
+                    'EventShare Needs Access to Your Camera',
+                    alertMessage,
+                    [
+                        {
+                            text: 'Cancel',
+                            style: 'cancel',
+                        },
+                        {
+                            text: 'Settings',
+                            onPress: () => {
+                                openSettings()
+                            },
+                        },
+                    ]
+                )
+            },
+            android: () => {
+                Alert.alert(
+                    'EventShare Needs Access to Your Camera',
+                    alertMessage,
+                    [
+                        {
+                            text: 'Cancel',
+                            style: 'cancel',
+                        },
+                        {
+                            text: 'Settings',
+                            onPress: () => {
+                                openSettings()
+                            },
+                        },
+                    ]
+                )
+            },
+        }),
+        []
+    )
 
     const navFunction = useCallback(() => {
         navigation.navigate('CameraScreen', {
@@ -370,14 +403,18 @@ const OtherGalleryView = ({ route, navigation }) => {
             }
         }
     }, [greenLightOnPermissions])
-    //-----------------------------------------------------PERMISSION CHECKER--------------------------------------------------------
+    //----------------------------------------------------------------PERMISSION CHECKER--------------------------------------------------------
 
+    //----------------------------------------------------------------EDIT GALLERY PRESSED--------------------------------------------------------
+    const editGalleryPressedHandler = useCallback(() => {
+        navigation.navigate('EditGalleryScreen', { galleryID, galName })
+    }, [])
+    //----------------------------------------------------------------EDIT GALLERY PRESSED--------------------------------------------------------
     const goBack = useCallback(() => {
         navigation.goBack()
         dispatch(emptyPicsArray())
     }, [])
-
-    //----------------------------------------------------FLAT LIST OPTIMIZATION--------------------------------------------------------
+    //----------------------------------------------------------------FLAT LIST OPTIMIZATION--------------------------------------------------------
     const ListEmptyComponent = useCallback(() => {
         return (
             <View
@@ -419,16 +456,15 @@ const OtherGalleryView = ({ route, navigation }) => {
                 key={item.id}
                 images={item}
                 picturePressedHandler={() => {
-                    picturePressedHandler(pics, index, item.id, item.fullPath)
+                    picturePressedHandler(index, item.id, item.fullPath)
                 }}
-                navigation={navigation}
             />
         )
     }, [])
-    //----------------------------------------------------FLAT LIST OPTIMIZATION--------------------------------------------------------
+    //----------------------------------------------------------------FLAT LIST OPTIMIZATION--------------------------------------------------------
 
     //----------------------------------------------------------------have to normalize uri----------------------------------------------------------------
-    const normalizedSource = () => {
+    const normalizedSource = useCallback(() => {
         const imageString = `${thumbnail}`
         const normalizedSource =
             imageString &&
@@ -437,7 +473,7 @@ const OtherGalleryView = ({ route, navigation }) => {
                 ? null
                 : imageString
         return normalizedSource
-    }
+    }, [])
     //----------------------------------------------------------------have to normalize uri----------------------------------------------------------------
 
     return (
@@ -468,7 +504,6 @@ const OtherGalleryView = ({ route, navigation }) => {
                             resizeMode={FastImage.resizeMode.cover}
                             source={{
                                 uri: normalizedSource(),
-                                // headers: { Authorization: 'someAuthToken' },
                                 priority: FastImage.priority.normal,
                             }}
                         />
@@ -477,25 +512,30 @@ const OtherGalleryView = ({ route, navigation }) => {
                         id={`${galleryID}${galName}`}
                         style={{
                             ...styles.sharedElementText,
-                            marginTop: insets.top,
+                            marginTop: insets.top - 3,
                         }}
                     >
                         <Text
                             style={styles.animatedTitle}
                             maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                            ellipsizeMode="tail"
+                            numberOfLines={1}
                         >
                             {galName}
                         </Text>
                     </SharedElement>
-                    <HeaderBasic
+                    <CustomHeaderBasic
                         rightButton
                         goBack={goBack}
-                        // header="Your Event"
                         headerColor={{ color: colors.darkestColorP1 }}
                         iconName="chevron-down-outline"
                         rightIcon="camera-outline"
                         rightIconSize={30}
                         onPressRight={cameraPressedHandler}
+                        // secondRightButton
+                        // secondRightIcon="create-outline"
+                        // secondRightIconSize={28}
+                        // onPressSecondRight={editGalleryPressedHandler}
                     />
                     <FlatList
                         ref={scrollViewRef}
@@ -523,11 +563,9 @@ const OtherGalleryView = ({ route, navigation }) => {
                         ListEmptyComponent={
                             isFocused ? ListEmptyComponent : null
                         }
-                        //Risky
                         removeClippedSubviews={
                             Platform.OS === 'android' ? true : false
                         }
-
                         // alwaysBounceVertical={false}
                         // bounces={false}
                     />
@@ -541,16 +579,9 @@ const OtherGalleryView = ({ route, navigation }) => {
                             },
                         ]}
                     >
-                        <ActivityIndicator />
+                        <ActivityIndicator color={colors.nPButton} />
                     </Animated.View>
                 </ScreenWrapper>
-
-                {/* <GalDetailBottomSheet
-                    ref={bottomSheetRef}
-                    data={pics}
-                    navigation={navigation}
-                    index={scrollIndex}
-                /> */}
             </Animated.View>
         </PanGestureHandler>
     )
@@ -579,10 +610,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     animatedTitle: {
-        fontSize: 21,
+        fontSize: 18,
         fontWeight: 'bold',
         textAlign: 'center',
         color: colors.darkestColorP1,
+        width: '40%',
+        fontFamily: colors.semiBold,
     },
     imageBg: {
         flex: 1,

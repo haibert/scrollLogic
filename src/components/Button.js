@@ -102,6 +102,7 @@ const styles = StyleSheet.create({
         fontSize: 17,
         fontWeight: 'bold',
         color: 'white',
+        fontFamily: colors.font,
     },
 })
 

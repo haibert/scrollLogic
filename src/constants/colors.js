@@ -49,8 +49,11 @@ export default {
     iOSBlue: 'rgba(0,122,225,1)',
     iOSGrey: 'rgba(209,209,234,1)',
 
+    grey: '#abb2c8',
+    darkGrey: 'rgba(71,71,71,1)',
+
     rowHeight: (width * 16) / 9,
 
-    androidFont: 'open-sans',
-    androidFontBold: 'open-sans-bold',
+    semiBold: 'Poppins_600SemiBold',
+    font: 'Poppins_400Regular',
 }

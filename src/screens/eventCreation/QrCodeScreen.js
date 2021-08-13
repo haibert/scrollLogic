@@ -24,6 +24,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 
 //redux
 import { shouldRefreshSet } from '../../store/event/action'
+import { loadPermissions } from '../../store/permissions/actions'
 import { useSelector, useDispatch } from 'react-redux'
 
 //expo camera
@@ -75,8 +76,6 @@ const QrCodeScreen = ({ navigation, route }) => {
     //     Math.random().toFixed(3) * 1000
     // ).toString()
 
-    // let base64Logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAA..';
-
     //----------------------------------------------------------------HEADER BUTTON-----------------------------------------------------------------
     const onXPressed = useCallback(async () => {
         await dispatch(shouldRefreshSet(true))
@@ -92,7 +91,6 @@ const QrCodeScreen = ({ navigation, route }) => {
     const greenLightOnPermissions = useSelector(
         (state) => state.permissionsReducer.permissions.camera
     )
-
     const navigateToCamera = useCallback(() => {
         navigation.navigate('CameraScreen', {
             checkMarkSet: 'checkMarkSet',
@@ -296,6 +294,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 25,
         color: colors.textColor,
+        fontFamily: colors.font,
     },
     underTitle: {
         color: colors.mediumTint,
@@ -303,6 +302,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 15,
         paddingHorizontal: 20,
+        fontFamily: colors.font,
     },
     midCont: {
         flex: 1,

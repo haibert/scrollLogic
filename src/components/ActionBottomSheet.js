@@ -32,6 +32,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 //colors
 import colors from '../constants/colors'
 
+//custom components
+import BottomSheetBackDrop from './BottomSheetBackDrop'
+
 const CustomHandleComponent = () => {
     return <View style={{ borderRadius: 20, width: '100%', height: 15 }}></View>
 }
@@ -58,40 +61,6 @@ const ActionBottomSheet = forwardRef((props, ref) => {
     })
     //----------------------------------------------------------------ANIMATION CONFIG----------------------------------------------------------------
 
-    //----------------------------------------------------------------BACKDROP COMPONENT----------------------------------------------------------------
-    const animatedOpacity = useSharedValue(0)
-
-    const backdropComponent = useCallback(({ animatedIndex, style }) => {
-        const containerAnimatedStyle = useAnimatedStyle(() => ({
-            opacity: interpolate(
-                animatedIndex.value,
-                [0, 1],
-                [0, 1],
-                Extrapolate.CLAMP
-            ),
-        }))
-        const containerStyle = useMemo(
-            () => [
-                style,
-                {
-                    backgroundColor: 'rgba(32,32,32,0.54)',
-                },
-                containerAnimatedStyle,
-            ],
-            [style, containerAnimatedStyle]
-        )
-        return (
-            <Animated.View
-                style={containerStyle}
-                onTouchStart={() => {
-                    animatedOpacity.value = 0
-                    bottomSheetModalRef.current?.close()
-                }}
-            />
-        )
-    }, [])
-    //----------------------------------------------------------------BACKDROP COMPONENT----------------------------------------------------------------
-
     //----------------------------------------------------------------DELETING GALLERY----------------------------------------------------------------
     const deleteGalleryHandler = useCallback(() => {
         bottomSheetModalRef.current?.close()
@@ -113,7 +82,7 @@ const ActionBottomSheet = forwardRef((props, ref) => {
                 snapPoints={snapPoints}
                 backgroundComponent={null}
                 animationConfigs={animationConfigs}
-                backdropComponent={backdropComponent}
+                backdropComponent={BottomSheetBackDrop}
                 dismissOnPanDown={true}
                 handleComponent={CustomHandleComponent}
             >

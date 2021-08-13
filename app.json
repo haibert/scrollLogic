@@ -22,7 +22,7 @@
             "supportsTablet": true,
             "userInterfaceStyle": "automatic",
             "infoPlist": {
-                "NSCameraUsageDescription": "This app uses the camera to take pictures, videos and scan barcodes on from other users.",
+                "NSCameraUsageDescription": "This app uses the camera to take pictures, videos and scan barcodes from other users.",
                 "UIBackgroundModes": [
                     "remote-notification",
                     "fetch",
@@ -45,17 +45,6 @@
         },
         "web": {
             "favicon": "./assets/favicon.png"
-        },
-        "plugins": [
-            [
-                "react-native-vision-camera",
-                {
-                    "cameraPermissionText": "$(PRODUCT_NAME) needs access to your Camera.",
-
-                    "enableMicrophonePermission": true,
-                    "microphonePermissionText": "$(PRODUCT_NAME) needs access to your Microphone."
-                }
-            ]
-        ]
+        }
     }
 }

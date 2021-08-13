@@ -12,18 +12,18 @@ const StatsContainer = (props) => {
                 onPress={props.followingsPressedHandler}
             >
                 <Text style={styles.numbers}>{props.followingCount}</Text>
-                <Text style={{ color: 'white' }}>Following</Text>
+                <Text style={styles.titles}>Following</Text>
             </Pressable>
             <Pressable
                 style={styles.statCubes2}
                 onPress={props.followersPressedHandler}
             >
                 <Text style={styles.numbers}>{props.followersCount}</Text>
-                <Text style={{ color: 'white' }}>Followers</Text>
+                <Text style={styles.titles}>Followers</Text>
             </Pressable>
             <View style={styles.statCubes3}>
                 <Text style={styles.numbers}>23,6k</Text>
-                <Text style={{ color: 'white' }}>Likes Received</Text>
+                <Text style={styles.titles}>Likes Received</Text>
             </View>
         </View>
     )
@@ -68,6 +68,11 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 18,
         color: 'white',
+        fontFamily: colors.semiBold,
+    },
+    titles: {
+        color: 'white',
+        fontFamily: colors.font,
     },
 })
 

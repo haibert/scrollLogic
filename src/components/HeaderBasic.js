@@ -168,6 +168,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         textAlign: 'center',
+        fontFamily: colors.semiBold,
     },
     rightIcons: {
         marginLeft: 10,
@@ -210,6 +211,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 16,
         fontWeight: 'bold',
+        fontFamily: colors.font,
     },
 })
 

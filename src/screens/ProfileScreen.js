@@ -50,6 +50,10 @@ import { ScrollView } from 'react-native-gesture-handler'
 const ProfileScreen = (props) => {
     //personal info
     const personalInfo = useSelector((state) => state.signupReducer.userInfo)
+    console.log(
+        '🚀 ~ file: ProfileScreen.js ~ line 53 ~ ProfileScreen ~ personalInfo',
+        personalInfo
+    )
 
     //insets
     const insets = useSafeAreaInsets()
@@ -251,11 +255,7 @@ const ProfileScreen = (props) => {
             <Thumbnail
                 images={item}
                 galleryPressedHandler={() => {
-                    galleryPressedHandler(
-                        item.galleryID,
-                        item.thumbnail,
-                        item.galleryName
-                    )
+                    galleryPressedHandler(item.galleryID, item.thumbnail, index)
                 }}
                 navigation={props.navigation}
                 galleryName={item.galleryName}
@@ -268,16 +268,13 @@ const ProfileScreen = (props) => {
         )
     }, [])
 
-    const galleryPressedHandler = useCallback(
-        (galleryID, thumbnail, galName) => {
-            props.navigation.navigate('GalleryView', {
-                galleryID,
-                thumbnail,
-                galName,
-            })
-        },
-        []
-    )
+    const galleryPressedHandler = useCallback((galleryID, thumbnail, index) => {
+        props.navigation.navigate('GalleryView', {
+            galleryID,
+            thumbnail,
+            index,
+        })
+    }, [])
 
     const oneEllipsisPressed = useCallback((galleryID, index) => {
         bottomSheetRef.current?.handlePresentModalPress()
@@ -530,7 +527,7 @@ const styles = StyleSheet.create({
     },
     signOut: {
         color: colors.darkColorP1,
-        fontWeight: 'bold',
+        fontFamily: colors.semiBold,
         position: 'absolute',
         top: 0,
         right: 10,

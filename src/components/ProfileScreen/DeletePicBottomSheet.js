@@ -4,7 +4,6 @@ import React, {
     useMemo,
     useImperativeHandle,
     forwardRef,
-    useState,
 } from 'react'
 import { StyleSheet, View, Text, Pressable } from 'react-native'
 import {
@@ -12,15 +11,7 @@ import {
     BottomSheetModalProvider,
     useBottomSheetTimingConfigs,
 } from '@gorhom/bottom-sheet'
-import BottomSheet from '@gorhom/bottom-sheet'
 
-import Animated, {
-    Extrapolate,
-    interpolate,
-    useAnimatedStyle,
-    useSharedValue,
-    withTiming,
-} from 'react-native-reanimated'
 import {
     TouchableOpacity,
     TouchableWithoutFeedback,
@@ -31,6 +22,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 //colors
 import colors from '../../constants/colors'
+
+//custom components
+import BottomSheetBackDrop from '../BottomSheetBackDrop'
 
 const CustomHandleComponent = () => {
     return <View style={{ borderRadius: 20, width: '100%', height: 15 }}></View>
@@ -58,42 +52,8 @@ const DeletePicBottomSheet = forwardRef((props, ref) => {
     })
     //----------------------------------------------------------------ANIMATION CONFIG----------------------------------------------------------------
 
-    //----------------------------------------------------------------BACKDROP COMPONENT----------------------------------------------------------------
-    const animatedOpacity = useSharedValue(0)
-
-    const backdropComponent = useCallback(({ animatedIndex, style }) => {
-        const containerAnimatedStyle = useAnimatedStyle(() => ({
-            opacity: interpolate(
-                animatedIndex.value,
-                [0, 1],
-                [0, 1],
-                Extrapolate.CLAMP
-            ),
-        }))
-        const containerStyle = useMemo(
-            () => [
-                style,
-                {
-                    backgroundColor: 'rgba(32,32,32,0.54)',
-                },
-                containerAnimatedStyle,
-            ],
-            [style, containerAnimatedStyle]
-        )
-        return (
-            <Animated.View
-                style={containerStyle}
-                onTouchStart={() => {
-                    animatedOpacity.value = 0
-                    bottomSheetModalRef.current?.close()
-                }}
-            />
-        )
-    }, [])
-    //----------------------------------------------------------------BACKDROP COMPONENT----------------------------------------------------------------
-
     //----------------------------------------------------------------DELETING GALLERY----------------------------------------------------------------
-    const deleteGalleryHandler = useCallback(() => {
+    const deletePhotoHandler = useCallback(() => {
         bottomSheetModalRef.current?.close()
         props.showConfirmation()
     }, [])
@@ -109,18 +69,16 @@ const DeletePicBottomSheet = forwardRef((props, ref) => {
         <BottomSheetModalProvider>
             <BottomSheetModal
                 ref={bottomSheetModalRef}
-                index={1}
                 snapPoints={snapPoints}
                 backgroundComponent={null}
                 animationConfigs={animationConfigs}
-                backdropComponent={backdropComponent}
+                backdropComponent={BottomSheetBackDrop}
                 dismissOnPanDown={true}
                 handleComponent={CustomHandleComponent}
-                style={{ backgroundColor: 'transparent' }}
             >
                 <View style={styles.container}>
                     <Pressable
-                        onPress={deleteGalleryHandler}
+                        onPress={deletePhotoHandler}
                         style={styles.removeButton}
                     >
                         <Text

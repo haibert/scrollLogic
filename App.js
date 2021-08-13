@@ -4,7 +4,11 @@ import 'expo-dev-client'
 import { createStore, combineReducers, applyMiddleware } from 'redux'
 import { Provider } from 'react-redux'
 import AppLoading from 'expo-app-loading'
-import { useFonts, Inter_900Black } from '@expo-google-fonts/inter'
+import {
+    useFonts,
+    Poppins_400Regular,
+    Poppins_600SemiBold,
+} from '@expo-google-fonts/poppins'
 //redux-thunk
 import ReduxThunk from 'redux-thunk'
 
@@ -195,7 +199,8 @@ const App = () => {
     }, [])
     //----------------------------------------------------------------GET NOTIFICATION AND UPLOAD------------------------------------------------------------
     let [fontsLoaded] = useFonts({
-        Inter_900Black,
+        Poppins_600SemiBold,
+        Poppins_400Regular,
     })
 
     if (!fontsLoaded) {

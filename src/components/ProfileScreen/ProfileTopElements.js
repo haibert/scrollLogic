@@ -66,7 +66,8 @@ const styles = StyleSheet.create({
     },
     signOut: {
         color: colors.darkColorP1,
-        fontWeight: 'bold',
+        fontFamily: colors.semiBold,
+
         fontSize: 17,
         position: 'absolute',
         top: 10,
@@ -82,8 +83,9 @@ const styles = StyleSheet.create({
         color: 'black',
         fontSize: 17,
         margin: 5,
+        fontFamily: colors.font,
     },
-    usernameText: { color: 'black', fontSize: 15 },
+    usernameText: { color: 'black', fontSize: 15, fontFamily: colors.font },
 })
 
 export default React.memo(ProfileTopElements)

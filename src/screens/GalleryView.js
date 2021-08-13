@@ -4,7 +4,6 @@ import {
     Text,
     StyleSheet,
     Dimensions,
-    ImageBackground,
     Platform,
     Linking,
     Image,
@@ -22,7 +21,6 @@ import Animated, {
     runOnJS,
     Extrapolate,
     interpolate,
-    withDelay,
 } from 'react-native-reanimated'
 import { snapPoint } from 'react-native-redash'
 
@@ -44,8 +42,6 @@ import colors from '../constants/colors'
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-const { width, height } = Dimensions.get('window')
-
 //ionicons
 import { Ionicons } from '@expo/vector-icons'
 import { Icon } from 'react-native-elements'
@@ -58,6 +54,7 @@ import {
     setPics,
     shouldRefreshSet,
     emptyPicsArray,
+    getGalleryInfo,
 } from '../store/event/action'
 
 import {
@@ -73,9 +70,14 @@ import { Audio } from 'expo-av'
 //fast image
 import FastImage from 'react-native-fast-image'
 
-const GalleryView = ({ route, navigation }) => {
-    const { galleryID, thumbnail, galName } = route.params
+const { width, height } = Dimensions.get('window')
 
+const GalleryView = ({ route, navigation }) => {
+    const { galleryID, thumbnail, index } = route.params
+
+    const galName = useSelector(
+        (state) => state.galleryReducer.galleries[index].galleryName
+    )
     // shouldRefresh
     const shouldRefresh = useSelector(
         (state) => state.galleryReducer.shouldRefresh
@@ -246,6 +248,14 @@ const GalleryView = ({ route, navigation }) => {
         loadingOpacity.value = 0
     }, [])
 
+    const loadGalleryInfo = useCallback(async () => {
+        try {
+            await dispatch(getGalleryInfo(galleryID))
+        } catch (error) {
+            console.log(error)
+        }
+    }, [galleryID])
+
     useFocusEffect(() => {
         const refreshConditionally = async () => {
             if (shouldRefresh) {
@@ -259,6 +269,7 @@ const GalleryView = ({ route, navigation }) => {
     useEffect(() => {
         const task = InteractionManager.runAfterInteractions(() => {
             loadPics()
+            loadGalleryInfo()
         })
         return () => task.cancel()
     }, [])
@@ -400,12 +411,10 @@ const GalleryView = ({ route, navigation }) => {
         navigation.navigate('EditGalleryScreen', { galleryID, galName })
     }, [])
     //----------------------------------------------------------------EDIT GALLERY PRESSED--------------------------------------------------------
-
     const goBack = useCallback(() => {
         navigation.goBack()
         dispatch(emptyPicsArray())
     }, [])
-
     //----------------------------------------------------------------FLAT LIST OPTIMIZATION--------------------------------------------------------
     const ListEmptyComponent = useCallback(() => {
         return (
@@ -603,11 +612,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     animatedTitle: {
-        fontSize: 21,
+        fontSize: 18,
         fontWeight: 'bold',
         textAlign: 'center',
         color: colors.darkestColorP1,
         width: '40%',
+        fontFamily: colors.semiBold,
     },
     imageBg: {
         flex: 1,
@@ -623,7 +633,7 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: colors.overallBackground,
+        backgroundColor: 'white',
         position: 'absolute',
         width: '100%',
         bottom: 0,

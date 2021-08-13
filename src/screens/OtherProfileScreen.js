@@ -30,8 +30,12 @@ import { Avatar, Title, Caption, Paragraph, Drawer } from 'react-native-paper'
 
 //redux
 import { loadProfile, followUnfollow } from '../store/signup-auth/actions'
-
-import { setGalleries, shouldRefreshSet } from '../store/event/action'
+import {
+    setProfileGalleries,
+    shouldRefreshSet,
+    emptyOtherProfileGalleries,
+    setInitialProfileGalleries,
+} from '../store/event/action'
 import { useDispatch, useSelector } from 'react-redux'
 
 //useFocus InteractionManager
@@ -57,6 +61,9 @@ import { fakeArray as listData } from '../data/images'
 import FastImage from 'react-native-fast-image'
 
 const { width, height } = Dimensions.get('window')
+
+const loadNumber = 15
+let page = 1
 
 const OtherProfileScreen = (props) => {
     //uniqueID
@@ -94,9 +101,17 @@ const OtherProfileScreen = (props) => {
 
     //     return () => task.cancel()
     // }, [])
+    //----------------------------------------------------------------EMPTY GALLERIES WHEN LEAVING----------------------------------------------------------------
+    // useEffect(() => {
+    //     const unsubscribe = props.navigation.addListener('blur', () => {
+    //         dispatch(emptyOtherProfileGalleries())
+    //     })
+
+    //     return unsubscribe
+    // }, [props.navigation])
+    //----------------------------------------------------------------EMPTY GALLERIES WHEN LEAVING----------------------------------------------------------------
 
     //----------------------------------------------------------------LOAD PROFILE----------------------------------------------------------------
-
     const loadProfileInfo = useCallback(async () => {
         // setLoadingGalleries(true)
         // setError(null)
@@ -158,6 +173,7 @@ const OtherProfileScreen = (props) => {
     }
     const startAnimationLeft = () => {
         animatedValue.value = withTiming(0, { duration: 100 })
+        loadGalleries()
     }
     //----------------------------------------------------------------ANIMATION LOGIC----------------------------------------------------------------
 
@@ -233,6 +249,17 @@ const OtherProfileScreen = (props) => {
     )
 
     const keyExtractor = useCallback((item) => `${item.galleryID}`, [])
+
+    const onEndReached = useCallback(async () => {
+        const nextPage = (page += 1)
+        try {
+            await dispatch(
+                setProfileGalleries(null, uniqueID, loadNumber, nextPage)
+            )
+        } catch (error) {
+            // setError(error.message)
+        }
+    }, [])
     //----------------------------------------------------------------FLAT LIST FUNCTIONS--------------------------------------------------------------
 
     //----------------------------------------------------------------LOAD GALLERIES----------------------------------------------------------------
@@ -251,8 +278,12 @@ const OtherProfileScreen = (props) => {
     const loadGalleries = useCallback(async () => {
         // setLoadingGalleries(true)
         // setError(null)
+        page = 1
         try {
-            await dispatch(setGalleries(uniqueID))
+            console.log('RAN THE FUCKING LOADER')
+            await dispatch(
+                setInitialProfileGalleries(null, uniqueID, loadNumber, page)
+            )
         } catch (error) {
             // setError(error.message)
         }
@@ -391,6 +422,8 @@ const OtherProfileScreen = (props) => {
                 style={styles.flatList}
                 onRefresh={loadGalleries}
                 refreshing={loadingGalleries}
+                onEndReachedThreshold={0.8}
+                onEndReached={onEndReached}
                 // ListEmptyComponent={}
             />
             {/* <Animated.View
