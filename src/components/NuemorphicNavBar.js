@@ -33,7 +33,9 @@ const NuemorphicNavBar = (props) => {
     //navigation
     const navigation = useNavigation()
 
-    const homeRef = useRef()
+    const homeLottieRef = useRef()
+    const searchLottieRef = useRef()
+    const profileLottieRef = useRef()
 
     //----------------------------------------------------------------JOIN EVENT PRESSED--------------------------------------------------------------
     const askForQRScannerPermissions = useCallback(async () => {
@@ -68,9 +70,15 @@ const NuemorphicNavBar = (props) => {
 
     useEffect(() => {
         if (props.feedFocused) {
-            homeRef.current.play()
+            homeLottieRef.current.play()
         }
-    }, [props.feedFocused])
+        if (props.searchFocused) {
+            searchLottieRef.current.play()
+        }
+        if (props.profileFocused) {
+            profileLottieRef.current.play()
+        }
+    }, [props.feedFocused, props.profileFocused, props.searchFocused])
 
     return (
         <View
@@ -88,10 +96,9 @@ const NuemorphicNavBar = (props) => {
                     {props.feedFocused ? null : (
                         <HomeSVG size={30} color={colors.grey} />
                     )}
-
                     {props.feedFocused ? (
                         <LottieView
-                            ref={homeRef}
+                            ref={homeLottieRef}
                             style={{
                                 width: 30,
                                 height: 30,
@@ -108,7 +115,22 @@ const NuemorphicNavBar = (props) => {
                     style={styles.pressable}
                     onPress={props.onSearchPressed}
                 >
-                    <SearchSVG size={24} color={colors.grey} />
+                    {props.searchFocused ? null : (
+                        <SearchSVG size={24} color={colors.grey} />
+                    )}
+                    {props.searchFocused ? (
+                        <LottieView
+                            ref={searchLottieRef}
+                            style={{
+                                width: 30,
+                                height: 30,
+                            }}
+                            source={require('../../assets/searchLottie.json')}
+                            loop={false}
+                            autoPlay={false}
+                            speed={1}
+                        />
+                    ) : null}
                 </Pressable>
 
                 <View style={styles.circlePlaceHolder}></View>
@@ -116,7 +138,22 @@ const NuemorphicNavBar = (props) => {
                     style={styles.pressable}
                     onPress={props.onPersonPressed}
                 >
-                    <PersonSVG size={24} color={colors.grey} />
+                    {props.profileFocused ? null : (
+                        <PersonSVG size={24} color={colors.grey} />
+                    )}
+                    {props.profileFocused ? (
+                        <LottieView
+                            ref={profileLottieRef}
+                            style={{
+                                width: 30,
+                                height: 30,
+                            }}
+                            source={require('../../assets/personLottie.json')}
+                            loop={false}
+                            autoPlay={false}
+                            speed={1}
+                        />
+                    ) : null}
                 </Pressable>
 
                 <Pressable

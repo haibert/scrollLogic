@@ -448,7 +448,7 @@ const SearchScreen = ({ route, ...props }) => {
                     onFeedPressed={onFeedPressed}
                     onCameraPressed={cameraPressedHandler}
                     onPersonPressed={onPersonPressed}
-                    searchFocused={true}
+                    searchFocused={isFocused}
                 />
             </Animated.View>
         </ScreenWrapper>

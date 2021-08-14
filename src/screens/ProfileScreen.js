@@ -64,6 +64,9 @@ const ProfileScreen = (props) => {
     // sheet ref
     const bottomSheetRef = useRef()
 
+    //is focused
+    const isFocused = useIsFocused()
+
     // //----------------------------------------------------------------CONDITIONAL PROFILE REFRESH----------------------------------------------------------------
 
     // const loadProfileHandler = useCallback(async () => {
@@ -471,7 +474,7 @@ const ProfileScreen = (props) => {
                 onCameraPressed={cameraPressedHandler}
                 onSearchPressed={onSearchPressed}
                 onFeedPressed={onFeedPressed}
-                profileFocused={true}
+                profileFocused={isFocused}
             />
 
             <ActionBottomSheet
