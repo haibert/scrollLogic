@@ -47,20 +47,20 @@ const HomeSVG = ({ color, size }) => {
                 })
             }}
         >
-            <Svg width={size} height={size} viewBox="0 -60 400 400">
+            <Svg width={size} height={size} viewBox="-30 -60 400 400">
                 <G id="model_4_2-2" data-name="model 4/2">
                     <Polyline
                         class="cls-1"
                         points="2.5 109.66 174.24 2.5 345.98 109.66"
                         stroke={color}
-                        strokeWidth={27}
+                        strokeWidth={24}
                     />
                     <Path
                         class="cls-1"
                         d="M200,112.94,60.73,200v84.09c0,36.77,7.38,49.85,40,49.85h52V272.72c0-14.77,11.17-23.61,20.44-23.61h53.66c9.27,0,20.44,8.84,20.44,23.61v61.22h52c32.63,0,40-13.08,40-49.85V200Z"
                         transform="translate(-25.76 -63.56)"
                         stroke={color}
-                        strokeWidth={27}
+                        strokeWidth={24}
                     />
                 </G>
             </Svg>

@@ -68,7 +68,7 @@ const NuemorphicNavBar = (props) => {
 
     useEffect(() => {
         if (props.feedFocused) {
-            // homeRef.current.play()
+            homeRef.current.play()
         }
     }, [props.feedFocused])
 
@@ -85,36 +85,30 @@ const NuemorphicNavBar = (props) => {
                     style={styles.pressable}
                     onPress={props.onFeedPressed}
                 >
-                    <HomeSVG
-                        size={29}
-                        color={colors.darkGrey}
-                        isFocused={props.searchFocused}
-                    />
-                    {/* 
-                    <LottieView
-                        ref={homeRef}
-                        style={{
-                            width: 30,
-                            height: 30,
-                            // backgroundColor: '#eee',
-                        }}
-                        source={require('../../assets/homeLottie.json')}
-                        loop={false}
-                        autoPlay={false}
-                        speed={2}
-                    /> */}
+                    {props.feedFocused ? null : (
+                        <HomeSVG size={30} color={colors.grey} />
+                    )}
+
+                    {props.feedFocused ? (
+                        <LottieView
+                            ref={homeRef}
+                            style={{
+                                width: 30,
+                                height: 30,
+                            }}
+                            source={require('../../assets/homeLottie.json')}
+                            loop={false}
+                            autoPlay={false}
+                            speed={1}
+                        />
+                    ) : null}
                 </Pressable>
 
                 <Pressable
                     style={styles.pressable}
                     onPress={props.onSearchPressed}
                 >
-                    <SearchSVG
-                        size={24}
-                        color="blue"
-                        color={colors.darkGrey}
-                        isFocused={props.searchFocused}
-                    />
+                    <SearchSVG size={24} color={colors.grey} />
                 </Pressable>
 
                 <View style={styles.circlePlaceHolder}></View>
@@ -122,24 +116,14 @@ const NuemorphicNavBar = (props) => {
                     style={styles.pressable}
                     onPress={props.onPersonPressed}
                 >
-                    <PersonSVG
-                        size={24}
-                        color="blue"
-                        color={colors.darkGrey}
-                        isFocused={props.searchFocused}
-                    />
+                    <PersonSVG size={24} color={colors.grey} />
                 </Pressable>
 
                 <Pressable
                     style={styles.pressable}
                     onPress={props.onCameraPressed}
                 >
-                    <CameraSVG
-                        size={40}
-                        color="blue"
-                        color={colors.darkGrey}
-                        isFocused={props.searchFocused}
-                    />
+                    <CameraSVG size={40} color={colors.grey} />
                 </Pressable>
             </View>
 
