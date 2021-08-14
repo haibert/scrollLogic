@@ -6,7 +6,7 @@ import Animated, {
     withTiming,
     Easing,
 } from 'react-native-reanimated'
-import Svg, { Path, Image, G } from 'react-native-svg'
+import Svg, { Path, Circle, G } from 'react-native-svg'
 
 import { parse } from 'react-native-redash'
 
@@ -47,27 +47,22 @@ const PersonSVG = ({ color, size }) => {
                 })
             }}
         >
-            <Svg width={size} height={size} viewBox="0 0 1690 1722.36">
+            <Svg width={size} height={size} viewBox="-20 -20 400 400">
                 <G>
-                    <AnimatedPath
-                        d="M2000.71,2023.61a448.65,448.65,0,0,1-57.94-3.79,442.56,442.56,0,1,1,495.84-381.37h0a442.12,442.12,0,0,1-437.9,385.16Z"
-                        transform="translate(-1155 -1138.82)"
-                        strokeWidth={1}
-                        fill={color}
-                        fillRule="evenodd"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        // animatedProps={animatedProps}
+                    <Circle
+                        class="cls-1"
+                        cx="156.49"
+                        cy="75.86"
+                        r="73.36"
+                        stroke={color}
+                        strokeWidth={31}
                     />
-                    <AnimatedPath
-                        d="M2712.43,2861.18H1287.57c-73.1,0-132.57-59.47-132.57-132.57a608.13,608.13,0,0,1,48.61-239.16,621.55,621.55,0,0,1,328-328,608.38,608.38,0,0,1,239.16-48.61h458.44a608.38,608.38,0,0,1,239.16,48.61,621.62,621.62,0,0,1,328,328,608.3,608.3,0,0,1,48.6,239.16C2845,2801.71,2785.53,2861.18,2712.43,2861.18Z"
-                        transform="translate(-1155 -1138.82)"
-                        strokeWidth={1}
-                        fill={color}
-                        fillRule="evenodd"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        // animatedProps={animatedProps}
+                    <Path
+                        class="cls-2"
+                        d="M354,371.89a154,154,0,0,0-308,0"
+                        transform="translate(-43.51 -25.61)"
+                        stroke={color}
+                        strokeWidth={31}
                     />
                 </G>
             </Svg>

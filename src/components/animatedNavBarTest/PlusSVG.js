@@ -61,7 +61,7 @@ const PlusSVG = ({ color, size }) => {
                     <Rect
                         transform="rotate(18.9676 447.292 309.862)"
                         stroke={color}
-                        strokeWidth="15"
+                        strokeWidth="10"
                         rx="30"
                         id="svg_7"
                         height="107"
@@ -72,7 +72,7 @@ const PlusSVG = ({ color, size }) => {
                         scale={3.6}
                     />
                     <Rect
-                        strokeWidth="15"
+                        strokeWidth="10"
                         rx="40"
                         id="svg_1"
                         height="141"
@@ -90,7 +90,7 @@ const PlusSVG = ({ color, size }) => {
                         x2="399.00001"
                         y1="255.48361"
                         x1="399.00001"
-                        strokeWidth="15"
+                        strokeWidth="10"
                         fill="none"
                         scale={3.6}
                     />
@@ -102,7 +102,7 @@ const PlusSVG = ({ color, size }) => {
                         x2="400.00001"
                         y1="255.48361"
                         x1="400.00001"
-                        strokeWidth="15"
+                        strokeWidth="10"
                         fill="none"
                         scale={3.6}
                     />

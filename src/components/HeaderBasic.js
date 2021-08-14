@@ -58,7 +58,7 @@ const CustomHeaderBasic = (props) => {
                     <Ionicons
                         name={props.iconName ? props.iconName : defaultIcon}
                         size={30}
-                        color={colors.darkestColorP1}
+                        color={colors.darkGrey}
                         style={iconStyle}
                     />
                     {/* </View> */}
@@ -169,6 +169,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
         fontFamily: colors.semiBold,
+        color: colors.darkGrey,
     },
     rightIcons: {
         marginLeft: 10,

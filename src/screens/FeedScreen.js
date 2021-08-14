@@ -35,7 +35,7 @@ import useAppState from '../hooks/useAppState'
 
 //useFocusEffect
 import { InteractionManager } from 'react-native'
-import { useFocusEffect } from '@react-navigation/native'
+import { useFocusEffect, useIsFocused } from '@react-navigation/native'
 
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -76,6 +76,8 @@ const FeedScreen = (props) => {
 
     // sheet ref
     const bottomSheetRef = useRef()
+
+    const isFocused = useIsFocused()
 
     let tabBarBottomPosition = insets.bottom > 0 ? insets.bottom / 2 + 2 : 10
 
@@ -386,7 +388,7 @@ const FeedScreen = (props) => {
                     props.navigation.toggleDrawer()
                 }}
                 header="Gallery"
-                headerColor={{ color: colors.darkestColorP1 }}
+                // headerColor={{ color: colors.darkestColorP1 }}
             />
 
             <BigList
@@ -431,7 +433,7 @@ const FeedScreen = (props) => {
                 onSearchPressed={onSearchPressed}
                 onPersonPressed={onPersonPressed}
                 onFeedPressed={onFeedPressed}
-                feedFocused={true}
+                feedFocused={isFocused}
             />
 
             <ActionBottomSheet

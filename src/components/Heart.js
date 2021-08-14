@@ -10,6 +10,7 @@ import Animated, {
 
 //ionicons
 import { Ionicons } from '@expo/vector-icons'
+import { Icon } from 'react-native-elements'
 
 //colors
 import colors from '../constants/colors'
@@ -34,9 +35,9 @@ const Heart = (props) => {
             style={{ ...styles.cont, ...props.style }}
             onPress={changeOpacity}
         >
-            <Ionicons name="heart-outline" size={25} color={'red'} />
+            <Icon type="feather" name="heart" size={25} color={props.color} />
             <Animated.View style={[styles.heart, opacity]}>
-                <Ionicons name="heart" size={25} color={'red'} />
+                <Ionicons name="heart" size={25} color={props.color} />
             </Animated.View>
         </Pressable>
     )

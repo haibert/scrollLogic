@@ -6,7 +6,7 @@ import Animated, {
     withTiming,
     Easing,
 } from 'react-native-reanimated'
-import Svg, { Path, Image, G } from 'react-native-svg'
+import Svg, { Path, G, Line, Polyline } from 'react-native-svg'
 
 import { parse } from 'react-native-redash'
 
@@ -47,29 +47,20 @@ const HomeSVG = ({ color, size }) => {
                 })
             }}
         >
-            <Svg width={size} height={size} viewBox="0 0 1276.35 1070.52">
-                <G>
-                    <AnimatedPath
-                        d="M3363.23,2773.47l-558.41-298.09a79.54,79.54,0,0,0-75.15,0l-558.39,298.09a79.76,79.76,0,1,0,75.15,140.72l520.82-278,520.82,278a79.77,79.77,0,0,0,75.16-140.72Z"
-                        transform="translate(-2129.07 -2465.95)"
-                        stroke="black"
-                        strokeWidth={1}
-                        fill={color}
-                        fillRule="evenodd"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        // animatedProps={animatedProps}
+            <Svg width={size} height={size} viewBox="0 -60 400 400">
+                <G id="model_4_2-2" data-name="model 4/2">
+                    <Polyline
+                        class="cls-1"
+                        points="2.5 109.66 174.24 2.5 345.98 109.66"
+                        stroke={color}
+                        strokeWidth={27}
                     />
-                    <AnimatedPath
-                        d="M2767.25,2762.75,2275,3025.55v415.19c0,52.66,43.07,95.73,95.73,95.73h793.1c52.66,0,95.73-43.07,95.73-95.73V3025.55Z"
-                        transform="translate(-2129.07 -2465.95)"
-                        stroke="black"
-                        strokeWidth={1}
-                        fill={color}
-                        fillRule="evenodd"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        // animatedProps={animatedProps}
+                    <Path
+                        class="cls-1"
+                        d="M200,112.94,60.73,200v84.09c0,36.77,7.38,49.85,40,49.85h52V272.72c0-14.77,11.17-23.61,20.44-23.61h53.66c9.27,0,20.44,8.84,20.44,23.61v61.22h52c32.63,0,40-13.08,40-49.85V200Z"
+                        transform="translate(-25.76 -63.56)"
+                        stroke={color}
+                        strokeWidth={27}
                     />
                 </G>
             </Svg>

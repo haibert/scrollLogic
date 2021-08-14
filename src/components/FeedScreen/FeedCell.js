@@ -201,7 +201,10 @@ const FeedCell = ({
                     {/* {galleryData.username} */}
                     userName
                 </Text>
-                <Heart style={styles.heartIcon} />
+                <Heart
+                    style={styles.heartIcon}
+                    color={colors.currentMainColor}
+                />
                 <Text
                     maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
                     style={styles.likes}
@@ -214,7 +217,7 @@ const FeedCell = ({
                 <Ionicons
                     name="people-outline"
                     size={25}
-                    color={'rgba(28,73,179,0.54)'}
+                    color={colors.darkGrey}
                     style={styles.peopleIcon}
                     maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
                 />
@@ -274,11 +277,11 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         top: (width * 0.95) / 2 - (width * 0.85) / 2,
         right: width / 15,
-        backgroundColor: 'rgba(28,73,179,0.54)',
+        backgroundColor: colors.currentMainColorOpacity05,
         position: 'absolute',
-        shadowColor: 'rgba(28,73,179,1)',
+        shadowColor: colors.currentMainColor,
         shadowRadius: 3,
-        shadowOpacity: 0.9,
+        shadowOpacity: 0.5,
         shadowOffset: {
             width: 2,
             height: 0,
@@ -290,7 +293,7 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         top: (width * 0.95) / 2 - (width * 0.75) / 2,
         right: width / 25,
-        backgroundColor: 'rgba(28,73,179,0.39)',
+        backgroundColor: colors.currentMainColorOpacity03,
         position: 'absolute',
     },
     galDetailCont: {
@@ -321,8 +324,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        // paddingHorizontal: width / 12,
         marginTop: 10,
+        width: width / 1.1,
     },
     avatar: {
         height: 30,
@@ -342,6 +345,7 @@ const styles = StyleSheet.create({
         maxWidth: width / 4.5,
         marginLeft: 8,
         fontFamily: colors.semiBold,
+        color: colors.darkGrey,
     },
     heartIcon: {
         marginLeft: 20,
@@ -377,7 +381,7 @@ const styles = StyleSheet.create({
     },
     iOSShadow: {
         shadowColor: 'black',
-        shadowOpacity: 0.5,
+        shadowOpacity: 0.2,
         backgroundColor: 'white',
         shadowOffset: {
             width: 0,
@@ -385,6 +389,8 @@ const styles = StyleSheet.create({
         },
         shadowRadius: 3,
         borderRadius: 15,
+        borderColor: 'white',
+        borderWidth: 1,
     },
     ellipsisStyle: {
         position: 'absolute',

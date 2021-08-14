@@ -6,7 +6,7 @@ import Animated, {
     withTiming,
     Easing,
 } from 'react-native-reanimated'
-import Svg, { Path, Image, G } from 'react-native-svg'
+import Svg, { Path, G, Circle, Line } from 'react-native-svg'
 
 import { parse } from 'react-native-redash'
 
@@ -47,27 +47,31 @@ const SearchSVG = ({ color, size }) => {
                 })
             }}
         >
-            <Svg width={size} height={size} viewBox="0 0 1387.51 1405.03">
+            <Svg width={size} height={size} viewBox="-30 -20 400 400">
                 <G>
-                    <AnimatedPath
-                        d="M3113.07,3393.37l-317.32-317.32a557.28,557.28,0,0,0,89.67-303.61c0-309.22-251.56-560.78-560.77-560.78s-560.78,251.56-560.78,560.78,251.56,560.77,560.78,560.77a557.17,557.17,0,0,0,281.93-76.33l321.49,321.49a130.81,130.81,0,0,0,185-185ZM1938.29,2772.44c0-213,173.32-386.36,386.36-386.36S2711,2559.4,2711,2772.44s-173.31,386.35-386.35,386.35S1938.29,2985.47,1938.29,2772.44Z"
-                        transform="translate(-1763.87 -2211.66)"
-                        strokeWidth={1}
-                        fill={color}
-                        fillRule="evenodd"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        // animatedProps={animatedProps}
+                    <Circle
+                        class="b0d04b00-d461-4667-88a1-f83b1e109fbc"
+                        cx="155.83"
+                        cy="155.83"
+                        r="153.33"
+                        stroke={color}
+                        strokeWidth={31}
                     />
-                    <AnimatedPath
-                        d="M2638.33,2772.44A312.8,312.8,0,0,0,2378,2463.29a43.6,43.6,0,1,0-14.75,85.95,225.8,225.8,0,0,1,187.83,223.2,43.61,43.61,0,0,0,87.21,0Z"
-                        transform="translate(-1763.87 -2211.66)"
-                        strokeWidth={1}
-                        fill={color}
-                        fillRule="evenodd"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        // animatedProps={animatedProps}
+                    <Path
+                        class="b0d04b00-d461-4667-88a1-f83b1e109fbc"
+                        d="M85.38,170.49A92.09,92.09,0,0,1,150,95.89"
+                        transform="translate(-20.55 -28.22)"
+                        stroke={color}
+                        strokeWidth={31}
+                    />
+                    <Line
+                        class="b0d04b00-d461-4667-88a1-f83b1e109fbc"
+                        x1="271.65"
+                        y1="256.31"
+                        x2="356.4"
+                        y2="341.07"
+                        stroke={color}
+                        strokeWidth={31}
                     />
                 </G>
             </Svg>

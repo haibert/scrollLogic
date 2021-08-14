@@ -49,6 +49,10 @@ export default {
     iOSBlue: 'rgba(0,122,225,1)',
     iOSGrey: 'rgba(209,209,234,1)',
 
+    // currentMainColor: 'rgba(28,73,179,1)',
+    currentMainColor: 'rgba(237, 88, 94, 1)',
+    currentMainColorOpacity05: 'rgba(237, 88, 94, 0.5)',
+    currentMainColorOpacity03: 'rgba(237, 88, 94, 0.3)',
     grey: '#abb2c8',
     darkGrey: 'rgba(71,71,71,1)',
 

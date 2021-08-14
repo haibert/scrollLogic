@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react'
+import React, { useCallback, useRef, useEffect } from 'react'
 import { View, StyleSheet, Dimensions, Pressable } from 'react-native'
 
 //safe area
@@ -64,6 +64,13 @@ const NuemorphicNavBar = (props) => {
     const shadowRadius = 1.5
     const shadowOffset = 2
     const contentPadding = 10
+    const plugButtonBottomSpace = insets.bottom + 10
+
+    useEffect(() => {
+        if (props.feedFocused) {
+            // homeRef.current.play()
+        }
+    }, [props.feedFocused])
 
     return (
         <View
@@ -76,17 +83,14 @@ const NuemorphicNavBar = (props) => {
             <View style={styles.squareButtonsCont}>
                 <Pressable
                     style={styles.pressable}
-                    onPress={() => {
-                        // props.onFeedPressed()
-                        homeRef.current.play()
-                    }}
+                    onPress={props.onFeedPressed}
                 >
-                    {/* <HomeSVG
-                        size={26}
+                    <HomeSVG
+                        size={29}
                         color={colors.darkGrey}
                         isFocused={props.searchFocused}
-                    /> */}
-
+                    />
+                    {/* 
                     <LottieView
                         ref={homeRef}
                         style={{
@@ -94,10 +98,11 @@ const NuemorphicNavBar = (props) => {
                             height: 30,
                             // backgroundColor: '#eee',
                         }}
-                        source={require('../../assets/cameraLottie.json')}
-                        loop={true}
-                        autoPlay={true}
-                    />
+                        source={require('../../assets/homeLottie.json')}
+                        loop={false}
+                        autoPlay={false}
+                        speed={2}
+                    /> */}
                 </Pressable>
 
                 <Pressable
@@ -130,7 +135,7 @@ const NuemorphicNavBar = (props) => {
                     onPress={props.onCameraPressed}
                 >
                     <CameraSVG
-                        size={27}
+                        size={40}
                         color="blue"
                         color={colors.darkGrey}
                         isFocused={props.searchFocused}
@@ -139,7 +144,10 @@ const NuemorphicNavBar = (props) => {
             </View>
 
             <FloatingButton
-                style={styles.animatedButton}
+                style={{
+                    ...styles.animatedButton,
+                    // bottom: plugButtonBottomSpace,
+                }}
                 onJoinEventPressed={joinEventHandler}
                 onCreateEventPressed={createEventHandler}
             />
@@ -165,7 +173,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',
         width: width,
         overflow: 'hidden',
-        paddingTop: 10,
+        paddingTop: 5,
         flex: 1,
         backgroundColor: 'transparent',
     },
@@ -174,11 +182,10 @@ const styles = StyleSheet.create({
         height: 60,
     },
     animatedButton: {
-        height: 60,
         width: 60,
         alignItems: 'center',
         height: '100%',
-        marginTop: Platform.OS === 'android' ? 10 : 20,
+        marginTop: 5,
     },
     pressable: {
         height: 40,
@@ -188,4 +195,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default React.memo(NuemorphicNavBar)
+export default NuemorphicNavBar
