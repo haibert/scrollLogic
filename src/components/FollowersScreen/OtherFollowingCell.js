@@ -1,36 +1,35 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { View, Text, StyleSheet, Pressable } from 'react-native'
 
-//colors
 import colors from '../../constants/colors'
 
 //components
 import ButtonFlatlist2 from '../../components/ButtonFlatlist2'
 
-//ionicons
-import { Ionicons } from '@expo/vector-icons'
-
 //redux
-import {
-    loadFollowersFollowing,
-    followUnfollow,
-} from '../../store/signup-auth/actions'
-import { useDispatch, useSelector } from 'react-redux'
+import { followUnfollow } from '../../store/signup-auth/actions'
+import { useDispatch } from 'react-redux'
 
-const FollowersCell = (props) => {
+// rename to common following cell if no changes between profile and other profile uses
+const OtherFollowingCell = ({ data, onPress, isCurrentUser, follows }) => {
     //dispatch
     const dispatch = useDispatch()
-    //----------------------------------------------------------------FOLLOW USER----------------------------------------------------------------
-    // if you are going to use props to set the initial state make sure to use useEffect like you did in OtherFollowingCell
-    const [buttonType, setButtonType] = useState(null)
+    console.log('rendered cell')
+    //----------------------------------------------------------------SET BUTTON TYPE----------------------------------------------------------------
+    const [buttonType, setButtonType] = useState(follows)
 
+    useEffect(() => {
+        setButtonType(follows)
+    }, [follows])
+    //----------------------------------------------------------------SET BUTTON TYPE----------------------------------------------------------------
+
+    //----------------------------------------------------------------FOLLOW USER----------------------------------------------------------------
     const followPressedHandler = useCallback(async (userID) => {
         try {
             const results = await dispatch(followUnfollow(userID, 'Follow'))
             setButtonType(results)
         } catch (err) {
             console.log('🚨  Error in followPressedHandler', err)
-            // setError(error.message)
         }
     }, [])
     //----------------------------------------------------------------FOLLOW USER----------------------------------------------------------------
@@ -39,7 +38,7 @@ const FollowersCell = (props) => {
     const unfollowPressedHandler = useCallback(async () => {
         try {
             const results = await dispatch(
-                followUnfollow(props.data.userID, 'unFollow', false)
+                followUnfollow(data.userID, 'unFollow', false)
             )
             setButtonType(results)
         } catch (err) {
@@ -47,46 +46,58 @@ const FollowersCell = (props) => {
         }
     }, [])
     //----------------------------------------------------------------UNFOLLOW USER----------------------------------------------------------------
-
+    if (isCurrentUser) {
+        return (
+            <Pressable onPress={onPress} style={styles.cellOuter}>
+                <View style={styles.imageCont}></View>
+                <View style={styles.namesCont}>
+                    <Text
+                        maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                        style={styles.galleryName}
+                    >
+                        {data.userName}
+                    </Text>
+                    <Text
+                        maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                        style={styles.username}
+                    >
+                        {`${data.firstName} ` + `${data.lastName}`}
+                    </Text>
+                </View>
+            </Pressable>
+        )
+    }
     return (
-        <Pressable onPress={props.onPress} style={styles.cellOuter}>
+        <Pressable onPress={onPress} style={styles.cellOuter}>
             <View style={styles.imageCont}></View>
             <View style={styles.namesCont}>
                 <Text
                     maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
                     style={styles.galleryName}
                 >
-                    {props.data.userName}
+                    {data.userName}
                 </Text>
                 <Text
                     maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
                     style={styles.username}
                 >
-                    {`${props.data.firstName} ` + `${props.data.lastName}`}
+                    {`${data.firstName} ` + `${data.lastName}`}
                 </Text>
             </View>
 
-            {/* <Pressable style={styles.followButton}>
-                <Text>
-                    Follow
-                </Text>
-            </Pressable> */}
-
-            {props.data.follows ||
-            buttonType === 'success' ||
-            buttonType === 'pending' ? null : (
+            {buttonType === 'unFollowed' ? (
                 <ButtonFlatlist2
                     buttonContStyle={styles.followButtonCont}
                     style={styles.followButton}
-                    title={'Follow'}
+                    title="Follow"
                     onPress={() => {
-                        followPressedHandler(props.data.userID)
+                        followPressedHandler(data.userID)
                     }}
                     textStyle={{
                         color: 'white',
                     }}
                 />
-            )}
+            ) : null}
 
             {buttonType === 'pending' ? (
                 <ButtonFlatlist2
@@ -94,7 +105,7 @@ const FollowersCell = (props) => {
                     style={styles.pendingButton}
                     title="Pending"
                     onPress={() => {
-                        unfollowPressedHandler(props.data.userID)
+                        unfollowPressedHandler(data.userID)
                     }}
                     textStyle={{
                         color: colors.darkGrey,
@@ -102,22 +113,19 @@ const FollowersCell = (props) => {
                 />
             ) : null}
 
-            <ButtonFlatlist2
-                buttonContStyle={styles.removeButtonCont}
-                style={styles.removeButton}
-                title="Remove"
-                onPress={() => {
-                    props.onRemovePressed()
-                }}
-            />
-
-            {/* <Ionicons
-                name="ellipsis-horizontal"
-                size={25}
-                style={styles.icon}
-                color={colors.lightestColorP1}
-                onPress={props.oneEllipsisPressed}
-            /> */}
+            {buttonType === 'Follows' || buttonType === 'success' ? (
+                <ButtonFlatlist2
+                    buttonContStyle={styles.buttonCont}
+                    style={styles.buttonSecondaryStyle}
+                    title="Following"
+                    onPress={() => {
+                        unfollowPressedHandler(data.userID)
+                    }}
+                    textStyle={{
+                        color: colors.darkGrey,
+                    }}
+                />
+            ) : null}
         </Pressable>
     )
 }
@@ -133,10 +141,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
-    galleryName: {
-        fontWeight: 'bold',
-    },
-    username: {},
     imageCont: {
         width: 40,
         height: 40,
@@ -152,40 +156,49 @@ const styles = StyleSheet.create({
         left: 60,
         justifyContent: 'center',
     },
+    galleryName: {
+        fontWeight: 'bold',
+    },
+    username: {},
+    buttonCont: {
+        position: 'absolute',
+        height: 30,
+        right: 15,
+        width: 90,
+    },
+    button: {
+        height: 30,
+        width: 90,
+        position: 'absolute',
+        right: 90,
+    },
+    buttonPrimaryStyle: {
+        height: 30,
+        width: 90,
+        backgroundColor: colors.currentMainColor,
+    },
+    buttonSecondaryStyle: {
+        height: 30,
+        width: 90,
+        borderWidth: 1,
+    },
     followButtonCont: {
         position: 'absolute',
         height: 30,
-        width: 70,
-        right: 95,
-    },
-    followButton: {
-        height: 30,
-        width: 70,
-        backgroundColor: colors.currentMainColor,
-    },
-    removeButtonCont: {
-        position: 'absolute',
-        height: 30,
-        width: 70,
+        width: 90,
         right: 15,
-    },
-    removeButton: {
-        height: 30,
-        width: 70,
-        // position: 'absolute',
-        borderWidth: 1,
-        borderColor: colors.darkGrey,
     },
     pendingButton: {
         height: 30,
-        width: 70,
+        width: 90,
         borderWidth: 1,
         borderColor: colors.currentMainColor,
     },
-    emptyButton: {
-        height: 0,
-        width: 0,
+    followButton: {
+        height: 30,
+        width: 90,
+        backgroundColor: colors.currentMainColor,
     },
 })
 
-export default FollowersCell
+export default OtherFollowingCell

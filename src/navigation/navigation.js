@@ -1,10 +1,12 @@
 import React, { useEffect, useCallback, useRef } from 'react'
-import { Platform } from 'react-native'
+import { Platform, Image, View } from 'react-native'
 import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import { createDrawerNavigator } from '@react-navigation/drawer'
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+
 import { enableScreens } from 'react-native-screens'
-import { useColorScheme } from 'react-native'
+import { useColorScheme, Pressable } from 'react-native'
 
 //MARK ROUSAVY
 import { TransitionPresets } from '@react-navigation/stack'
@@ -37,7 +39,7 @@ import SearchScreen from '../screens/SearchScreen'
 import OtherProfileScreen from '../screens/OtherProfileScreen'
 import OtherProfilePhotoScreen from '../screens/OtherProfilePhotoScreen'
 import OtherGalleryView from '../screens/OtherGalleryView'
-import FollowersScreen from '../screens/FollowersScreen'
+import OtherFollowsScreen from '../screens/OtherFollowsScreen'
 import CommentsScreen from '../screens/CommentsScreen'
 import DesignTest from '../screens/DesignTest'
 import EditGalleryScreen from '../screens/EditGalleryScreen'
@@ -51,11 +53,14 @@ import EditBirthdayScreen from '../screens/profileScreen/EditBirthdayScreen'
 import EditPhoneScreen from '../screens/profileScreen/EditPhoneScreen'
 import EditUsernameScreen from '../screens/profileScreen/EditUsernameScreen'
 import NotificationsScreen from '../screens/profileScreen/NotificationsScreen'
+import ProfileFollowsScreen from '../screens/profileScreen/ProfileFollowsScreen'
 
 //event creation
 import CreateEventScreen from '../screens/eventCreation/CreateEventScreen'
 import QrCodeScreen from '../screens/eventCreation/QrCodeScreen'
 import JoinEventScreen from '../screens/eventCreation/JoinEventScreen'
+
+import { useIsFocused } from '@react-navigation/native'
 
 //custom drawer content
 import DrawerContent from '../screens/drawerContent/DrawerContent'
@@ -78,6 +83,18 @@ import { useDispatch } from 'react-redux'
 //expo camera
 import { Camera } from 'expo-camera'
 import { Audio } from 'expo-av'
+
+//lottie
+import LottieView from 'lottie-react-native'
+
+//all SVGs
+import HomeSVG from '../components/animatedNavBarTest/HomeSVG'
+import SearchSVG from '../components/animatedNavBarTest/SearchSVG'
+import PersonSVG from '../components/animatedNavBarTest/PersonSVG'
+import CameraSVG from '../components/animatedNavBarTest/CameraSVG'
+import PlusSVG from '../components/animatedNavBarTest/PlusSVG'
+import NuemorphicNavBar from '../components/NuemorphicNavBar'
+import FloatingButton from '../components/FloatingButton'
 
 const MainStack = createStackNavigator()
 
@@ -180,11 +197,11 @@ const SignUpNavigation = () => {
         </MainStack.Navigator>
     )
 }
-
-const DashStackShared = createSharedElementStackNavigator()
-const DashModalStack = () => {
+FeedSEStack
+const FeedSEStack = createSharedElementStackNavigator()
+const FeedSharedElementStack = () => {
     return (
-        <DashStackShared.Navigator
+        <FeedSEStack.Navigator
             mode="modal"
             initialRouteName="DashboardScreen"
             screenOptions={{
@@ -196,7 +213,7 @@ const DashModalStack = () => {
             }}
             detachInactiveScreens={true}
         >
-            <DashStackShared.Screen
+            <FeedSEStack.Screen
                 name="DashboardScreen"
                 component={FeedScreen}
                 options={{
@@ -204,39 +221,8 @@ const DashModalStack = () => {
                     animationEnabled: false,
                 }}
             />
-            <DashStackShared.Screen
-                name="GalleryView"
-                component={GalleryView}
-                options={() => ({
-                    headerShown: false,
-                    gestureEnabled: false,
-                    cardStyle: {
-                        backgroundColor: 'transparent',
-                    },
-                    // gestureResponseDistance: gestureResponseVertical,
-                    // gestureDirection: gestureDirectionVertical,
-                    cardStyleInterpolator: cardStyleInterpolatorFunc,
-                })}
-                sharedElementsConfig={(route) => {
-                    const { galleryID, galName } = route.params
-                    return [
-                        {
-                            id: galleryID,
-                            animation:
-                                Platform.OS === 'android' ? 'fade-out' : 'move',
-                            resize: 'auto',
-                            align: 'auto',
-                        },
-                        {
-                            id: [galleryID + galName],
-                            animation: 'fade',
-                            resize: 'clip',
-                            align: 'auto',
-                        },
-                    ]
-                }}
-            />
-            <DashStackShared.Screen
+
+            <FeedSEStack.Screen
                 name="GalleryDetailScreen"
                 component={GalleryDetailScreen}
                 options={() => ({
@@ -259,7 +245,7 @@ const DashModalStack = () => {
                     ]
                 }}
             />
-            <DashStackShared.Screen
+            <FeedSEStack.Screen
                 name="ProfileScreen"
                 component={ProfileScreen}
                 options={() => ({
@@ -283,7 +269,7 @@ const DashModalStack = () => {
                 //     ]
                 // }}
             />
-            <DashStackShared.Screen
+            <FeedSEStack.Screen
                 name="ProfileEditScreen"
                 component={ProfileEditScreen}
                 options={{
@@ -308,33 +294,8 @@ const DashModalStack = () => {
                     ]
                 }}
             />
-            <DashStackShared.Screen
-                name="PhotoEditScreen"
-                component={PhotoEditScreen}
-                options={{
-                    headerShown: false,
-                    useNativeDriver: true,
-                    gestureEnabled: false,
-                    cardStyle: {
-                        backgroundColor: 'transparent',
-                    },
-                    gestureResponseDistance: gestureResponseVertical,
-                    gestureDirection: gestureDirectionVertical,
-                    cardStyleInterpolator: cardStyleInterpolatorFunc,
-                }}
-                sharedElementsConfig={(route) => {
-                    return [
-                        {
-                            id: '1',
-                            animation:
-                                Platform.OS === 'android' ? 'fade-out' : null,
-                            resize: 'auto',
-                        },
-                    ]
-                }}
-            />
 
-            <DashStackShared.Screen
+            <FeedSEStack.Screen
                 name="SearchScreen"
                 component={SearchScreen}
                 options={{
@@ -343,7 +304,7 @@ const DashModalStack = () => {
                     // ...TransitionPresets.SlideFromRightIOS,
                 }}
             />
-            <DashStackShared.Screen
+            <FeedSEStack.Screen
                 name="OtherProfileScreen"
                 component={OtherProfileScreen}
                 options={{
@@ -353,24 +314,123 @@ const DashModalStack = () => {
                     gestureDirection: gestureDirectionHorizontal,
                 }}
             />
-            <DashStackShared.Screen
-                name="OtherProfilePhotoScreen"
-                component={OtherProfilePhotoScreen}
+
+            {/* ALL HORIZONTAL SCREENS BELLOW */}
+
+            <FeedSEStack.Screen
+                name="ProfileFollowsScreen"
+                component={ProfileFollowsScreen}
                 options={{
                     headerShown: false,
-                    useNativeDriver: true,
-                    gestureEnabled: false,
+                    ...TransitionPresets.SlideFromRightIOS,
+                    gestureResponseDistance: { horizontal: 1000 },
+                    gestureDirection: gestureDirectionHorizontal,
+                }}
+            />
+            <FeedSEStack.Screen
+                name="OtherFollowsScreen"
+                component={OtherFollowsScreen}
+                options={{
+                    headerShown: false,
+                    ...TransitionPresets.SlideFromRightIOS,
+                    gestureResponseDistance: { horizontal: 1000 },
+                    gestureDirection: gestureDirectionHorizontal,
+                }}
+            />
+
+            <FeedSEStack.Screen
+                name="NotificationsScreen"
+                component={NotificationsScreen}
+                options={{
+                    headerShown: false,
+                    ...TransitionPresets.SlideFromRightIOS,
+                    gestureResponseDistance: gestureResponseHorizontal,
+                    gestureDirection: gestureDirectionHorizontal,
+                }}
+            />
+
+            {/* ALL EDIT SCREENS BELLOW */}
+            <FeedSEStack.Screen
+                name="EditNameScreen"
+                component={EditNameScreen}
+                options={{
+                    headerShown: false,
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                }}
+            />
+            <FeedSEStack.Screen
+                name="EditBirthdayScreen"
+                component={EditBirthdayScreen}
+                options={{
+                    headerShown: false,
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                }}
+            />
+
+            <FeedSEStack.Screen
+                name="EditPhoneScreen"
+                component={EditPhoneScreen}
+                options={{
+                    headerShown: false,
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                }}
+            />
+            <FeedSEStack.Screen
+                name="EditUsernameScreen"
+                component={EditUsernameScreen}
+                options={{
+                    headerShown: false,
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                }}
+            />
+            <FeedSEStack.Screen
+                name="EditGalleryScreen"
+                component={EditGalleryScreen}
+                options={{
+                    headerShown: false,
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                }}
+            />
+        </FeedSEStack.Navigator>
+    )
+}
+
+const ProfileSEStack = createSharedElementStackNavigator()
+const ProfileSharedElementStack = () => {
+    return (
+        <ProfileSEStack.Navigator
+            mode="modal"
+            initialRouteName="ProfileScreen"
+            screenOptions={{
+                useNativeDriver: true,
+                transitionSpec: {
+                    open: iosTransitionSpec,
+                    close: iosTransitionSpec,
+                },
+            }}
+            detachInactiveScreens={true}
+        >
+            <ProfileSEStack.Screen
+                name="GalleryDetailScreen"
+                component={GalleryDetailScreen}
+                options={() => ({
+                    headerShown: false,
                     cardStyle: {
                         backgroundColor: 'transparent',
                     },
                     gestureResponseDistance: gestureResponseVertical,
                     gestureDirection: gestureDirectionVertical,
-                    cardStyleInterpolator: cardStyleInterpolatorFunc,
-                }}
+                })}
                 sharedElementsConfig={(route) => {
+                    const { picID } = route.params
                     return [
                         {
-                            id: '2',
+                            id: Platform.OS === 'android' ? picID : picID,
                             animation:
                                 Platform.OS === 'android' ? 'fade-out' : 'move',
                             resize: 'auto',
@@ -378,7 +438,66 @@ const DashModalStack = () => {
                     ]
                 }}
             />
-            <DashStackShared.Screen
+            <ProfileSEStack.Screen
+                name="ProfileScreen"
+                component={ProfileScreen}
+                options={() => ({
+                    headerShown: false,
+                    animationEnabled: false,
+                    cardStyle: {
+                        backgroundColor: 'transparent',
+                    },
+                    cardStyleInterpolator: cardStyleInterpolatorFunc,
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                })}
+                // sharedElementsConfig={(route) => {
+                //     return [
+                //         {
+                //             id: '1',
+                //             animation:
+                //                 Platform.OS === 'android' ? 'fade-out' : null,
+                //             resize: 'auto',
+                //         },
+                //     ]
+                // }}
+            />
+            <ProfileSEStack.Screen
+                name="ProfileEditScreen"
+                component={ProfileEditScreen}
+                options={{
+                    headerShown: false,
+                    useNativeDriver: true,
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                }}
+                sharedElementsConfig={(navigation) => {
+                    const animatePlease = navigation.name === 'ProfileScreen'
+                    console.log(
+                        '🚀 ~ file: navigation.js ~ line 292 ~ DashModalStack ~ animatePlease',
+                        animatePlease
+                    )
+                    return [
+                        {
+                            id: animatePlease ? '1' : null,
+                            animation:
+                                Platform.OS === 'android' ? 'fade-out' : null,
+                            resize: 'auto',
+                        },
+                    ]
+                }}
+            />
+            <ProfileSEStack.Screen
+                name="OtherProfileScreen"
+                component={OtherProfileScreen}
+                options={{
+                    headerShown: false,
+                    ...TransitionPresets.SlideFromRightIOS,
+                    gestureResponseDistance: gestureResponseHorizontal,
+                    gestureDirection: gestureDirectionHorizontal,
+                }}
+            />
+            <ProfileSEStack.Screen
                 name="OtherGalleryView"
                 component={OtherGalleryView}
                 options={() => ({
@@ -412,49 +531,10 @@ const DashModalStack = () => {
                 }}
             />
             {/* ALL HORIZONTAL SCREENS BELLOW */}
-            <DashStackShared.Screen
-                name="CreateEventScreen"
-                component={CreateEventScreen}
-                options={{
-                    headerShown: false,
-                    ...TransitionPresets.SlideFromRightIOS,
-                    // gestureResponseDistance: gestureResponseHorizontal,
-                    gestureDirection: gestureDirectionHorizontal,
-                }}
-            />
-            <DashStackShared.Screen
-                name="QrCodeScreen"
-                component={QrCodeScreen}
-                options={{
-                    headerShown: false,
-                    ...TransitionPresets.SlideFromRightIOS,
-                    gestureResponseDistance: gestureResponseHorizontal,
-                    gestureDirection: gestureDirectionHorizontal,
-                }}
-            />
-            <DashStackShared.Screen
-                name="JoinEventScreen"
-                component={JoinEventScreen}
-                options={{
-                    headerShown: false,
-                    ...TransitionPresets.SlideFromRightIOS,
-                    gestureResponseDistance: gestureResponseHorizontal,
-                    gestureDirection: gestureDirectionHorizontal,
-                }}
-            />
-            <DashStackShared.Screen
-                name="CameraScreen"
-                component={CameraScreen}
-                options={({ route }) => ({
-                    headerShown: false,
-                    ...TransitionPresets.SlideFromRightIOS,
-                    gestureResponseDistance: { horizontal: 1000 },
-                    gestureDirection: gestureDirectionHorizontal,
-                })}
-            />
-            <DashStackShared.Screen
-                name="FollowersScreen"
-                component={FollowersScreen}
+
+            <ProfileSEStack.Screen
+                name="ProfileFollowsScreen"
+                component={ProfileFollowsScreen}
                 options={{
                     headerShown: false,
                     ...TransitionPresets.SlideFromRightIOS,
@@ -462,29 +542,19 @@ const DashModalStack = () => {
                     gestureDirection: gestureDirectionHorizontal,
                 }}
             />
-            <DashStackShared.Screen
-                name="CommentsScreen"
-                component={CommentsScreen}
+            <ProfileSEStack.Screen
+                name="OtherFollowsScreen"
+                component={OtherFollowsScreen}
                 options={{
                     headerShown: false,
                     ...TransitionPresets.SlideFromRightIOS,
-                    gestureResponseDistance: gestureResponseHorizontal,
-                    gestureDirection: gestureDirectionHorizontal,
-                }}
-            />
-            <DashStackShared.Screen
-                name="NotificationsScreen"
-                component={NotificationsScreen}
-                options={{
-                    headerShown: false,
-                    ...TransitionPresets.SlideFromRightIOS,
-                    gestureResponseDistance: gestureResponseHorizontal,
+                    gestureResponseDistance: { horizontal: 1000 },
                     gestureDirection: gestureDirectionHorizontal,
                 }}
             />
 
             {/* ALL EDIT SCREENS BELLOW */}
-            <DashStackShared.Screen
+            <ProfileSEStack.Screen
                 name="EditNameScreen"
                 component={EditNameScreen}
                 options={{
@@ -493,7 +563,285 @@ const DashModalStack = () => {
                     gestureDirection: gestureDirectionVertical,
                 }}
             />
-            <DashStackShared.Screen
+            <ProfileSEStack.Screen
+                name="EditBirthdayScreen"
+                component={EditBirthdayScreen}
+                options={{
+                    headerShown: false,
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                }}
+            />
+            <ProfileSEStack.Screen
+                name="EditPhoneScreen"
+                component={EditPhoneScreen}
+                options={{
+                    headerShown: false,
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                }}
+            />
+            <ProfileSEStack.Screen
+                name="EditUsernameScreen"
+                component={EditUsernameScreen}
+                options={{
+                    headerShown: false,
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                }}
+            />
+            <ProfileSEStack.Screen
+                name="EditGalleryScreen"
+                component={EditGalleryScreen}
+                options={{
+                    headerShown: false,
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                }}
+            />
+        </ProfileSEStack.Navigator>
+    )
+}
+
+const SearchSEStack = createSharedElementStackNavigator()
+const SearchSharedElementStack = () => {
+    return (
+        <SearchSEStack.Navigator
+            mode="modal"
+            initialRouteName="SearchScreen"
+            screenOptions={{
+                useNativeDriver: true,
+                transitionSpec: {
+                    open: iosTransitionSpec,
+                    close: iosTransitionSpec,
+                },
+            }}
+            detachInactiveScreens={true}
+        >
+            <SearchSEStack.Screen
+                name="DashboardScreen"
+                component={FeedScreen}
+                options={{
+                    headerShown: false,
+                    animationEnabled: false,
+                }}
+            />
+            <SearchSEStack.Screen
+                name="GalleryView"
+                component={GalleryView}
+                options={() => ({
+                    headerShown: false,
+                    gestureEnabled: false,
+                    cardStyle: {
+                        backgroundColor: 'transparent',
+                    },
+                    // gestureResponseDistance: gestureResponseVertical,
+                    // gestureDirection: gestureDirectionVertical,
+                    cardStyleInterpolator: cardStyleInterpolatorFunc,
+                })}
+                sharedElementsConfig={(route) => {
+                    const { galleryID, galName } = route.params
+                    return [
+                        {
+                            id: galleryID,
+                            animation:
+                                Platform.OS === 'android' ? 'fade-out' : 'move',
+                            resize: 'auto',
+                            align: 'auto',
+                        },
+                        {
+                            id: [galleryID + galName],
+                            animation: 'fade',
+                            resize: 'clip',
+                            align: 'auto',
+                        },
+                    ]
+                }}
+            />
+            <SearchSEStack.Screen
+                name="GalleryDetailScreen"
+                component={GalleryDetailScreen}
+                options={() => ({
+                    headerShown: false,
+                    cardStyle: {
+                        backgroundColor: 'transparent',
+                    },
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                })}
+                sharedElementsConfig={(route) => {
+                    const { picID } = route.params
+                    return [
+                        {
+                            id: Platform.OS === 'android' ? picID : picID,
+                            animation:
+                                Platform.OS === 'android' ? 'fade-out' : 'move',
+                            resize: 'auto',
+                        },
+                    ]
+                }}
+            />
+            <SearchSEStack.Screen
+                name="ProfileScreen"
+                component={ProfileScreen}
+                options={() => ({
+                    headerShown: false,
+                    animationEnabled: false,
+                    cardStyle: {
+                        backgroundColor: 'transparent',
+                    },
+                    cardStyleInterpolator: cardStyleInterpolatorFunc,
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                })}
+                // sharedElementsConfig={(route) => {
+                //     return [
+                //         {
+                //             id: '1',
+                //             animation:
+                //                 Platform.OS === 'android' ? 'fade-out' : null,
+                //             resize: 'auto',
+                //         },
+                //     ]
+                // }}
+            />
+            <SearchSEStack.Screen
+                name="ProfileEditScreen"
+                component={ProfileEditScreen}
+                options={{
+                    headerShown: false,
+                    useNativeDriver: true,
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                }}
+                sharedElementsConfig={(navigation) => {
+                    const animatePlease = navigation.name === 'ProfileScreen'
+                    console.log(
+                        '🚀 ~ file: navigation.js ~ line 292 ~ DashModalStack ~ animatePlease',
+                        animatePlease
+                    )
+                    return [
+                        {
+                            id: animatePlease ? '1' : null,
+                            animation:
+                                Platform.OS === 'android' ? 'fade-out' : null,
+                            resize: 'auto',
+                        },
+                    ]
+                }}
+            />
+            <SearchSEStack.Screen
+                name="PhotoEditScreen"
+                component={PhotoEditScreen}
+                options={{
+                    headerShown: false,
+                    useNativeDriver: true,
+                    gestureEnabled: false,
+                    cardStyle: {
+                        backgroundColor: 'transparent',
+                    },
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                    cardStyleInterpolator: cardStyleInterpolatorFunc,
+                }}
+                sharedElementsConfig={(route) => {
+                    return [
+                        {
+                            id: '1',
+                            animation:
+                                Platform.OS === 'android' ? 'fade-out' : null,
+                            resize: 'auto',
+                        },
+                    ]
+                }}
+            />
+            <SearchSEStack.Screen
+                name="SearchScreen"
+                component={SearchScreen}
+                options={{
+                    headerShown: false,
+                    animationEnabled: false,
+                    // ...TransitionPresets.SlideFromRightIOS,
+                }}
+            />
+            <SearchSEStack.Screen
+                name="OtherProfileScreen"
+                component={OtherProfileScreen}
+                options={{
+                    headerShown: false,
+                    ...TransitionPresets.SlideFromRightIOS,
+                    gestureResponseDistance: gestureResponseHorizontal,
+                    gestureDirection: gestureDirectionHorizontal,
+                }}
+            />
+
+            <SearchSEStack.Screen
+                name="OtherGalleryView"
+                component={OtherGalleryView}
+                options={() => ({
+                    headerShown: false,
+                    useNativeDriver: true,
+                    gestureEnabled: false,
+                    cardStyle: {
+                        backgroundColor: 'transparent',
+                    },
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                    cardStyleInterpolator: cardStyleInterpolatorFunc,
+                })}
+                sharedElementsConfig={(route) => {
+                    const { galleryID, galName } = route.params
+                    return [
+                        {
+                            id: [galleryID],
+                            animation:
+                                Platform.OS === 'android' ? 'fade-out' : 'move',
+                            resize: 'auto',
+                            align: 'auto',
+                        },
+                        {
+                            id: [galleryID + galName],
+                            animation: 'fade',
+                            resize: 'clip',
+                            align: 'auto',
+                        },
+                    ]
+                }}
+            />
+            {/* ALL HORIZONTAL SCREENS BELLOW */}
+
+            <SearchSEStack.Screen
+                name="ProfileFollowsScreen"
+                component={ProfileFollowsScreen}
+                options={{
+                    headerShown: false,
+                    ...TransitionPresets.SlideFromRightIOS,
+                    gestureResponseDistance: { horizontal: 1000 },
+                    gestureDirection: gestureDirectionHorizontal,
+                }}
+            />
+            <SearchSEStack.Screen
+                name="OtherFollowsScreen"
+                component={OtherFollowsScreen}
+                options={{
+                    headerShown: false,
+                    ...TransitionPresets.SlideFromRightIOS,
+                    gestureResponseDistance: { horizontal: 1000 },
+                    gestureDirection: gestureDirectionHorizontal,
+                }}
+            />
+
+            {/* ALL EDIT SCREENS BELLOW */}
+            <SearchSEStack.Screen
+                name="EditNameScreen"
+                component={EditNameScreen}
+                options={{
+                    headerShown: false,
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                }}
+            />
+            <SearchSEStack.Screen
                 name="EditBirthdayScreen"
                 component={EditBirthdayScreen}
                 options={{
@@ -503,7 +851,7 @@ const DashModalStack = () => {
                 }}
             />
 
-            <DashStackShared.Screen
+            <SearchSEStack.Screen
                 name="EditPhoneScreen"
                 component={EditPhoneScreen}
                 options={{
@@ -512,7 +860,7 @@ const DashModalStack = () => {
                     gestureDirection: gestureDirectionVertical,
                 }}
             />
-            <DashStackShared.Screen
+            <SearchSEStack.Screen
                 name="EditUsernameScreen"
                 component={EditUsernameScreen}
                 options={{
@@ -521,7 +869,7 @@ const DashModalStack = () => {
                     gestureDirection: gestureDirectionVertical,
                 }}
             />
-            <DashStackShared.Screen
+            <SearchSEStack.Screen
                 name="EditGalleryScreen"
                 component={EditGalleryScreen}
                 options={{
@@ -530,7 +878,451 @@ const DashModalStack = () => {
                     gestureDirection: gestureDirectionVertical,
                 }}
             />
-        </DashStackShared.Navigator>
+        </SearchSEStack.Navigator>
+    )
+}
+
+const CommonSharedElementStack = createSharedElementStackNavigator()
+const FeedModalsSharedElementStack = () => {
+    return (
+        <CommonSharedElementStack.Navigator
+            mode="modal"
+            initialRouteName="BottomTabNav"
+            screenOptions={{
+                headerShown: false,
+                useNativeDriver: true,
+                transitionSpec: {
+                    open: iosTransitionSpec,
+                    close: iosTransitionSpec,
+                },
+            }}
+            detachInactiveScreens={true}
+        >
+            <CommonSharedElementStack.Screen
+                name="BottomTabNav"
+                component={BottomTabNav}
+                screenOptions={{
+                    headerShown: false,
+                    useNativeDriver: true,
+                    transitionSpec: {
+                        open: iosTransitionSpec,
+                        close: iosTransitionSpec,
+                    },
+                }}
+                detachInactiveScreens={true}
+            />
+            <CommonSharedElementStack.Screen
+                name="OtherGalleryView"
+                component={OtherGalleryView}
+                options={() => ({
+                    headerShown: false,
+                    useNativeDriver: true,
+                    gestureEnabled: false,
+                    cardStyle: {
+                        backgroundColor: 'transparent',
+                    },
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                    cardStyleInterpolator: cardStyleInterpolatorFunc,
+                })}
+                sharedElementsConfig={(route) => {
+                    const { galleryID, galName } = route.params
+                    return [
+                        {
+                            id: [galleryID],
+                            animation:
+                                Platform.OS === 'android' ? 'fade-out' : 'move',
+                            resize: 'auto',
+                            align: 'auto',
+                        },
+                        {
+                            id: [galleryID + galName],
+                            animation: 'fade',
+                            resize: 'clip',
+                            align: 'auto',
+                        },
+                    ]
+                }}
+            />
+            <CommonSharedElementStack.Screen
+                name="GalleryDetailScreen"
+                component={GalleryDetailScreen}
+                options={() => ({
+                    headerShown: false,
+                    cardStyle: {
+                        backgroundColor: 'transparent',
+                    },
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                })}
+                sharedElementsConfig={(route) => {
+                    const { picID } = route.params
+                    return [
+                        {
+                            id: Platform.OS === 'android' ? picID : picID,
+                            animation:
+                                Platform.OS === 'android' ? 'fade-out' : 'move',
+                            resize: 'auto',
+                        },
+                    ]
+                }}
+            />
+            <CommonSharedElementStack.Screen
+                name="GalleryView"
+                component={GalleryView}
+                options={() => ({
+                    headerShown: false,
+                    gestureEnabled: false,
+                    cardStyle: {
+                        backgroundColor: 'transparent',
+                    },
+                    // gestureResponseDistance: gestureResponseVertical,
+                    // gestureDirection: gestureDirectionVertical,
+                    cardStyleInterpolator: cardStyleInterpolatorFunc,
+                })}
+                sharedElementsConfig={(route) => {
+                    const { galleryID, galName } = route.params
+                    return [
+                        {
+                            id: galleryID,
+                            animation:
+                                Platform.OS === 'android' ? 'fade-out' : 'move',
+                            resize: 'auto',
+                            align: 'auto',
+                        },
+                        {
+                            id: [galleryID + galName],
+                            animation: 'fade',
+                            resize: 'clip',
+                            align: 'auto',
+                        },
+                    ]
+                }}
+            />
+            <CommonSharedElementStack.Screen
+                name="PhotoEditScreen"
+                component={PhotoEditScreen}
+                options={{
+                    headerShown: false,
+                    useNativeDriver: true,
+                    gestureEnabled: false,
+                    cardStyle: {
+                        backgroundColor: 'transparent',
+                    },
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                    cardStyleInterpolator: cardStyleInterpolatorFunc,
+                }}
+                sharedElementsConfig={(route) => {
+                    return [
+                        {
+                            id: '1',
+                            animation:
+                                Platform.OS === 'android' ? 'fade-out' : null,
+                            resize: 'auto',
+                        },
+                    ]
+                }}
+            />
+            <CommonSharedElementStack.Screen
+                name="OtherProfilePhotoScreen"
+                component={OtherProfilePhotoScreen}
+                options={{
+                    headerShown: false,
+                    useNativeDriver: true,
+                    gestureEnabled: false,
+                    cardStyle: {
+                        backgroundColor: 'transparent',
+                    },
+                    gestureResponseDistance: gestureResponseVertical,
+                    gestureDirection: gestureDirectionVertical,
+                    cardStyleInterpolator: cardStyleInterpolatorFunc,
+                }}
+                sharedElementsConfig={(route) => {
+                    return [
+                        {
+                            id: '2',
+                            animation:
+                                Platform.OS === 'android' ? 'fade-out' : 'move',
+                            resize: 'auto',
+                        },
+                    ]
+                }}
+            />
+            <CommonSharedElementStack.Screen
+                name="CreateEventScreen"
+                component={CreateEventScreen}
+                options={{
+                    headerShown: false,
+                    ...TransitionPresets.SlideFromRightIOS,
+                    // gestureResponseDistance: gestureResponseHorizontal,
+                    gestureDirection: gestureDirectionHorizontal,
+                }}
+            />
+            <CommonSharedElementStack.Screen
+                name="QrCodeScreen"
+                component={QrCodeScreen}
+                options={{
+                    headerShown: false,
+                    ...TransitionPresets.SlideFromRightIOS,
+                    gestureResponseDistance: gestureResponseHorizontal,
+                    gestureDirection: gestureDirectionHorizontal,
+                }}
+            />
+            <CommonSharedElementStack.Screen
+                name="CommentsScreen"
+                component={CommentsScreen}
+                options={{
+                    headerShown: false,
+                    ...TransitionPresets.SlideFromRightIOS,
+                    gestureResponseDistance: gestureResponseHorizontal,
+                    gestureDirection: gestureDirectionHorizontal,
+                }}
+            />
+            <CommonSharedElementStack.Screen
+                name="NotificationsScreen"
+                component={NotificationsScreen}
+                options={{
+                    headerShown: false,
+                    ...TransitionPresets.SlideFromRightIOS,
+                    gestureResponseDistance: gestureResponseHorizontal,
+                    gestureDirection: gestureDirectionHorizontal,
+                }}
+            />
+        </CommonSharedElementStack.Navigator>
+    )
+}
+const BottomTab = createBottomTabNavigator()
+const BottomTabNav = ({ state, descriptors, navigation, route }) => {
+    //lottie refs
+    const homeLottieRef = useRef()
+    const searchLottieRef = useRef()
+    const profileLottieRef = useRef()
+
+    const feedPressed = () => {
+        homeLottieRef.current?.play()
+        navigation.navigate('FeedSEStack')
+    }
+    const searchPressed = () => {
+        searchLottieRef.current?.play()
+        navigation?.navigate('SearchSEStack')
+    }
+    const profilePressed = () => {
+        profileLottieRef.current?.play()
+        navigation?.navigate('ProfileSEStack')
+    }
+
+    return (
+        <BottomTab.Navigator
+            screenOptions={{
+                headerShown: false,
+            }}
+            tabBarOptions={{
+                showLabel: false,
+            }}
+        >
+            <BottomTab.Screen
+                name="FeedSEStack"
+                component={FeedSharedElementStack}
+                options={{
+                    tabBarLabel: 'Feed',
+                    tabBarShowLabel: false,
+                    tabBarIcon: ({ focused }) => {
+                        return (
+                            <View
+                                style={{
+                                    flex: 1,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                                onPress={feedPressed}
+                            >
+                                {focused ? null : (
+                                    <HomeSVG size={30} color={colors.grey} />
+                                )}
+                                {focused ? (
+                                    <LottieView
+                                        ref={homeLottieRef}
+                                        style={{
+                                            width: 28,
+                                            height: 28,
+                                        }}
+                                        source={require('../../assets/homeLottie.json')}
+                                        loop={false}
+                                        autoPlay={false}
+                                        speed={1}
+                                    />
+                                ) : null}
+                            </View>
+                        )
+                    },
+                    tabBarButton: (props) => {
+                        return (
+                            <Pressable
+                                style={{
+                                    flex: 1,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                                {...props}
+                                onPress={feedPressed}
+                            >
+                                {props.children}
+                            </Pressable>
+                        )
+                    },
+                }}
+            />
+            <BottomTab.Screen
+                name="SearchSEStack"
+                component={SearchSharedElementStack}
+                options={{
+                    tabBarLabel: 'Search',
+                    tabBarIcon: ({ focused }) => {
+                        return (
+                            <View
+                                style={{
+                                    flex: 1,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                            >
+                                {focused ? null : (
+                                    <SearchSVG size={24} color={colors.grey} />
+                                )}
+                                {focused ? (
+                                    <LottieView
+                                        ref={searchLottieRef}
+                                        style={{
+                                            width: 25,
+                                            height: 25,
+                                        }}
+                                        source={require('../../assets/searchLottie.json')}
+                                        loop={false}
+                                        autoPlay={false}
+                                        speed={1.5}
+                                    />
+                                ) : null}
+                            </View>
+                        )
+                    },
+                    tabBarButton: (props) => {
+                        return (
+                            <Pressable
+                                style={{
+                                    flex: 1,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                                {...props}
+                                onPress={searchPressed}
+                            >
+                                {props.children}
+                            </Pressable>
+                        )
+                    },
+                }}
+            />
+
+            <BottomTab.Screen
+                name="blabla"
+                component={SearchSharedElementStack}
+                options={{
+                    tabBarButton: (...props) => {
+                        return <FloatingButton {...props}></FloatingButton>
+                    },
+                }}
+            />
+
+            <BottomTab.Screen
+                name="ProfileSEStack"
+                component={ProfileSharedElementStack}
+                options={{
+                    tabBarLabel: 'Profile',
+                    tabBarIcon: ({ focused }) => {
+                        return (
+                            <View
+                                style={{
+                                    flex: 1,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                            >
+                                {focused ? null : (
+                                    <PersonSVG size={24} color={colors.grey} />
+                                )}
+                                {focused ? (
+                                    <LottieView
+                                        ref={profileLottieRef}
+                                        style={{
+                                            width: 25,
+                                            height: 25,
+                                        }}
+                                        source={require('../../assets/personLottie.json')}
+                                        loop={false}
+                                        autoPlay={false}
+                                        speed={1}
+                                    />
+                                ) : null}
+                            </View>
+                        )
+                    },
+                    tabBarButton: (props) => {
+                        return (
+                            <Pressable
+                                style={{
+                                    flex: 1,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                                {...props}
+                                onPress={profilePressed}
+                            >
+                                {props.children}
+                            </Pressable>
+                        )
+                    },
+                }}
+            />
+            <BottomTab.Screen
+                name="Camera"
+                component={CameraScreen}
+                options={{
+                    tabBarIcon: ({ focused, ...props }) => {
+                        return (
+                            <View
+                                style={{
+                                    flex: 1,
+
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                                {...props}
+                            >
+                                <CameraSVG size={40} color={colors.grey} />
+                            </View>
+                        )
+                    },
+                    tabBarButton: (props) => {
+                        return (
+                            <Pressable
+                                style={{
+                                    flex: 1,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                                {...props}
+                                onPress={() => {
+                                    navigation?.navigate('CameraScreen')
+                                }}
+                            >
+                                {props.children}
+                            </Pressable>
+                        )
+                    },
+                }}
+            />
+        </BottomTab.Navigator>
     )
 }
 
@@ -557,7 +1349,7 @@ function DrawerNav({ navigation, route }) {
         >
             <Drawer.Screen
                 name="DashModalStack"
-                component={DashModalStack}
+                component={FeedModalsSharedElementStack}
                 options={({ route }) => ({
                     drawerLabel: 'Home',
                     drawerIcon: (config) => (
@@ -722,8 +1514,28 @@ const AppNavigator = () => {
                     component={DrawerNav}
                     options={{
                         headerShown: false,
-                        gestureEnabled: false,
                         animationEnabled: false,
+                        gestureEnabled: false,
+                    }}
+                />
+                <MainStack.Screen
+                    name="CameraScreen"
+                    component={CameraScreen}
+                    options={() => ({
+                        headerShown: false,
+                        ...TransitionPresets.SlideFromRightIOS,
+                        gestureResponseDistance: { horizontal: 1000 },
+                        gestureDirection: gestureDirectionHorizontal,
+                    })}
+                />
+                <MainStack.Screen
+                    name="JoinEventScreen"
+                    component={JoinEventScreen}
+                    options={{
+                        headerShown: false,
+                        ...TransitionPresets.SlideFromRightIOS,
+                        gestureResponseDistance: gestureResponseHorizontal,
+                        gestureDirection: gestureDirectionHorizontal,
                     }}
                 />
             </MainStack.Navigator>

@@ -327,7 +327,6 @@ const DashboardScreen = (props) => {
                         item.thumbnail,
                         item.galleryName
                     )
-                    
                 }}
                 galleryName={item.galleryName}
                 oneEllipsisPressed={() => {
@@ -395,9 +394,11 @@ const DashboardScreen = (props) => {
                 itemHeight={itemHeight}
                 layOut={layOut}
                 keyExtractor={keyExtractor}
-                contentContainerStyle={{
-                    paddingBottom: tabBarBottomPosition,
-                }}
+                contentContainerStyle={
+                    {
+                        // paddingBottom: tabBarBottomPosition,
+                    }
+                }
                 showsVerticalScrollIndicator={false}
                 numColumns={2}
                 onRefresh={loadGalleries}

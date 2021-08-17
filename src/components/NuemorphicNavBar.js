@@ -26,13 +26,36 @@ import { BarCodeScanner } from 'expo-barcode-scanner'
 //nav hooks
 import { useNavigation } from '@react-navigation/native'
 
-const NuemorphicNavBar = (props) => {
+//custom screen options
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native'
+
+//redux
+import {
+    shouldAnimateProfile,
+    shouldAnimateSearch,
+    shouldAnimateFeed,
+} from '../store/signup-auth/actions'
+import { useSelector, useDispatch } from 'react-redux'
+
+import { useIsFocused } from '@react-navigation/native'
+
+const NuemorphicNavBar = ({ route }) => {
+    console.log(
+        '🚀 ~ file: NuemorphicNavBar.js ~ line 43 ~ NuemorphicNavBar ~ route',
+        route
+    )
     //insets
     const insets = useSafeAreaInsets()
 
     //navigation
     const navigation = useNavigation()
 
+    //dispatch
+    const dispatch = useDispatch()
+
+    const isFocused = useIsFocused()
+
+    //lottie refs
     const homeLottieRef = useRef()
     const searchLottieRef = useRef()
     const profileLottieRef = useRef()
@@ -68,35 +91,63 @@ const NuemorphicNavBar = (props) => {
     const contentPadding = 10
     const plugButtonBottomSpace = insets.bottom + 10
 
-    useEffect(() => {
-        if (props.feedFocused) {
-            homeLottieRef.current.play()
-        }
-        if (props.searchFocused) {
-            searchLottieRef.current.play()
-        }
-        if (props.profileFocused) {
-            profileLottieRef.current.play()
-        }
-    }, [props.feedFocused, props.profileFocused, props.searchFocused])
+    const animateFeed = useSelector(
+        (state) => state.signupReducer.navBarAnimations.animateFeed
+    )
+    const animateSearch = useSelector(
+        (state) => state.signupReducer.navBarAnimations.animateSearch
+    )
+    const animateProfile = useSelector(
+        (state) => state.signupReducer.navBarAnimations.animateProfile
+    )
+    // useEffect(() => {
+    //     if (props.feedFocused && animateFeed && homeLottieRef.current) {
+    //         homeLottieRef.current.play()
+    //         dispatch(shouldAnimateFeed(false))
+    //     }
+    //     if (props.searchFocused && animateSearch && searchLottieRef.current) {
+    //         searchLottieRef.current.play()
+    //         dispatch(shouldAnimateSearch(false))
+    //     }
+    //     if (
+    //         props.profileFocused &&
+    //         animateProfile &&
+    //         profileLottieRef.current
+    //     ) {
+    //         profileLottieRef.current.play()
+    //         dispatch(shouldAnimateProfile(false))
+    //     }
+    // }, [props.feedFocused, props.profileFocused, props.searchFocused])
+
+    const feedPressed = useCallback(() => {
+        homeLottieRef.current.play()
+        // props.onFeedPressed()
+    }, [])
+    const searchPressed = useCallback(() => {
+        searchLottieRef.current.play()
+        // props.onSearchPressed()
+    }, [])
+    const profilePressed = useCallback(() => {
+        profileLottieRef.current.play()
+        // props.onProfilePressed()
+    }, [])
+
+    // const routeName = getFocusedRouteNameFromRoute(route) ?? 'FeedScreen'
 
     return (
         <View
             style={{
-                ...props.style,
+                // ...props.style,
                 ...styles.outerCont,
                 height: 50 + insets.bottom,
             }}
         >
             <View style={styles.squareButtonsCont}>
-                <Pressable
-                    style={styles.pressable}
-                    onPress={props.onFeedPressed}
-                >
-                    {props.feedFocused ? null : (
+                <Pressable style={styles.pressable} onPress={feedPressed}>
+                    {isFocused ? null : (
                         <HomeSVG size={30} color={colors.grey} />
                     )}
-                    {props.feedFocused ? (
+                    {isFocused ? (
                         <LottieView
                             ref={homeLottieRef}
                             style={{
@@ -111,14 +162,11 @@ const NuemorphicNavBar = (props) => {
                     ) : null}
                 </Pressable>
 
-                <Pressable
-                    style={styles.pressable}
-                    onPress={props.onSearchPressed}
-                >
-                    {props.searchFocused ? null : (
+                <Pressable style={styles.pressable} onPress={searchPressed}>
+                    {isFocused ? null : (
                         <SearchSVG size={24} color={colors.grey} />
                     )}
-                    {props.searchFocused ? (
+                    {isFocused ? (
                         <LottieView
                             ref={searchLottieRef}
                             style={{
@@ -128,20 +176,17 @@ const NuemorphicNavBar = (props) => {
                             source={require('../../assets/searchLottie.json')}
                             loop={false}
                             autoPlay={false}
-                            speed={1}
+                            speed={1.5}
                         />
                     ) : null}
                 </Pressable>
 
                 <View style={styles.circlePlaceHolder}></View>
-                <Pressable
-                    style={styles.pressable}
-                    onPress={props.onPersonPressed}
-                >
-                    {props.profileFocused ? null : (
+                <Pressable style={styles.pressable} onPress={profilePressed}>
+                    {isFocused ? null : (
                         <PersonSVG size={24} color={colors.grey} />
                     )}
-                    {props.profileFocused ? (
+                    {isFocused ? (
                         <LottieView
                             ref={profileLottieRef}
                             style={{
@@ -158,7 +203,7 @@ const NuemorphicNavBar = (props) => {
 
                 <Pressable
                     style={styles.pressable}
-                    onPress={props.onCameraPressed}
+                    // onPress={props.onCameraPressed}
                 >
                     <CameraSVG size={40} color={colors.grey} />
                 </Pressable>

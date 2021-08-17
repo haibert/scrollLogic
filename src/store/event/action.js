@@ -11,6 +11,8 @@ export const EMPTY_OTHER_GALLERIES = 'EMPTY_OTHER_GALLERIES'
 export const SET_INITIAL_OTHER_GALLERIES = 'SET_INITIAL_OTHER_GALLERIES'
 export const SET_GALLERY_INFO = 'SET_GALLERY_INFO'
 export const EDIT_GALLERY = 'EDIT_GALLERY'
+const SET_INITIAL_TAGGED_GALLERIES = 'SET_INITIAL_TAGGED_GALLERIES'
+const SET_TAGGED_GALLERIES = 'SET_TAGGED_GALLERIES'
 
 //models
 import { Gallery } from '../../models/GalleryModel'
@@ -194,6 +196,74 @@ export const setProfileGalleries = (userID, profileID, load, page) => {
                 //         galleries: loadedGalleries,
                 //     })
                 // }
+            } catch (error) {
+                console.log(error)
+                throw new Error('Something went wrong!')
+            }
+        } catch (error) {
+            console.log(error)
+            throw new Error('Something went wrong!')
+        }
+    }
+}
+
+export const setTaggedGalleries = (userID, load, page, initialLoad = false) => {
+    return async (dispatch, getState) => {
+        console.log('load more galleries ran')
+        const userIDPassed =
+            userID === null ? getState().signupReducer.userInfo.userID : userID
+        try {
+            const body = JSON.stringify({
+                userID: userIDPassed,
+                load,
+                page,
+            })
+            console.log('🚀 ~ file: action.js ~ line 74 ~ return ~ body', body)
+            const response = await fetch(`${LINK}&get-tagged-galleries=1`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+                cache: 'no-cache',
+            })
+
+            if (!response.ok) {
+                throw new Error('Something went wrong!')
+                // OR below you can pass the error status.
+                throw new Error(response.status.toString())
+            }
+
+            try {
+                const data = await response.json()
+                const galleries = data.message.galleries
+
+                const loadedGalleries = []
+
+                for (const key in galleries) {
+                    loadedGalleries.push(
+                        new Gallery(
+                            galleries[key].galleryID,
+                            galleries[key].eventName,
+                            galleries[key].thumbnail,
+                            galleries[key].eventDate
+                        )
+                    )
+                }
+
+                if (initialLoad) {
+                    dispatch({
+                        type: SET_INITIAL_TAGGED_GALLERIES,
+                        taggedGalleries: loadedGalleries,
+                    })
+                    return
+                }
+
+                dispatch({
+                    type: SET_TAGGED_GALLERIES,
+                    taggedGalleries: loadedGalleries,
+                })
             } catch (error) {
                 console.log(error)
                 throw new Error('Something went wrong!')

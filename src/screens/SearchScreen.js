@@ -371,12 +371,16 @@ const SearchScreen = ({ route, ...props }) => {
         props.navigation.navigate('SearchScreen')
     }, [])
 
-    const onPersonPressed = useCallback(() => {
-        props.navigation.navigate('ProfileScreen')
+    const onProfilePressed = useCallback(() => {
+        props.navigation.navigate('ProfileScreen', {
+            shouldAnimateProfile: true,
+        })
     }, [])
 
     const onFeedPressed = useCallback(() => {
-        props.navigation.navigate('DashboardScreen')
+        props.navigation.navigate('DashboardScreen', {
+            shouldAnimateFeed: true,
+        })
     }, [])
     //----------------------------------------------------------------NAV BAR FUNCTIONS----------------------------------------------------------------
     return (
@@ -443,14 +447,14 @@ const SearchScreen = ({ route, ...props }) => {
             >
                 <ActivityIndicator color={colors.nPButton} />
             </Animated.View>
-            <Animated.View style={bottomNavStyle}>
+            {/* <Animated.View style={bottomNavStyle}>
                 <NuemorphicNavBar
                     onFeedPressed={onFeedPressed}
                     onCameraPressed={cameraPressedHandler}
-                    onPersonPressed={onPersonPressed}
+                    onProfilePressed={onProfilePressed}
                     searchFocused={isFocused}
                 />
-            </Animated.View>
+            </Animated.View> */}
         </ScreenWrapper>
     )
 }
@@ -497,7 +501,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         width: '100%',
         bottom: 0,
-        backgroundColor: colors.overallBackground,
+        backgroundColor: 'white',
     },
 })
 

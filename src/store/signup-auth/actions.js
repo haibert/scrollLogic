@@ -14,8 +14,6 @@ export const TEXT_CODE = 'TEXT_CODE'
 export const CHANGE_AVATAR = 'CHANGE_AVATAR'
 export const SEARCH = 'SEARCH'
 export const LOAD_PROFILE = 'LOAD_PROFILE '
-export const FOLLOW = 'FOLLOW'
-export const UNFOLLOW = 'UNFOLLOW'
 export const EMPTY_PROFILE = 'EMPTY_PROFILE'
 export const LOAD_FOLLOWINGS = 'LOAD_FOLLOWINGS'
 export const EDIT_PROFILE = 'EDIT_PROFILE'
@@ -24,9 +22,17 @@ export const LOAD_REQUESTS = 'LOAD_REQUESTS'
 export const FOLLOW_RESPONSE = 'FOLLOW_RESPONSE'
 export const UPDATE_USER_STATS = 'UPDATE_USER_STATS'
 export const SHOULD_REFRESH_PROFILE = 'SHOULD_REFRESH_PROFILE'
-export const REMOVE_FRIEND = 'REMOVE_FRIEND'
+export const REMOVE_FOLLOWER = 'REMOVE_FOLLOWER'
+export const FOLLOW_USER = 'FOLLOW'
+export const UNFOLLOW_USER = 'UNFOLLOW_USER'
 export const LOAD_FOLLOWING = 'LOAD_FOLLOWING'
 export const SET_PROFILE_GALLERIES = 'SET_PROFILE_GALLERIES'
+export const REDUCE_FOLLOWING_COUNT = 'REDUCE_FOLLOWING_COUNT'
+
+//nav bar animations
+export const SHOULD_ANIMATE_FEED = 'SHOULD_ANIMATE_FEED'
+export const SHOULD_ANIMATE_PROFILE = 'SHOULD_ANIMATE_PROFILE'
+export const SHOULD_ANIMATE_SEARCH = 'SHOULD_ANIMATE_SEARCH'
 
 //models
 import { Search } from '../../models/SearchModel'
@@ -526,6 +532,7 @@ export const loadProfile = (userID) => {
             try {
                 const data = await response.json()
                 const loadedProfile = data.message.data
+                return loadedProfile
 
                 if (userID === null) {
                     dispatch({
@@ -560,7 +567,11 @@ export const emptyProfile = () => {
     }
 }
 
-export const followUnfollow = (followID, followType) => {
+export const followUnfollow = (
+    followID,
+    followType,
+    shouldRemoveFromList = true
+) => {
     return async (dispatch, getState) => {
         const userID = getState().signupReducer.userInfo.userID
 
@@ -585,6 +596,10 @@ export const followUnfollow = (followID, followType) => {
                 },
                 body: body,
             })
+            console.log(
+                '🚀 ~ file: actions.js ~ line 585 ~ return ~ link',
+                link
+            )
 
             if (!response.ok) {
                 throw new Error('Something went wrong!')
@@ -597,15 +612,43 @@ export const followUnfollow = (followID, followType) => {
 
                 const results = data.message.response
                 console.log(
-                    '🚀 ~ file: actions.js ~ line 581 ~ return ~ results',
+                    `🚀 ~ file: actions.js followUnfollow action type ${followType}~ return ~ results`,
                     results
                 )
 
-                // if (followType === 'unFollow') {
-                //     dispatch({
-                //         type: UNFOLLOW,
-                //     })
-                // }
+                if (
+                    followType === 'unFollow' &&
+                    results === 'success' &&
+                    shouldRemoveFromList
+                ) {
+                    dispatch({
+                        type: UNFOLLOW_USER,
+                        userID: followID,
+                    })
+                }
+
+                if (followType === 'Follow' && results === 'success') {
+                    dispatch({
+                        type: FOLLOW_USER,
+                        userID: followID,
+                    })
+                    return 'success'
+                }
+
+                if (followType === 'Follow' && results === 'pending') {
+                    return 'pending'
+                }
+
+                if (
+                    followType === 'unFollow' &&
+                    results === 'success' &&
+                    !shouldRemoveFromList
+                ) {
+                    dispatch({
+                        type: REDUCE_FOLLOWING_COUNT,
+                    })
+                    return 'unFollowed'
+                }
             } catch (error) {
                 throw error
             }
@@ -625,7 +668,7 @@ export const removeFriend = (followID) => {
             userID: userID,
             followerID: followID,
         })
-        console.log('🚀 ~ file: actions.js ~ line 561 ~ return ~ body', body)
+        console.log('🚀 ~ removeFriend ~ body', body)
 
         try {
             const response = await fetch(link, {
@@ -653,7 +696,7 @@ export const removeFriend = (followID) => {
                 )
                 if (results === 'success') {
                     dispatch({
-                        type: REMOVE_FRIEND,
+                        type: REMOVE_FOLLOWER,
                         userID: followID,
                     })
                 }
@@ -668,6 +711,10 @@ export const removeFriend = (followID) => {
 
 export const loadFollowersFollowing = (userID, followType) => {
     return async (dispatch, getState) => {
+        const currentUser = getState().signupReducer.userInfo.userID
+        const userIDPassed =
+            userID === null ? getState().signupReducer.userInfo.userID : userID
+
         let link = `${LINK}&get-user-followings=1`
 
         if (followType === 'followers') {
@@ -675,8 +722,10 @@ export const loadFollowersFollowing = (userID, followType) => {
         }
 
         const body = JSON.stringify({
-            userID: userID,
+            userID: userIDPassed,
+            currentUser: currentUser,
         })
+        // console.log('🚀 ~ file: actions.js ~ line 685 ~ return ~ body', body)
 
         try {
             const response = await fetch(link, {
@@ -697,21 +746,23 @@ export const loadFollowersFollowing = (userID, followType) => {
             try {
                 const data = await response.json()
                 const follows = data.message?.data
-                console.log(
-                    '🚀 ~ file: actions.js ~ line 699 ~ return ~ follows',
-                    follows
-                )
+                // console.log(
+                //     '🚀 ~ file: actions.js ~ line 699 ~ return ~ follows',
+                //     data
+                // )
 
                 const loadedFollows = []
                 for (const key in follows) {
                     loadedFollows.push(
                         new Follows(
-                            follows[key].avatarFullPath,
+                            // follows[key].avatarFullPath,
                             follows[key].avatar,
                             follows[key].firstName,
                             follows[key].lastName,
                             follows[key].uniqueID,
-                            follows[key].userName
+                            follows[key].userName,
+                            follows[key].accountPrivacy,
+                            follows[key].follows
                         )
                     )
                 }
@@ -721,6 +772,11 @@ export const loadFollowersFollowing = (userID, followType) => {
                     followings: loadedFollows,
                 })
             } catch (error) {
+                console.log(
+                    '🚀 ~ file: actions.js ~ line 733 ~ return ~ error',
+                    error
+                )
+
                 throw error
             }
         } catch (error) {
@@ -729,13 +785,15 @@ export const loadFollowersFollowing = (userID, followType) => {
     }
 }
 
-export const loadFollowing = () => {
+export const loadFollowing = (userID) => {
     return async (dispatch, getState) => {
-        const userID = getState().signupReducer.userInfo.userID
-
+        const currentUser = getState().signupReducer.userInfo.userID
+        const userIDPassed =
+            userID === null ? getState().signupReducer.userInfo.userID : userID
         const link = `${LINK}&get-user-followings=1`
         const body = JSON.stringify({
-            userID: userID,
+            userID: userIDPassed,
+            currentUser: currentUser,
         })
 
         try {
@@ -822,7 +880,7 @@ export const editProfile = (
             phone: phonePassed,
             userName: usernamePassed,
         })
-        console.log('🚀 ~ file: actions.js ~ line 685 ~ return ~ body', body)
+        // console.log('🚀 ~ file: actions.js ~ line 685 ~ return ~ body', body)
 
         try {
             const response = await fetch(link, {
@@ -1090,6 +1148,42 @@ export const getProfileGalleries = (userID) => {
     }
 }
 
+export const shouldAnimateFeed = (boolean) => {
+    return async (dispatch, getState) => {
+        try {
+            dispatch({
+                type: SHOULD_ANIMATE_FEED,
+                animation: boolean,
+            })
+        } catch (error) {
+            throw error
+        }
+    }
+}
+export const shouldAnimateProfile = (boolean) => {
+    return async (dispatch, getState) => {
+        try {
+            dispatch({
+                type: SHOULD_ANIMATE_PROFILE,
+                animation: boolean,
+            })
+        } catch (error) {
+            throw error
+        }
+    }
+}
+export const shouldAnimateSearch = (boolean) => {
+    return async (dispatch, getState) => {
+        try {
+            dispatch({
+                type: SHOULD_ANIMATE_SEARCH,
+                animation: boolean,
+            })
+        } catch (error) {
+            throw error
+        }
+    }
+}
 export const setShouldRefreshProfile = (boolean) => {
     return async (dispatch, getState) => {
         try {

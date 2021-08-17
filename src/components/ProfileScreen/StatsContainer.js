@@ -65,7 +65,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     numbers: {
-        fontWeight: 'bold',
         fontSize: 18,
         color: 'white',
         fontFamily: colors.semiBold,

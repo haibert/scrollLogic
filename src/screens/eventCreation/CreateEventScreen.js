@@ -377,7 +377,7 @@ const CreateEventScreen = (props) => {
     const loadFriends = useCallback(async () => {
         try {
             // showLoader()
-            await dispatch(loadFollowing())
+            await dispatch(loadFollowing(null))
         } catch (err) {
             console.log(err)
         }

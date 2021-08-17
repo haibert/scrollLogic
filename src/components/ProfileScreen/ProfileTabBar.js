@@ -16,6 +16,9 @@ import { Ionicons } from '@expo/vector-icons'
 //colors
 import colors from '../../constants/colors'
 
+//SVG icons
+import PersonsSVG from '../SVGIcons/PersonsSVG'
+
 const ProfileTabBar = (props) => {
     //----------------------------------------------------------------ANIMATION LOGIC----------------------------------------------------------------
     const animatedValue = useSharedValue(0)
@@ -50,7 +53,7 @@ const ProfileTabBar = (props) => {
                     props.onLeftPressed()
                 }}
             >
-                <Ionicons name="images-outline" size={30} />
+                <Ionicons name="images-outline" size={25} />
             </View>
             <View
                 style={styles.requestsColumButtons}
@@ -59,7 +62,7 @@ const ProfileTabBar = (props) => {
                     props.onMiddlePressed()
                 }}
             >
-                <Ionicons name="heart-outline" size={30} />
+                <Ionicons name="heart-outline" size={25} />
             </View>
             <View
                 style={styles.requestsColumButtons}
@@ -67,7 +70,8 @@ const ProfileTabBar = (props) => {
                     startAnimationRight()
                 }}
             >
-                <Ionicons name="lock-closed-outline" size={30} />
+                {/* <Ionicons name="lock-closed-outline" size={30} /> */}
+                <PersonsSVG size={28} color={colors.darkGrey} />
             </View>
             <View style={styles.animatingBar}>
                 <Animated.View style={animatedStyle}></Animated.View>

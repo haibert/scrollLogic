@@ -14,7 +14,12 @@ const ButtonFlatlist2 = (props) => {
             style={{ ...styles.const, ...props.buttonContStyle }}
         >
             <View style={{ ...styles.button, ...props.style }}>
-                <Text style={styles.text}>{props.title}</Text>
+                <Text
+                    style={{ ...styles.text, ...props.textStyle }}
+                    maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                >
+                    {props.title}
+                </Text>
             </View>
         </TouchableOpacity>
     )
@@ -27,16 +32,15 @@ const styles = StyleSheet.create({
     },
     button: {
         padding: 3,
-        backgroundColor: colors.nPButton,
         borderRadius: 6,
         alignItems: 'center',
         justifyContent: 'center',
     },
     text: {
-        color: 'white',
-        fontSize: 16,
+        color: colors.darkGrey,
+        fontSize: 14,
         textAlign: 'center',
     },
 })
 
-export default React.memo(ButtonFlatlist2)
+export default ButtonFlatlist2

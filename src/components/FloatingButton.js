@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useCallback } from 'react'
 import {
     AppRegistry,
     StyleSheet,
@@ -40,11 +40,17 @@ import colors from '../constants/colors'
 //expo qr scanner
 import { BarCodeScanner } from 'expo-barcode-scanner'
 
+//nav hooks
+import { useNavigation } from '@react-navigation/native'
+
 const { width } = Dimensions.get('screen')
 
 const FloatingButton = (props) => {
     //insets
     const insets = useSafeAreaInsets()
+
+    //navigation
+    const navigation = useNavigation()
 
     const tabBarBottomPosition = insets.bottom > 0 ? insets.bottom + 5 : 5
 
@@ -134,6 +140,32 @@ const FloatingButton = (props) => {
         }
     })
 
+    //----------------------------------------------------------------JOIN EVENT PRESSED--------------------------------------------------------------
+    const askForQRScannerPermissions = useCallback(async () => {
+        const { status } = await BarCodeScanner.requestPermissionsAsync()
+
+        if (status === 'granted') {
+            navigation.navigate('JoinEventScreen', {
+                permission: status,
+            })
+        } else {
+            navigation.navigate('JoinEventScreen', {
+                permission: status,
+            })
+        }
+    }, [])
+
+    const joinEventHandler = useCallback(() => {
+        askForQRScannerPermissions()
+    }, [])
+    //----------------------------------------------------------------JOIN EVENT PRESSED--------------------------------------------------------------
+
+    //----------------------------------------------------------------CREATE EVENT PRESSED--------------------------------------------------------------
+    const createEventHandler = useCallback(() => {
+        navigation.navigate('CreateEventScreen')
+    }, [])
+
+    //----------------------------------------------------------------CREATE EVENT PRESSED--------------------------------------------------------------
     return (
         <View style={{ ...styles.container, ...props.style }}>
             <Reanimated.View
@@ -143,7 +175,7 @@ const FloatingButton = (props) => {
             <TouchableWithoutFeedback
                 onPress={() => {
                     reToggleOpen()
-                    props.onCreateEventPressed()
+                    createEventHandler()
                 }}
             >
                 <Reanimated.View
@@ -162,7 +194,7 @@ const FloatingButton = (props) => {
             <TouchableWithoutFeedback
                 onPress={() => {
                     reToggleOpen()
-                    props.onJoinEventPressed()
+                    joinEventHandler()
                 }}
             >
                 <Reanimated.View
@@ -185,7 +217,7 @@ const FloatingButton = (props) => {
                 onPress={reToggleOpen}
                 contentContainerStyle={[styles.button, styles.pay]}
             >
-                <PlusSVG size={35} color="blue" color={colors.darkGrey} />
+                <PlusSVG size={35} color="blue" color={colors.grey} />
             </ScaleButton>
         </View>
     )
@@ -193,7 +225,8 @@ const FloatingButton = (props) => {
 
 const styles = StyleSheet.create({
     container: {
-        //uncomment this for the old nav bar to work
+        flex: 1,
+        alignItems: 'center',
     },
     background: {
         backgroundColor: 'rgba(0,0,0,.5)',

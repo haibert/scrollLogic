@@ -54,7 +54,6 @@ const PlusSVG = ({ color, size }) => {
                 style={{
                     alignItems: 'center',
                     justifyContent: 'center',
-                    // borderWidth: 1,
                 }}
             >
                 <G>

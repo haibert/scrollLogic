@@ -28,7 +28,7 @@ const PATH1 =
     'M3363.23,2773.47l-558.41-298.09a79.54,79.54,0,0,0-75.15,0l-558.39,298.09a79.76,79.76,0,1,0,75.15,140.72l520.82-278,520.82,278a79.77,79.77,0,0,0,75.16-140.72Z'
 const PATH2 = 'M0,0 L10,10'
 
-const PersonsSVG = ({ color, size }) => {
+const PersonsSVG = ({ color, size, style }) => {
     const progress = useSharedValue(0)
 
     // const interpolator = interpolatePath(PATH1, PATH2)
@@ -41,16 +41,17 @@ const PersonsSVG = ({ color, size }) => {
     return (
         <View
             onTouchStart={() => {
-                progress.value = withTiming(progress.value ? 0 : 1, {
-                    duration: 100,
-                    easing: Easing.inOut(Easing.cubic),
-                })
+                // progress.value = withTiming(progress.value ? 0 : 1, {
+                //     duration: 100,
+                //     easing: Easing.inOut(Easing.cubic),
+                // })
             }}
+            style={{ ...style }}
         >
             <Svg
                 width={size}
                 height={size}
-                viewBox="-60 -110 400 400"
+                viewBox="-30 -70 400 400"
                 style={
                     {
                         // borderWidth: 1,

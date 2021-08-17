@@ -31,13 +31,15 @@ import colors from '../../constants/colors'
 
 //redux
 //redux
-import { removeFriend } from '../../store/signup-auth/actions'
+import { removeFriend, followUnfollow } from '../../store/signup-auth/actions'
 import { useDispatch } from 'react-redux'
+
+import BottomSheetBackDrop from '../BottomSheetBackDrop'
 
 const CustomHandleComponent = () => {
     return <View style={{ borderRadius: 20, width: '100%', height: 15 }}></View>
 }
-const FollowsActionSheet = forwardRef((props, ref) => {
+const FollowingActionSheet = forwardRef((props, ref) => {
     //dispatch
     const dispatch = useDispatch()
 
@@ -48,10 +50,16 @@ const FollowsActionSheet = forwardRef((props, ref) => {
     const bottomSheetModalRef = useRef()
 
     //snap points
-    const snapPoints = useMemo(() => [150, 150, 200], [])
+    const snapPoints = useMemo(
+        () => [150 + insets.bottom, 150 + insets.bottom],
+        []
+    )
     useImperativeHandle(ref, () => ({
         handlePresentModalPress: () => {
             bottomSheetModalRef.current.present()
+        },
+        closeActionSheet: () => {
+            bottomSheetModalRef.current.close()
         },
     }))
 
@@ -61,51 +69,6 @@ const FollowsActionSheet = forwardRef((props, ref) => {
     })
     //----------------------------------------------------------------ANIMATION CONFIG----------------------------------------------------------------
 
-    //----------------------------------------------------------------BACKDROP COMPONENT----------------------------------------------------------------
-    const animatedOpacity = useSharedValue(0)
-
-    const backdropComponent = useCallback(({ animatedIndex, style }) => {
-        const containerAnimatedStyle = useAnimatedStyle(() => ({
-            opacity: interpolate(
-                animatedIndex.value,
-                [0, 1],
-                [0, 1],
-                Extrapolate.CLAMP
-            ),
-        }))
-        const containerStyle = useMemo(
-            () => [
-                style,
-                {
-                    backgroundColor: 'rgba(32,32,32,0.54)',
-                },
-                containerAnimatedStyle,
-            ],
-            [style, containerAnimatedStyle]
-        )
-        return (
-            <Animated.View
-                style={containerStyle}
-                onTouchStart={() => {
-                    animatedOpacity.value = 0
-                    bottomSheetModalRef.current?.close()
-                }}
-            />
-        )
-    }, [])
-    //----------------------------------------------------------------BACKDROP COMPONENT----------------------------------------------------------------
-
-    //----------------------------------------------------------------CANCEL----------------------------------------------------------------
-    const removePressedHandler = useCallback(async () => {
-        try {
-            await dispatch(removeFriend(props.followerID))
-        } catch (err) {
-            console.log('🚨  Error in followPressedHandler', err)
-            // setError(error.message)
-        }
-        bottomSheetModalRef.current.close()
-    }, [props.followerID])
-    //----------------------------------------------------------------CANCEL----------------------------------------------------------------
     //----------------------------------------------------------------CANCEL----------------------------------------------------------------
     const cancelPressedHandler = useCallback(() => {
         bottomSheetModalRef.current.close()
@@ -120,21 +83,21 @@ const FollowsActionSheet = forwardRef((props, ref) => {
                 snapPoints={snapPoints}
                 backgroundComponent={null}
                 animationConfigs={animationConfigs}
-                backdropComponent={backdropComponent}
+                backdropComponent={BottomSheetBackDrop}
                 dismissOnPanDown={true}
                 handleComponent={CustomHandleComponent}
                 style={{ backgroundColor: 'transparent' }}
             >
                 <View style={styles.container}>
                     <Pressable
-                        onPress={removePressedHandler}
+                        onPress={props.unfollowConfirmed}
                         style={styles.removeButton}
                     >
                         <Text
                             style={styles.removeText}
                             maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
                         >
-                            Remove Follower
+                            Unfollow
                         </Text>
                     </Pressable>
 
@@ -176,7 +139,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     removeText: {
-        color: colors.iOSBlue,
+        color: 'red',
         fontSize: 20,
     },
     cancelText: {
@@ -186,4 +149,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default FollowsActionSheet
+export default FollowingActionSheet

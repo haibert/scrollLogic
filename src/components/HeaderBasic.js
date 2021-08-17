@@ -166,9 +166,8 @@ const styles = StyleSheet.create({
     headerText: {
         color: 'white',
         fontSize: 18,
-        fontWeight: 'bold',
         textAlign: 'center',
-        fontFamily: colors.semiBold,
+        fontFamily: colors.font,
         color: colors.darkGrey,
     },
     rightIcons: {

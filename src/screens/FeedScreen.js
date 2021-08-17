@@ -309,11 +309,13 @@ const FeedScreen = (props) => {
 
     //----------------------------------------------------------------NAV BAR FUNCTIONS----------------------------------------------------------------
     const onSearchPressed = useCallback(() => {
-        props.navigation.navigate('SearchScreen')
+        props.navigation.navigate('SearchScreen', { shouldAnimateSearch: true })
     }, [])
 
-    const onPersonPressed = useCallback(() => {
-        props.navigation.navigate('ProfileScreen')
+    const onProfilePressed = useCallback(() => {
+        props.navigation.navigate('ProfileScreen', {
+            shouldAnimateProfile: true,
+        })
     }, [])
 
     const onFeedPressed = useCallback(() => {}, [])
@@ -387,7 +389,7 @@ const FeedScreen = (props) => {
                 goBack={() => {
                     props.navigation.toggleDrawer()
                 }}
-                header="Gallery"
+                // header="Gallery"
                 // headerColor={{ color: colors.darkestColorP1 }}
             />
 
@@ -397,9 +399,9 @@ const FeedScreen = (props) => {
                 itemHeight={itemHeight}
                 layOut={layOut}
                 keyExtractor={keyExtractor}
-                contentContainerStyle={{
-                    paddingBottom: tabBarBottomPosition,
-                }}
+                // contentContainerStyle={{
+                //     paddingBottom: tabBarBottomPosition,
+                // }}
                 showsVerticalScrollIndicator={false}
                 onRefresh={loadGalleries}
                 refreshing={loadingGalleries}
@@ -428,13 +430,13 @@ const FeedScreen = (props) => {
                 onEndReached={onEndReached}
             /> */}
 
-            <NuemorphicNavBar
+            {/* <NuemorphicNavBar
                 onCameraPressed={cameraPressedHandler}
                 onSearchPressed={onSearchPressed}
-                onPersonPressed={onPersonPressed}
+                onProfilePressed={onProfilePressed}
                 onFeedPressed={onFeedPressed}
                 feedFocused={isFocused}
-            />
+            /> */}
 
             <ActionBottomSheet
                 ref={bottomSheetRef}

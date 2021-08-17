@@ -16,9 +16,10 @@ import Animated, {
 //custom components
 import ScreenWrapper from '../components/ScreenWrapper'
 import HeaderBasic from '../components/HeaderBasic'
-import FollowingCell from '../components/FollowersScreen/FollowingCell'
+import OtherFollowingCell from '../components/FollowersScreen/OtherFollowingCell'
 import FollowersCell from '../components/FollowersScreen/FollowersCell'
-import FollowsActionSheet from '../components/FollowersScreen/FollowsActionSheet'
+import FollowersActionSheet from '../components/FollowersScreen/FollowersActionSheet'
+import FollowingActionSheet from '../components/FollowersScreen/FollowingActionSheet'
 
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -35,15 +36,24 @@ import BigList from 'react-native-big-list'
 // import { fakeArray as listData } from '../data/images'
 
 //redux
-import { loadFollowersFollowing } from '../store/signup-auth/actions'
+import {
+    loadFollowersFollowing,
+    followUnfollow,
+} from '../store/signup-auth/actions'
 import { useDispatch, useSelector } from 'react-redux'
 
-const FollowersScreen = (props) => {
+const OtherFollowsScreen = (props) => {
     const { username, userID, followType } = props.route.params
     //data
     const followingsData = useSelector(
         (state) => state.signupReducer.followings
     )
+    // console.log(
+    //     '🚀 ~ file: FollowersScreen.js ~ line 47 ~ FollowersScreen ~ followingsData',
+    //     followingsData
+    // )
+
+    console.log('rendered other follows screen')
 
     //dispatch
     const dispatch = useDispatch()
@@ -57,15 +67,34 @@ const FollowersScreen = (props) => {
     }, [])
 
     // sheet ref
-    const bottomSheetRef = useRef()
+    const followersActionSheet = useRef()
+    const followingActionSheet = useRef()
 
-    //----------------------------------------------------------------ELLIPSIS PRESSED----------------------------------------------------------------
+    // //----------------------------------------------------------------REMOVE FOLLOWER----------------------------------------------------------------
     const [followerID, setFollowerID] = useState()
-    const oneEllipsisPressed = useCallback((userID) => {
-        bottomSheetRef.current?.handlePresentModalPress()
-        setFollowerID(userID)
-    }, [])
-    //----------------------------------------------------------------ELLIPSIS PRESSED----------------------------------------------------------------
+    // const onRemovePressed = useCallback((userID) => {
+    //     followersActionSheet.current?.handlePresentModalPress()
+    //     setFollowerID(userID)
+    // }, [])
+    // //----------------------------------------------------------------REMOVE FOLLOWER----------------------------------------------------------------
+
+    //----------------------------------------------------------------UNFOLLOW USER---------------------------------------------------------------
+    // const [followingID, setFollowingID] = useState()
+    // const onUnfollowPressed = useCallback((userID) => {
+    //     followingActionSheet.current?.handlePresentModalPress()
+    //     setFollowingID(userID)
+    // }, [])
+
+    // const unfollowConfirmed = useCallback(async () => {
+    //     followingActionSheet.current?.closeActionSheet()
+    //     try {
+    //         await dispatch(followUnfollow(followingID, 'unFollow', false))
+    //     } catch (err) {
+    //         console.log('🚨  Error in followPressedHandler', err)
+    //         // setError(error.message)
+    //     }
+    // }, [followingID])
+    //----------------------------------------------------------------UNFOLLOW USER----------------------------------------------------------------
 
     //----------------------------------------------------------------CELL PRESSED----------------------------------------------------------------
     const onCellPressed = useCallback((userID) => {
@@ -92,6 +121,9 @@ const FollowersScreen = (props) => {
     //----------------------------------------------------------------LOAD DATA----------------------------------------------------------------
     const loadFollows = useCallback(
         async (userIDPassed, followTypePassed) => {
+            // console.log(
+            //     'loaded following or followers from Other followwings screen'
+            // )
             try {
                 showLoader()
                 await dispatch(
@@ -104,7 +136,6 @@ const FollowersScreen = (props) => {
         },
         [dispatch, userID, followType]
     )
-
     useEffect(() => {
         loadFollows(userID, followType)
     }, [loadFollows, userID, followType])
@@ -121,7 +152,7 @@ const FollowersScreen = (props) => {
     const animatedStyle = useAnimatedStyle(() => {
         return {
             right: animatedValue.value,
-            backgroundColor: colors.nPButton,
+            backgroundColor: colors.currentMainColor,
             width: '50%',
             height: 5,
         }
@@ -142,36 +173,41 @@ const FollowersScreen = (props) => {
     const startAnimationLeft = async () => {
         animatedValue.value = withTiming(0, { duration: 100 })
         animatedSwitchData.value = 'following'
-        // setSwitchData('following')
         await loadFollows(userID, 'followings')
     }
     //----------------------------------------------------------------ANIMATION LOGIC----------------------------------------------------------------
 
     //----------------------------------------------------------------FLATlIST OPTIMIZATION----------------------------------------------------------------
+    const currentUserID = useSelector(
+        (state) => state.signupReducer.userInfo.userID
+    )
+
     const renderFollowing = useCallback(({ item, index }) => {
         return (
-            <FollowingCell
+            <OtherFollowingCell
+                follows={item.follows === true ? 'Follows' : 'unFollowed'}
                 data={item}
                 onPress={() => {
                     onCellPressed(item.userID)
                 }}
+                isCurrentUser={item.userID === currentUserID}
             />
         )
     }, [])
 
-    const renderFollowers = useCallback(({ item, index }) => {
-        return (
-            <FollowersCell
-                data={item}
-                oneEllipsisPressed={() => {
-                    oneEllipsisPressed(item.userID)
-                }}
-                onPress={() => {
-                    onCellPressed(item.userID)
-                }}
-            />
-        )
-    }, [])
+    // const renderFollowers = useCallback(({ item, index }) => {
+    //     return (
+    //         <FollowingCell
+    //             data={item}
+    //             onPress={() => {
+    //                 onCellPressed(item.userID)
+    //             }}
+    //             onUnfollowPressed={() => {
+    //                 onUnfollowPressed(item.userID)
+    //             }}
+    //         />
+    //     )
+    // }, [])
 
     const layOut = useCallback(
         (data, index) => ({
@@ -216,11 +252,7 @@ const FollowersScreen = (props) => {
             </View>
             <BigList
                 data={followingsData}
-                renderItem={
-                    animatedSwitchData.value === 'following'
-                        ? renderFollowing
-                        : renderFollowers
-                }
+                renderItem={renderFollowing}
                 keyExtractor={keyExtractor}
                 itemHeight={width}
                 getItemLayout={layOut}
@@ -237,14 +269,20 @@ const FollowersScreen = (props) => {
                     },
                 ]}
             >
-                <ActivityIndicator color={colors.nPButton} />
+                <ActivityIndicator color={colors.currentMainColor} />
             </Animated.View>
 
-            <FollowsActionSheet
-                ref={bottomSheetRef}
+            {/* <FollowersActionSheet
+                ref={followersActionSheet}
                 followerID={followerID}
                 // refreshGalleryList={loadGalleries}
             />
+
+            <FollowingActionSheet
+                ref={followingActionSheet}
+                userID={followingID}
+                unfollowConfirmed={unfollowConfirmed}
+            /> */}
         </ScreenWrapper>
     )
 }
@@ -282,8 +320,8 @@ const styles = StyleSheet.create({
         position: 'absolute',
         width: '100%',
         bottom: 0,
-        backgroundColor: colors.overallBackground,
+        backgroundColor: 'white',
     },
 })
 
-export default FollowersScreen
+export default OtherFollowsScreen

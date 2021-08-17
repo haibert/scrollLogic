@@ -22,9 +22,15 @@ import {
     FOLLOW_RESPONSE,
     SHOULD_REFRESH_PROFILE,
     UPDATE_USER_STATS,
-    REMOVE_FRIEND,
+    REMOVE_FOLLOWER,
+    FOLLOW_USER,
+    UNFOLLOW_USER,
     LOAD_FOLLOWING,
-    SET_GALLERY_INFO
+    REDUCE_FOLLOWING_COUNT,
+    SET_GALLERY_INFO,
+    SHOULD_ANIMATE_FEED,
+    SHOULD_ANIMATE_SEARCH,
+    SHOULD_ANIMATE_PROFILE,
 } from './actions'
 
 //async storage
@@ -59,13 +65,18 @@ const initialState = {
         privacy: '',
     },
     searches: [],
-    loadedProfile: {},
+    loadedProfile: [],
     followings: [],
     following: [],
     followers: [],
     friendRequests: [],
     shouldRefreshProfile: false,
     selectedFriendsForSharing: [],
+    navBarAnimations: {
+        animateFeed: false,
+        animateProfile: false,
+        animateSearch: false,
+    },
 }
 
 const signupReducer = (state = initialState, action) => {
@@ -198,9 +209,14 @@ const signupReducer = (state = initialState, action) => {
             }
         }
         case LOAD_PROFILE: {
+            const newArray = [...state.loadedProfile, action.loadedProfile]
+            console.log(
+                '🚀 ~ file: reducer.js ~ line 224 ~ signupReducer ~ newArray',
+                newArray
+            )
             return {
                 ...state,
-                loadedProfile: action.loadedProfile,
+                loadedProfile: newArray,
             }
         }
         case EMPTY_PROFILE: {
@@ -264,7 +280,7 @@ const signupReducer = (state = initialState, action) => {
                 friendRequests: filteredArray,
             }
         }
-        case REMOVE_FRIEND: {
+        case REMOVE_FOLLOWER: {
             const filteredArray = state.followings.filter(function (obj) {
                 return obj.userID !== action.userID
             })
@@ -275,6 +291,45 @@ const signupReducer = (state = initialState, action) => {
             return {
                 ...state,
                 followings: filteredArray,
+                userInfo: {
+                    ...state.userInfo,
+                    followersCount: +state.userInfo.followersCount - 1,
+                },
+            }
+        }
+        case FOLLOW_USER: {
+            return {
+                ...state,
+                userInfo: {
+                    ...state.userInfo,
+                    followingCount: +state.userInfo.followingCount + 1,
+                },
+            }
+        }
+        case UNFOLLOW_USER: {
+            const filteredArray = state.followings.filter(function (obj) {
+                return obj.userID !== action.userID
+            })
+            console.log(
+                '🚀 ~ file: reducer.js ~ line 260 ~ filteredArray ~ filteredArray',
+                filteredArray
+            )
+            return {
+                ...state,
+                followings: filteredArray,
+                userInfo: {
+                    ...state.userInfo,
+                    followingCount: +state.userInfo.followingCount - 1,
+                },
+            }
+        }
+        case REDUCE_FOLLOWING_COUNT: {
+            return {
+                ...state,
+                userInfo: {
+                    ...state.userInfo,
+                    followingCount: +state.userInfo.followingCount - 1,
+                },
             }
         }
         case SHOULD_REFRESH_PROFILE: {
@@ -290,6 +345,34 @@ const signupReducer = (state = initialState, action) => {
                     ...state.userInfo,
                     followersCount: action.updatedStats.followersCount,
                     followingCount: action.updatedStats.followingCount,
+                },
+            }
+        }
+        //navbar animations
+        case SHOULD_ANIMATE_FEED: {
+            return {
+                ...state,
+                navBarAnimations: {
+                    ...state.navBarAnimations,
+                    animateFeed: action.animation,
+                },
+            }
+        }
+        case SHOULD_ANIMATE_SEARCH: {
+            return {
+                ...state,
+                navBarAnimations: {
+                    ...state.navBarAnimations,
+                    animateSearch: action.animation,
+                },
+            }
+        }
+        case SHOULD_ANIMATE_PROFILE: {
+            return {
+                ...state,
+                navBarAnimations: {
+                    ...state.navBarAnimations,
+                    animateProfile: action.animation,
                 },
             }
         }

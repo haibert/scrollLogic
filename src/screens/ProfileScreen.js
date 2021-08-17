@@ -17,7 +17,11 @@ import ActionBottomSheet from '../components/ActionBottomSheet'
 
 //redux
 import { loadPermissions } from '../store/permissions/actions'
-import { setGalleries, shouldRefreshSet } from '../store/event/action'
+import {
+    setGalleries,
+    shouldRefreshSet,
+    setTaggedGalleries,
+} from '../store/event/action'
 import {
     setShouldRefreshProfile,
     loadProfile,
@@ -47,6 +51,9 @@ import { useIsFocused, useFocusEffect } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
 import { ScrollView } from 'react-native-gesture-handler'
 
+//PagerView
+import PagerView from 'react-native-pager-view'
+
 const ProfileScreen = (props) => {
     //personal info
     const personalInfo = useSelector((state) => state.signupReducer.userInfo)
@@ -66,6 +73,9 @@ const ProfileScreen = (props) => {
 
     //is focused
     const isFocused = useIsFocused()
+
+    let shouldAnimateProfile
+    shouldAnimateProfile = props.route.params?.shouldAnimateProfile
 
     // //----------------------------------------------------------------CONDITIONAL PROFILE REFRESH----------------------------------------------------------------
 
@@ -161,6 +171,46 @@ const ProfileScreen = (props) => {
         refreshConditionally()
     })
     //----------------------------------------------------------------LOAD GALLERIES----------------------------------------------------------------
+
+    //----------------------------------------------------------------LOAD TAGGED GALLERIES----------------------------------------------------------------
+    // const [loadingGalleries, setLoadingGalleries] = useState(false)
+
+    const taggedGalleries = useSelector(
+        (state) => state.galleryReducer.galleries
+    )
+
+    const shouldRefreshTaggedGalleries = useSelector(
+        (state) => state.galleryReducer.shouldRefresh
+    )
+
+    const loadTaggedGalleries = useCallback(async () => {
+        // setLoadingGalleries(true)
+        // setError(null)
+        try {
+            await dispatch(setTaggedGalleries(userID))
+        } catch (error) {
+            // setError(error.message)
+        }
+        // setLoadingGalleries(false)
+    }, [dispatch])
+
+    useEffect(() => {
+        const task = InteractionManager.runAfterInteractions(() => {
+            loadTaggedGalleries()
+        })
+        return () => task.cancel()
+    }, [])
+
+    useFocusEffect(() => {
+        const refreshConditionally = async () => {
+            if (shouldRefresh) {
+                loadTaggedGalleries()
+                await dispatch(shouldRefreshSet(false))
+            }
+        }
+        refreshConditionally()
+    })
+    //----------------------------------------------------------------LOAD TAGGED GALLERIES----------------------------------------------------------------
 
     //----------------------------------------------------------------CAMERA PRESSED HANDLER----------------------------------------------------------------
     const greenLightOnPermissions = useSelector(
@@ -380,7 +430,7 @@ const ProfileScreen = (props) => {
 
     //----------------------------------------------------------------FOLLOWINGS PRESSED HANDLER----------------------------------------------------------------
     const followingsPressedHandler = useCallback((followType) => {
-        props.navigation.navigate('FollowersScreen', {
+        props.navigation.navigate('ProfileFollowsScreen', {
             username: personalInfo.userName,
             userID: personalInfo.userID,
             followType: followType,
@@ -403,13 +453,19 @@ const ProfileScreen = (props) => {
 
     //----------------------------------------------------------------NAV BAR FUNCTIONS----------------------------------------------------------------
     const onSearchPressed = useCallback(() => {
-        props.navigation.navigate('SearchScreen')
+        props.navigation.navigate('SearchScreen', {
+            shouldAnimateSearch: true,
+        })
     }, [])
 
     const onFeedPressed = useCallback(() => {
-        props.navigation.navigate('DashboardScreen')
+        props.navigation.navigate('DashboardScreen', {
+            shouldAnimateFeed: true,
+        })
     }, [])
     //----------------------------------------------------------------NAV BAR FUNCTIONS----------------------------------------------------------------
+    const refPagerView = useRef()
+    requestAnimationFrame(() => refPagerView.current?.setPage(0))
 
     return (
         <ScreenWrapper>
@@ -439,43 +495,53 @@ const ProfileScreen = (props) => {
             >
                 <RenderHeader />
                 <RenderSectionHeader />
-                <BigList
-                    data={listShown === 'galleries' ? galleries : pics}
-                    renderItem={
-                        listShown === 'galleries' ? render : renderLiked
-                    }
-                    itemHeight={
-                        listShown === 'galleries' ? itemHeight : itemHeightLiked
-                    }
-                    layOut={
-                        listShown === 'galleries' ? layOut : getItemLayoutLiked
-                    }
-                    keyExtractor={
-                        listShown === 'galleries'
-                            ? keyExtractor
-                            : keyExtractorLiked
-                    }
-                    numColumns={listShown === 'galleries' ? 2 : 3}
-                    // onRefresh={loadGalleries}
-                    // refreshing={loadingGalleries}
-                    removeClippedSubviews={
-                        Platform.OS === 'android' ? true : false
-                    }
-                    showsVerticalScrollIndicator={false}
-                    //header components
-                    // headerHeight={260}
-                    // sectionHeaderHeight={50}
-                    // renderHeader={renderHeader}
-                    // renderSectionHeader={renderSectionHeader}
-                    // stickySectionHeadersEnabled={true}
-                />
+                <PagerView
+                    ref={refPagerView}
+                    style={styles.pagerView}
+                    initialPage={0}
+                >
+                    <BigList
+                        data={listShown === 'galleries' ? galleries : pics}
+                        renderItem={
+                            listShown === 'galleries' ? render : renderLiked
+                        }
+                        itemHeight={
+                            listShown === 'galleries'
+                                ? itemHeight
+                                : itemHeightLiked
+                        }
+                        layOut={
+                            listShown === 'galleries'
+                                ? layOut
+                                : getItemLayoutLiked
+                        }
+                        keyExtractor={
+                            listShown === 'galleries'
+                                ? keyExtractor
+                                : keyExtractorLiked
+                        }
+                        numColumns={listShown === 'galleries' ? 2 : 3}
+                        // onRefresh={loadGalleries}
+                        // refreshing={loadingGalleries}
+                        removeClippedSubviews={
+                            Platform.OS === 'android' ? true : false
+                        }
+                        showsVerticalScrollIndicator={false}
+                        //header components
+                        // headerHeight={260}
+                        // sectionHeaderHeight={50}
+                        // renderHeader={renderHeader}
+                        // renderSectionHeader={renderSectionHeader}
+                        // stickySectionHeadersEnabled={true}
+                    />
+                </PagerView>
             </ScrollView>
-            <NuemorphicNavBar
+            {/* <NuemorphicNavBar
                 onCameraPressed={cameraPressedHandler}
                 onSearchPressed={onSearchPressed}
                 onFeedPressed={onFeedPressed}
                 profileFocused={isFocused}
-            />
+            /> */}
 
             <ActionBottomSheet
                 ref={bottomSheetRef}
@@ -521,6 +587,7 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 20,
         marginTop: -20,
     },
+    pagerView: { flex: 1 },
     bigList: {
         flex: 1,
     },

@@ -35,9 +35,9 @@ const Heart = (props) => {
             style={{ ...styles.cont, ...props.style }}
             onPress={changeOpacity}
         >
-            <Icon type="feather" name="heart" size={25} color={props.color} />
+            <Icon type="feather" name="heart" size={22} color={props.color} />
             <Animated.View style={[styles.heart, opacity]}>
-                <Ionicons name="heart" size={25} color={props.color} />
+                <Ionicons name="heart" size={22} color={props.color} />
             </Animated.View>
         </Pressable>
     )

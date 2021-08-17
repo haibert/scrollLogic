@@ -12,11 +12,14 @@ import {
     EMPTY_OTHER_GALLERIES,
     SET_GALLERY_INFO,
     EDIT_GALLERY,
+    SET_TAGGED_GALLERIES,
+    SET_INITIAL_TAGGED_GALLERIES,
 } from './action'
 
 const initialState = {
     events: [],
     galleries: [],
+    taggedGalleries: [],
     otherGalleries: [],
     pics: [],
     galleryTitles: [],

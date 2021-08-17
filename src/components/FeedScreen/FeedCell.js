@@ -24,6 +24,7 @@ import { SharedElement } from 'react-navigation-shared-element'
 //ionicons
 import { Ionicons } from '@expo/vector-icons'
 import { Icon } from 'react-native-elements'
+import PersonsSVG from '../SVGIcons/PersonsSVG'
 
 //linear gradient
 import { LinearGradient } from 'expo-linear-gradient'
@@ -214,12 +215,17 @@ const FeedCell = ({
                     {/* {galleryData.likes} */}
                     22k
                 </Text>
-                <Ionicons
+                {/* <Ionicons
                     name="people-outline"
                     size={25}
                     color={colors.darkGrey}
                     style={styles.peopleIcon}
                     maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                /> */}
+                <PersonsSVG
+                    size={28}
+                    color={colors.darkGrey}
+                    style={styles.peopleIcon}
                 />
                 <Text
                     maxFontSizeMultiplier={colors.maxFontSizeMultiplier}

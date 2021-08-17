@@ -64,14 +64,15 @@ const { width, height } = Dimensions.get('window')
 
 const loadNumber = 15
 let page = 1
+let profileInfo
 
 const OtherProfileScreen = (props) => {
     //uniqueID
     const uniqueID = props.route.params?.uniqueID
-    console.log(
-        '🚀 ~ file: OtherProfileScreen.js ~ line 64 ~ OtherProfileScreen ~ uniqueID',
-        uniqueID
-    )
+    // console.log(
+    //     '🚀 ~ file: OtherProfileScreen.js ~ line 64 ~ OtherProfileScreen ~ uniqueID',
+    //     uniqueID
+    // )
 
     //insets
     const insets = useSafeAreaInsets()
@@ -80,13 +81,18 @@ const OtherProfileScreen = (props) => {
     const dispatch = useDispatch()
 
     //profile info
-    const profileInfo = useSelector(
-        (state) => state.signupReducer.loadedProfile
-    )
-    console.log(
-        '🚀 ~ file: OtherProfileScreen.js ~ line 71 ~ OtherProfileScreen ~ profileInfo',
-        profileInfo
-    )
+    // const profileInfo = useSelector(
+    //     (state) => state.signupReducer.loadedProfile[0]
+    // )
+    // console.log(
+    //     '🚀 ~ file: OtherProfileScreen.js ~ line 87 ~ OtherProfileScreen ~ profileInfo',
+    //     profileInfo
+    // )
+
+    // console.log(
+    //     '🚀 ~ file: OtherProfileScreen.js ~ line 71 ~ OtherProfileScreen ~ profileInfo',
+    //     profileInfo
+    // )
 
     //tabBarBottomPosition
     let tabBarBottomPosition = useMemo(
@@ -112,11 +118,19 @@ const OtherProfileScreen = (props) => {
     //----------------------------------------------------------------EMPTY GALLERIES WHEN LEAVING----------------------------------------------------------------
 
     //----------------------------------------------------------------LOAD PROFILE----------------------------------------------------------------
+    const [profileInfo, setProfileInfo] = useState()
+
     const loadProfileInfo = useCallback(async () => {
+        console.log('ran')
         // setLoadingGalleries(true)
         // setError(null)
         try {
-            await dispatch(loadProfile(uniqueID))
+            const profileData = await dispatch(loadProfile(uniqueID))
+            console.log(
+                '🚀 ~ file: OtherProfileScreen.js ~ line 128 ~ loadProfileInfo ~ profileData',
+                profileData
+            )
+            setProfileInfo(profileData)
         } catch (error) {
             // setError(error.message)
         }
@@ -188,8 +202,7 @@ const OtherProfileScreen = (props) => {
     //----------------------------------------------------------------FOLLOWERS PRESSED HANDLER----------------------------------------------------------------
     const followingsPressedHandler = useCallback(
         (followType) => {
-            console.log(profileInfo)
-            props.navigation.push('FollowersScreen', {
+            props.navigation.push('OtherFollowsScreen', {
                 username: profileInfo.username,
                 userID: profileInfo.uniqueID,
                 followType: followType,
@@ -280,7 +293,6 @@ const OtherProfileScreen = (props) => {
         // setError(null)
         page = 1
         try {
-            console.log('RAN THE FUCKING LOADER')
             await dispatch(
                 setInitialProfileGalleries(null, uniqueID, loadNumber, page)
             )
