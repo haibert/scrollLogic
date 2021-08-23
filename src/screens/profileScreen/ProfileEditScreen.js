@@ -287,13 +287,13 @@ const ProfileEditScreen = ({ route, ...props }) => {
                     style={styles.changeButtons}
                     onPress={() => {
                         props.navigation.navigate('EditUsernameScreen', {
-                            usernameNavPassed: userInfo.username,
+                            usernameNavPassed: userInfo.userName,
                         })
                     }}
                 >
                     <Text style={styles.text}>Username</Text>
                     <View style={styles.arrowAndTextCont}>
-                        <Text style={styles.text}>{userInfo.username}</Text>
+                        <Text style={styles.text}>{userInfo.userName}</Text>
                         <Ionicons
                             name="checkmark-outline"
                             size={20}

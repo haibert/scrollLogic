@@ -46,6 +46,7 @@ const ScaleButton = ({
         <TouchableWithoutFeedback
             onPress={() => {
                 runOnJSPlease()
+                // animateIn()
                 if (haptics) {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
                 }

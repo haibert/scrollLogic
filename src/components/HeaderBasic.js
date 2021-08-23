@@ -58,7 +58,9 @@ const CustomHeaderBasic = (props) => {
                     <Ionicons
                         name={props.iconName ? props.iconName : defaultIcon}
                         size={30}
-                        color={colors.darkGrey}
+                        color={
+                            props.iconColor ? props.iconColor : colors.darkGrey
+                        }
                         style={iconStyle}
                     />
                     {/* </View> */}

@@ -5,7 +5,6 @@ import {
     View,
     Animated,
     Text,
-    TouchableOpacity,
     TouchableWithoutFeedback,
     Dimensions,
     Pressable,
@@ -17,6 +16,7 @@ import Reanimated, {
     useAnimatedStyle,
     interpolate,
 } from 'react-native-reanimated'
+import { TapGestureHandler } from 'react-native-gesture-handler'
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -59,6 +59,7 @@ const FloatingButton = (props) => {
     const reOpen = useSharedValue(false)
 
     const reToggleOpen = () => {
+        console.log('toggled plus button content')
         const toValue = reOpen.value ? 0 : 1
         reanimatedValue.value = withTiming(toValue, {
             duration: 200,
@@ -134,7 +135,7 @@ const FloatingButton = (props) => {
         return {
             transform: [
                 {
-                    scale: interpolate(reanimatedValue.value, [0, 1], [0, 35]),
+                    scale: interpolate(reanimatedValue.value, [0, 1], [0, 50]),
                 },
             ],
         }
@@ -168,12 +169,14 @@ const FloatingButton = (props) => {
     //----------------------------------------------------------------CREATE EVENT PRESSED--------------------------------------------------------------
     return (
         <View style={{ ...styles.container, ...props.style }}>
-            <Reanimated.View
-                style={[styles.background, reBgStyle]}
-                onTouchStart={reToggleOpen}
-            ></Reanimated.View>
-            <TouchableWithoutFeedback
-                onPress={() => {
+            <TapGestureHandler onActivated={reToggleOpen}>
+                <Reanimated.View
+                    style={[styles.background, reBgStyle]}
+                    // onTouchStart={reToggleOpen}
+                ></Reanimated.View>
+            </TapGestureHandler>
+            <TapGestureHandler
+                onActivated={() => {
                     reToggleOpen()
                     createEventHandler()
                 }}
@@ -190,9 +193,9 @@ const FloatingButton = (props) => {
                         color={colors.nPButton}
                     ></Ionicons>
                 </Reanimated.View>
-            </TouchableWithoutFeedback>
-            <TouchableWithoutFeedback
-                onPress={() => {
+            </TapGestureHandler>
+            <TapGestureHandler
+                onActivated={() => {
                     reToggleOpen()
                     joinEventHandler()
                 }}
@@ -210,7 +213,7 @@ const FloatingButton = (props) => {
                         color={colors.nPButton}
                     ></Ionicons>
                 </Reanimated.View>
-            </TouchableWithoutFeedback>
+            </TapGestureHandler>
 
             <ScaleButton
                 activeScale={0.8}
@@ -233,6 +236,7 @@ const styles = StyleSheet.create({
         width: 40,
         height: 40,
         borderRadius: 20,
+        position: 'absolute',
     },
     button: {
         width: 40,

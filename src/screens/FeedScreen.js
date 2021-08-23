@@ -1,19 +1,13 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import {
-    View,
     StyleSheet,
     Dimensions,
-    FlatList,
-    Alert,
-    Linking,
     Platform,
     BackHandler,
+    Modal,
 } from 'react-native'
 
 import { StatusBar } from 'expo-status-bar'
-
-// //Linear Gradient
-// import { LinearGradient } from 'expo-linear-gradient'
 
 //colors
 import colors from '../constants/colors'
@@ -30,12 +24,12 @@ import CustomActionSheet from '../components/CustomActionSheet'
 import DeleteConfirmation from '../components/DeleteConfirmation'
 import ActionBottomSheet from '../components/ActionBottomSheet'
 
-//customHooks
-import useAppState from '../hooks/useAppState'
+import FloatingButton from '../components/FloatingButton'
 
 //useFocusEffect
 import { InteractionManager } from 'react-native'
 import { useFocusEffect, useIsFocused } from '@react-navigation/native'
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -44,20 +38,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { Icon } from 'react-native-elements'
 
-//expo camera
-import { Camera } from 'expo-camera'
-import { Audio } from 'expo-av'
-
-//redux
-import {
-    savePermissionsStatus,
-    loadPermissions,
-} from '../store/permissions/actions'
 import {
     setGalleries,
     shouldRefreshSet,
     deleteGallery,
 } from '../store/event/action'
+import { uploadExpoToken } from '../store/signup-auth/actions'
 
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -67,6 +53,92 @@ import BigList from 'react-native-big-list'
 //dimensions
 const { height, width } = Dimensions.get('screen')
 
+//expo notifications
+import * as Notifications from 'expo-notifications'
+import * as TaskManager from 'expo-task-manager'
+import Constants from 'expo-constants'
+
+//-------------------------------------------------------------------NOTIFICATIONS SETUP-------------------------------------------------------------------
+const hasNotificationPermission = async () => {
+    if (Constants.isDevice) {
+        try {
+            const { status: existingStatus } =
+                await Notifications.getPermissionsAsync()
+            let finalStatus = existingStatus
+
+            if (existingStatus !== 'granted') {
+                const { status } = await Notifications.requestPermissionsAsync({
+                    ios: {
+                        allowAlert: true,
+                        allowBadge: true,
+                        allowSound: true,
+                        allowAnnouncements: true,
+                    },
+                })
+                finalStatus = status
+            }
+
+            if (finalStatus === 'granted') return true
+
+            if (finalStatus !== 'granted') {
+                // Alert.alert(
+                //     'Warning',
+                //     'You will not receive notifications if you do not enable push notifications. If you would like to stay up to date with your account activity, please enable push notifications for EventShare in your settings.',
+                //     [
+                //         { text: 'Cancel' },
+                //         {
+                //             text: 'Enable Notifications',
+                //             onPress: () =>
+                //                 Platform.OS === 'ios'
+                //                     ? Linking.openURL('app-settings:')
+                //                     : Linking.openSettings(),
+                //         },
+                //     ]
+                // )
+                return false
+            }
+        } catch (error) {
+            Alert.alert(
+                'Error',
+                'Something went wrong while check your notification permissions, please try again later.'
+            )
+            return false
+        }
+
+        if (Platform.OS === 'android') {
+            Notifications.setNotificationChannelAsync('default', {
+                name: 'default',
+                importance: Notifications.AndroidImportance.MAX,
+                vibrationPattern: [0, 250, 250, 250],
+                lightColor: '#FF231F7C',
+            })
+        }
+    } else {
+        alert('Must use physical device for Push Notifications')
+    }
+}
+
+const getPushToken = async () => {
+    const token = await Notifications.getExpoPushTokenAsync({
+        experienceId: '@haibert/EventShare',
+    })
+    return token
+}
+
+const BACKGROUND_NOTIFICATION_TASK = 'BACKGROUND-NOTIFICATION-TASK'
+TaskManager.defineTask(
+    BACKGROUND_NOTIFICATION_TASK,
+    ({ data, error, executionInfo }) => {
+        console.log('Received a notification in the background!')
+        console.log(data)
+        // Do something with the notification data
+    }
+)
+Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK)
+
+//-------------------------------------------------------------------NOTIFICATIONS SETUP-------------------------------------------------------------------
+
+// USED FOR LOADING GALLERIES WITH PAGINATION
 const loadNumber = 15
 let page = 1
 
@@ -77,6 +149,8 @@ const FeedScreen = (props) => {
     // sheet ref
     const bottomSheetRef = useRef()
 
+    const tabBarHeight = useBottomTabBarHeight()
+
     const isFocused = useIsFocused()
 
     let tabBarBottomPosition = insets.bottom > 0 ? insets.bottom / 2 + 2 : 10
@@ -84,10 +158,78 @@ const FeedScreen = (props) => {
     //dispatch
     const dispatch = useDispatch()
 
-    // green on permissions
-    const greenLightOnPermissions = useSelector(
-        (state) => state.permissionsReducer.permissions.camera
-    )
+    //----------------------------------------------------------------GET NOTIFICATION AND UPLOAD------------------------------------------------------------
+    const notificationListener = useRef()
+    const responseListener = useRef()
+    const uploadNotificationToken = useCallback(async () => {
+        const hasPermission = await hasNotificationPermission()
+        if (hasPermission) {
+            const token = await getPushToken()
+            await dispatch(uploadExpoToken(token.data))
+            console.log(
+                '🚀 ~ file: App.js ~ line 122 ~ doNotificationLogic ~ token',
+                token
+            )
+            // dispatch(updatePushToken(token))
+            return
+        }
+    }, [])
+
+    useEffect(() => {
+        uploadNotificationToken()
+    }, [])
+
+    // useEffect(() => {
+    //     const getRegisteredTasks = async () => {
+    //         const tasks = await TaskManager.getRegisteredTasksAsync()
+    //         console.log(tasks)
+    //     }
+    //     getRegisteredTasks()
+    // }, [])
+
+    useEffect(() => {
+        notificationListener.current =
+            Notifications.addNotificationReceivedListener(
+                async (notification) => {
+                    // notification received in the foreground
+                }
+            )
+
+        responseListener.current =
+            Notifications.addNotificationResponseReceivedListener(
+                (response) => {
+                    // console.log(response)
+                    navigateToNotifications()
+                }
+            )
+
+        return () => {
+            Notifications.removeNotificationSubscription(
+                notificationListener.current
+            )
+            Notifications.removeNotificationSubscription(
+                responseListener.current
+            )
+        }
+    }, [])
+    //----------------------------------------------------------------GET NOTIFICATION AND UPLOAD------------------------------------------------------------
+
+    //----------------------------------------------------------------HANDLE NOTIFICATION------------------------------------------------------------
+
+    const navigateToNotifications = () => {
+        Notifications.setBadgeCountAsync(0)
+        props.navigation.dispatch(
+            CommonActions.navigate('ProfileSEStack', {
+                screen: 'ProfileScreen',
+            })
+        )
+        props.navigation.dispatch(
+            CommonActions.navigate('ProfileSEStack', {
+                screen: 'ProfileScreen',
+            })
+        )
+    }
+    //----------------------------------------------------------------HANDLE NOTIFICATION------------------------------------------------------------
 
     //----------------------------------------------------------------LOAD GALLERIES----------------------------------------------------------------
     const [loadingGalleries, setLoadingGalleries] = useState(false)
@@ -137,39 +279,6 @@ const FeedScreen = (props) => {
     )
     //----------------------------------------------------------------PREVENT BACK BUTTON ANDROID----------------------------------------------------------------
 
-    const cameraPressedHandler = async () => {
-        if (greenLightOnPermissions === 'granted') {
-            props.navigation.navigate('CameraScreen')
-        } else {
-            const { status } = await Camera.getPermissionsAsync()
-            const audioStatus = await Audio.getPermissionsAsync()
-
-            // setHasCameraPermission(status === 'granted')
-            if (status && audioStatus.status === 'granted') {
-                dispatch(loadPermissions('granted'))
-                props.navigation.navigate('CameraScreen')
-            } else if (status || audioStatus.status === 'undetermined') {
-                const results = await Camera.requestPermissionsAsync()
-                const audioResults = await Audio.requestPermissionsAsync()
-                if (results.status && audioResults.status === 'granted') {
-                    props.navigation.navigate('CameraScreen')
-                } else if (results.status || audioResults.status === 'denied') {
-                    sendUserToSettingsHandler()
-                    return
-                }
-            } else if (status || audioResults.status === 'denied') {
-                const results2 = await Camera.requestPermissionsAsync()
-                const audioResults2 = await Audio.requestPermissionsAsync()
-                if (results2.status && audioResults2 === 'granted') {
-                    props.navigation.navigate('CameraScreen')
-                } else {
-                    sendUserToSettingsHandler()
-                    return
-                }
-            }
-        }
-    }
-
     // // handle checking permissions after app state change
     // const checkPermissionsAppState = useCallback(async () => {
     //     const { status } = await Camera.getPermissionsAsync()
@@ -193,91 +302,6 @@ const FeedScreen = (props) => {
 
     // const { appStateVisible } = useAppState(checkPermissionsAppState)
 
-    const openSettings = useCallback(
-        Platform.select({
-            ios: async () => {
-                const supported = await Linking.canOpenURL('app-settings:')
-                try {
-                    if (!supported) {
-                        //Can't handle settings url
-                        Alert.alert(
-                            'Failed to Open Settings',
-                            'Please go to this app settings manually.',
-                            [
-                                {
-                                    text: 'Cancel',
-                                    style: 'cancel',
-                                },
-                            ]
-                        )
-                    } else {
-                        return Linking.openURL('app-settings:')
-                    }
-                } catch (err) {
-                    Alert.alert(
-                        'Something Went Wrong.',
-                        'Please try again later.',
-                        [
-                            {
-                                text: 'Cancel',
-                                style: 'cancel',
-                            },
-                        ]
-                    )
-                }
-            },
-            android: () => {
-                Linking.openSettings()
-            },
-        }),
-        []
-    )
-
-    const alertMessage =
-        'Turn on camera permissions to allow EventShare to take pictures, videos, and scan QR codes.'
-
-    const sendUserToSettingsHandler = useCallback(
-        Platform.select({
-            ios: () => {
-                Alert.alert(
-                    'EventShare Needs Access to Your Camera',
-                    alertMessage,
-                    [
-                        {
-                            text: 'Cancel',
-                            style: 'cancel',
-                        },
-                        {
-                            text: 'Settings',
-                            onPress: () => {
-                                openSettings()
-                            },
-                        },
-                    ]
-                )
-            },
-            android: () => {
-                Alert.alert(
-                    'EventShare Needs Access to Your Camera',
-                    alertMessage,
-                    [
-                        {
-                            text: 'Cancel',
-                            style: 'cancel',
-                        },
-                        {
-                            text: 'Settings',
-                            onPress: () => {
-                                openSettings()
-                            },
-                        },
-                    ]
-                )
-            },
-        }),
-        []
-    )
-
     //----------------------------------------------------------------ACTION SHEET LOGIC---------------------------------------------------------------
     const [showConfirmationBool, setShowConfirmationBool] = useState()
     const [deleteID, setDeleteID] = useState({ id: '', index: '' })
@@ -291,7 +315,8 @@ const FeedScreen = (props) => {
     const dismissConfirmation = useCallback(() => {
         setTimeout(() => {
             setShowConfirmationBool(false)
-        }, 100)
+            setOpenModal(false)
+        }, 150)
     }, [])
 
     const onConfirmPressed = useCallback(async () => {
@@ -299,7 +324,8 @@ const FeedScreen = (props) => {
             await dispatch(deleteGallery(deleteID))
             setTimeout(() => {
                 setShowConfirmationBool(false)
-            }, 100)
+                setOpenModal(false)
+            }, 150)
         } catch (err) {
             console.log('Error deleting gallery', err)
         }
@@ -353,12 +379,20 @@ const FeedScreen = (props) => {
         })
     }, [])
 
+    const [openModal, setOpenModal] = useState(false)
     const oneEllipsisPressed = useCallback((galleryID, index) => {
-        bottomSheetRef.current?.handlePresentModalPress()
+        setOpenModal(true)
+        setTimeout(() => {
+            bottomSheetRef.current?.handlePresentModalPress()
+        }, 50)
         setDeleteID({ id: galleryID, index: index })
     }, [])
 
-    const itemHeight = useMemo(() => width + 20, [])
+    const closeModal = useCallback(() => {
+        setOpenModal(false)
+    }, [])
+
+    const itemHeight = useMemo(() => width + 40, [])
 
     const layOut = useCallback(
         (data, index) => ({
@@ -383,7 +417,11 @@ const FeedScreen = (props) => {
     //----------------------------------------------------------------FLAT LIST FUNCTIONS--------------------------------------------------------------
 
     return (
-        <ScreenWrapper>
+        <ScreenWrapper
+            style={{
+                paddingBottom: tabBarHeight,
+            }}
+        >
             <CustomHeaderBasic
                 iconName="menu-outline"
                 goBack={() => {
@@ -402,6 +440,9 @@ const FeedScreen = (props) => {
                 // contentContainerStyle={{
                 //     paddingBottom: tabBarBottomPosition,
                 // }}
+                contentContainerStyle={{
+                    paddingTop: 20,
+                }}
                 showsVerticalScrollIndicator={false}
                 onRefresh={loadGalleries}
                 refreshing={loadingGalleries}
@@ -437,20 +478,41 @@ const FeedScreen = (props) => {
                 onFeedPressed={onFeedPressed}
                 feedFocused={isFocused}
             /> */}
-
-            <ActionBottomSheet
-                ref={bottomSheetRef}
-                showConfirmation={showConfirmation}
-            />
-
-            {showConfirmationBool && (
-                <DeleteConfirmation
-                    dismissConfirmation={dismissConfirmation}
-                    onConfirmPressed={onConfirmPressed}
-                    message="This will permanently delete all of the pictures
-                            inside this gallery"
+            {/* 
+            <View
+                style={{
+                    position: 'absolute',
+                    borderColor: 'red',
+                    borderWidth: 1,
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                }}
+            ></View> */}
+            <Modal
+                style={StyleSheet.absoluteFill}
+                visible={openModal}
+                animationType="fade"
+                transparent
+            >
+                <ActionBottomSheet
+                    ref={bottomSheetRef}
+                    showConfirmation={showConfirmation}
+                    closeModal={() => {
+                        console.log('called')
+                        closeModal()
+                    }}
                 />
-            )}
+                {showConfirmationBool && (
+                    <DeleteConfirmation
+                        dismissConfirmation={dismissConfirmation}
+                        onConfirmPressed={onConfirmPressed}
+                        message="This will permanently delete all of the pictures
+                            inside this gallery"
+                    />
+                )}
+            </Modal>
         </ScreenWrapper>
     )
 }
@@ -486,7 +548,6 @@ const styles = StyleSheet.create({
         borderRadius: 27,
         alignItems: 'center',
         justifyContent: 'center',
-        // position: 'absolute',
         shadowColor: 'black',
         shadowRadius: 10,
         shadowOpacity: 0.2,

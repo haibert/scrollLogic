@@ -44,6 +44,10 @@ import { useDispatch, useSelector } from 'react-redux'
 
 const OtherFollowsScreen = (props) => {
     const { username, userID, followType } = props.route.params
+    console.log(
+        '🚀 ~ file: OtherFollowsScreen.js ~ line 47 ~ OtherFollowsScreen ~ userID',
+        userID
+    )
     //data
     const followingsData = useSelector(
         (state) => state.signupReducer.followings
@@ -97,11 +101,23 @@ const OtherFollowsScreen = (props) => {
     //----------------------------------------------------------------UNFOLLOW USER----------------------------------------------------------------
 
     //----------------------------------------------------------------CELL PRESSED----------------------------------------------------------------
-    const onCellPressed = useCallback((userID) => {
-        props.navigation.push('OtherProfileScreen', {
-            uniqueID: userID,
-        })
-    }, [])
+    const onCellPressed = useCallback(
+        (userID) => {
+            const isCurrentUser = userID === currentUserID
+            if (isCurrentUser) {
+                props.navigation.push('ProfileScreen', {
+                    uniqueID: userID,
+                    showBackButton: true,
+                })
+                return
+            }
+
+            props.navigation.push('OtherProfileScreen', {
+                uniqueID: userID,
+            })
+        },
+        [currentUserID]
+    )
 
     //----------------------------------------------------------------LOADING ANIMATION----------------------------------------------------------------
     const loadingOpacity = useSharedValue(0)
@@ -185,7 +201,15 @@ const OtherFollowsScreen = (props) => {
     const renderFollowing = useCallback(({ item, index }) => {
         return (
             <OtherFollowingCell
-                follows={item.follows === true ? 'Follows' : 'unFollowed'}
+                follows={
+                    item.follows === true
+                        ? 'follows'
+                        : item.follows === false
+                        ? 'unFollowed'
+                        : item.follows === 'pending'
+                        ? 'pending'
+                        : null
+                }
                 data={item}
                 onPress={() => {
                     onCellPressed(item.userID)

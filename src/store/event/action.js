@@ -138,14 +138,17 @@ export const setGalleries = (userID, load, page, initialLoad = false) => {
     }
 }
 
-export const setProfileGalleries = (userID, profileID, load, page) => {
+export const setOtherProfileGalleries = (
+    profileID,
+    load,
+    page,
+    initialLoad = false
+) => {
     return async (dispatch, getState) => {
-        console.log('load more galleries ran')
-        const userIDPassed =
-            userID === null ? getState().signupReducer.userInfo.userID : userID
+        const userID = getState().signupReducer.userInfo.userID
         try {
             const body = JSON.stringify({
-                userID: userIDPassed,
+                userID,
                 profileID,
                 load,
                 page,
@@ -171,9 +174,10 @@ export const setProfileGalleries = (userID, profileID, load, page) => {
                 const data = await response.json()
                 const galleries = data.message.galleries
                 console.log(
-                    '🚀 ~ file: action.js ~ line 164 ~ return ~ galleries',
+                    '🚀 ~ file: action.js ~ line 176 ~ return ~ galleries',
                     galleries
                 )
+
                 const loadedGalleries = []
                 for (const key in galleries) {
                     loadedGalleries.push(
@@ -185,11 +189,13 @@ export const setProfileGalleries = (userID, profileID, load, page) => {
                         )
                     )
                 }
+
+                return loadedGalleries
                 // if (userID !== null) {
-                dispatch({
-                    type: SET_OTHER_GALLERIES,
-                    otherGalleries: loadedGalleries,
-                })
+                // dispatch({
+                //     type: SET_OTHER_GALLERIES,
+                //     otherGalleries: loadedGalleries,
+                // })
                 // } else {
                 //     dispatch({
                 //         type: SET_GALLERIES,

@@ -23,13 +23,13 @@ const ProfileTopElements = (props) => {
             style={{ ...styles.topCont }}
             source={
                 {
-                    // uri: props.personalInfo.avatarFullPath,
+                    // uri: props?.profileInfo?.avatarFullPath,
                 }
             }
             blurRadius={10}
         >
             <TouchableWithoutFeedback onPress={props.handleProfilePhotoPressed}>
-                <SharedElement id={'1'}>
+                <SharedElement id={props.isCurrentUser ? '1' : '2'}>
                     <FastImage
                         resizeMode={FastImage.resizeMode.cover}
                         source={{
@@ -44,14 +44,14 @@ const ProfileTopElements = (props) => {
                 style={styles.name}
                 maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
             >
-                {props.personalInfo.firstName} {props.personalInfo.lastName}
+                {props?.profileInfo?.firstName} {props?.profileInfo?.lastName}
             </Text>
             <Text
                 style={styles.usernameText}
-                maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
-            >{`@${props.personalInfo.username}`}</Text>
+                maxFontSizeMultiplier={colors?.maxFontSizeMultiplier}
+            >{`@${props?.profileInfo?.userName}`}</Text>
+            <View style={styles.bottomWhiteBar}></View>
             {props.children}
-            <View height={20}></View>
         </ImageBackground>
     )
 }
@@ -59,33 +59,41 @@ const ProfileTopElements = (props) => {
 const styles = StyleSheet.create({
     topCont: {
         width: '100%',
-        justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: colors.overallBackground,
-        height: 260,
+        backgroundColor: 'white',
+        height: 250,
+        backgroundColor: colors.currentMainColor,
     },
     signOut: {
         color: colors.darkColorP1,
         fontFamily: colors.semiBold,
-
         fontSize: 17,
         position: 'absolute',
         top: 10,
         right: 10,
     },
     avatar: {
-        marginTop: 10,
         borderRadius: 30,
         height: 60,
         width: 60,
+        borderWidth: 3,
+        borderColor: 'white',
     },
     name: {
-        color: 'black',
-        fontSize: 17,
-        margin: 5,
-        fontFamily: colors.font,
+        color: 'white',
+        fontSize: 19,
+        marginTop: 5,
+        fontFamily: colors.semiBold,
     },
-    usernameText: { color: 'black', fontSize: 15, fontFamily: colors.font },
+    usernameText: { color: 'white', fontSize: 15, fontFamily: colors.font },
+    bottomWhiteBar: {
+        position: 'absolute',
+        backgroundColor: 'white',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 70,
+    },
 })
 
-export default React.memo(ProfileTopElements)
+export default ProfileTopElements

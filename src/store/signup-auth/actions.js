@@ -43,6 +43,8 @@ import { RequestModel } from '../../models/RequestModel'
 //Gallery Actions
 import { setGalleries } from '../event/action'
 
+import Constants from 'expo-constants'
+
 import { LINK } from '../../utilities/apiLink'
 
 export const addEmail = (email) => {
@@ -205,7 +207,7 @@ export const login = (username, password) => {
                     fullInfo: userInfo,
                 })
 
-                dispatch(setGalleries(null, 15, 1, true))
+                dispatch(setGalleries(null, 10, 1, true))
 
                 await storeCredentials(
                     credentials.userName,
@@ -504,13 +506,13 @@ export const search = (text) => {
     }
 }
 
-export const loadProfile = (userID) => {
+export const loadProfile = (profileID) => {
     return async (dispatch, getState) => {
-        const userIDPassed =
-            userID === null ? getState().signupReducer.userInfo.userID : userID
+        userID = getState().signupReducer.userInfo.userID
 
         const body = JSON.stringify({
-            userID: userIDPassed,
+            userID: userID,
+            profileID: profileID,
         })
 
         try {
@@ -725,7 +727,7 @@ export const loadFollowersFollowing = (userID, followType) => {
             userID: userIDPassed,
             currentUser: currentUser,
         })
-        // console.log('🚀 ~ file: actions.js ~ line 685 ~ return ~ body', body)
+        console.log('🚀 ~ file: actions.js ~ line 685 ~ return ~ body', body)
 
         try {
             const response = await fetch(link, {
@@ -820,12 +822,13 @@ export const loadFollowing = (userID) => {
                 for (const key in follows) {
                     loadedFollows.push(
                         new Follows(
-                            follows[key].avatarFullPath,
                             follows[key].avatar,
                             follows[key].firstName,
                             follows[key].lastName,
                             follows[key].uniqueID,
-                            follows[key].userName
+                            follows[key].userName,
+                            follows[key].accountPrivacy,
+                            follows[key].follows
                         )
                     )
                 }
@@ -867,7 +870,7 @@ export const editProfile = (
             phone === null ? getState().signupReducer.userInfo.phone : phone
         const usernamePassed =
             username === null
-                ? getState().signupReducer.userInfo.username
+                ? getState().signupReducer.userInfo.userName
                 : username
 
         const link = `${LINK}&edit-profile=1`
@@ -913,15 +916,16 @@ export const editProfile = (
                     throw new Error('Something went wrong!')
                 }
 
+                if (username) {
+                    console.log('got the user name ', username)
+                    storeNewUsername(username)
+                }
+
                 dispatch({
                     type: EDIT_PROFILE,
                     userProfileData: userProfileData,
                     username: usernamePassed,
                 })
-
-                if (username) {
-                    storeNewUsername(username)
-                }
             } catch (error) {
                 throw error
             }
@@ -1144,6 +1148,52 @@ export const getProfileGalleries = (userID) => {
         } catch (error) {
             console.log(error)
             throw new Error('Something went wrong!')
+        }
+    }
+}
+
+export const uploadExpoToken = (token) => {
+    return async (dispatch, getState) => {
+        const userID = getState().signupReducer.userInfo.userID
+        const deviceID = Constants.deviceName
+        const body = JSON.stringify({
+            userID,
+            deviceID,
+            token,
+        })
+        console.log('🚀 ~ file: actions.js ~ line 861 ~ return ~ body', body)
+        try {
+            const response = await fetch(`${LINK}&add-notification-token=1`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    key: 'ThisIsASecretKey',
+                },
+                body: body,
+            })
+
+            if (!response.ok) {
+                throw new Error('Something went wrong!')
+                // OR below you can pass the error status.
+                throw new Error(response.status.toString())
+            }
+
+            try {
+                const data = await response.json()
+                console.log(
+                    '🚀 ~ file: actions.js ~ line 770 ~ return ~ data',
+                    data
+                )
+                const success = data.message.response === 'Successfully added'
+
+                if (!success) {
+                    throw new Error('Something went wrong!')
+                }
+            } catch (error) {
+                throw new Error('Something went wrong!')
+            }
+        } catch (error) {
+            throw error
         }
     }
 }

@@ -12,15 +12,6 @@ import {
     BottomSheetModalProvider,
     useBottomSheetTimingConfigs,
 } from '@gorhom/bottom-sheet'
-import BottomSheet from '@gorhom/bottom-sheet'
-
-import Animated, {
-    Extrapolate,
-    interpolate,
-    useAnimatedStyle,
-    useSharedValue,
-    withTiming,
-} from 'react-native-reanimated'
 import {
     TouchableOpacity,
     TouchableWithoutFeedback,
@@ -57,7 +48,7 @@ const ActionBottomSheet = forwardRef((props, ref) => {
 
     //----------------------------------------------------------------ANIMATION CONFIG----------------------------------------------------------------
     const animationConfigs = useBottomSheetTimingConfigs({
-        duration: 200,
+        duration: 400,
     })
     //----------------------------------------------------------------ANIMATION CONFIG----------------------------------------------------------------
 
@@ -71,18 +62,27 @@ const ActionBottomSheet = forwardRef((props, ref) => {
     //----------------------------------------------------------------CANCEL----------------------------------------------------------------
     const cancelPressedHandler = useCallback(() => {
         bottomSheetModalRef.current.close()
+        props.closeModal()
     }, [])
     //----------------------------------------------------------------CANCEL----------------------------------------------------------------
 
     return (
-        <BottomSheetModalProvider>
+        <BottomSheetModalProvider style={StyleSheet.absoluteFill}>
             <BottomSheetModal
                 ref={bottomSheetModalRef}
                 index={1}
                 snapPoints={snapPoints}
                 backgroundComponent={null}
                 animationConfigs={animationConfigs}
-                backdropComponent={BottomSheetBackDrop}
+                backdropComponent={({ animatedIndex, style }) => {
+                    return (
+                        <BottomSheetBackDrop
+                            animatedIndex={animatedIndex}
+                            style={style}
+                            closeModal={props.closeModal}
+                        />
+                    )
+                }}
                 dismissOnPanDown={true}
                 handleComponent={CustomHandleComponent}
             >

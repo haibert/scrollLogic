@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 
+import { useNavigation } from '@react-navigation/native'
+
 import colors from '../../constants/colors'
 
 //components
@@ -17,12 +19,17 @@ import { Ionicons } from '@expo/vector-icons'
 
 const CommentCell = (props) => {
     const [checked, setChecked] = useState()
+
+    const navigation = useNavigation()
     return (
         <View
             onPress={() => {
                 setChecked((prevState) => !prevState)
             }}
             style={styles.cellOuter}
+            onTouchStart={() => {
+                navigation.navigate('OtherProfileScreen')
+            }}
         >
             <View style={styles.imageCont}></View>
             <Text

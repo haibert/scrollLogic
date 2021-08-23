@@ -310,4 +310,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default React.memo(ThumbnailBig)
+export default ThumbnailBig

@@ -37,7 +37,7 @@ const Button = (props) => {
                 onPress={props.onPress}
                 activeOpacity={0.5}
             >
-                <LinearGradient
+                {/* <LinearGradient
                     // colors={['rgba(252,140,250,1)', 'rgba(155,97,234,1)']}
                     colors={[colors.nPButton, colors.nPButton]}
                     // colors={[colors.mediumTint, 'rgba(155,97,234,1)']}
@@ -50,22 +50,22 @@ const Button = (props) => {
                     }}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
+                > */}
+                {props.iconName ? (
+                    <Ionicons
+                        name={props.iconName ? props.iconName : null}
+                        size={20}
+                        color="white"
+                        style={{ marginRight: 7 }}
+                    />
+                ) : null}
+                <Text
+                    maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                    style={{ ...styles.text, ...props.textStyle }}
                 >
-                    {props.iconName ? (
-                        <Ionicons
-                            name={props.iconName ? props.iconName : null}
-                            size={20}
-                            color="white"
-                            style={{ marginRight: 7 }}
-                        />
-                    ) : null}
-                    <Text
-                        maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
-                        style={{ ...styles.text, ...props.textStyle }}
-                    >
-                        {props.text}
-                    </Text>
-                </LinearGradient>
+                    {props.text}
+                </Text>
+                {/* </LinearGradient> */}
             </TouchableCmp>
         </View>
     )
@@ -77,16 +77,17 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         // backgroundColor: colors.buttonColor,
-        borderRadius: 15,
-        shadowColor: 'black',
-        shadowRadius: 2,
-        shadowOpacity: 0.4,
-        backgroundColor: 'white',
-        shadowOffset: {
-            width: 0,
-            height: 1,
-        },
-        elevation: 5,
+        // borderRadius: 15,
+        // shadowColor: 'black',
+        // shadowRadius: 2,
+        // shadowOpacity: 0.4,
+        // backgroundColor: 'white',
+        // shadowOffset: {
+        //     width: 0,
+        //     height: 1,
+        // },
+        // elevation: 5,
+        backgroundColor: colors.currentMainColor,
     },
     touchable: {
         flex: 1,

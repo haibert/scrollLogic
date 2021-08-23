@@ -35,6 +35,7 @@ import useDidMountEffect from '../hooks/useDidMountEffect'
 //useFocus InteractionManager
 import { InteractionManager } from 'react-native'
 import { useFocusEffect, useIsFocused } from '@react-navigation/native'
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 
 //constants
 import colors from '../constants/colors'
@@ -91,6 +92,9 @@ const OtherGalleryView = ({ route, navigation }) => {
 
     //isFocused?
     const isFocused = useIsFocused()
+
+    //bottom tab bar height
+    const tabBarHeight = useBottomTabBarHeight()
 
     let tabBarBottomPosition = insets.bottom > 0 ? insets.bottom / 2 + 2 : 10
 
@@ -493,7 +497,7 @@ const OtherGalleryView = ({ route, navigation }) => {
                 <ScreenWrapper
                     //old way of handling gesture event
                     // onStartShouldSetResponderCapture={scrollChecker}
-                    style={{ paddingBottom: 0 }}
+                    style={{ paddingBottom: tabBarHeight }}
                 >
                     <SharedElement
                         id={`${galleryID}`}

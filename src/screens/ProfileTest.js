@@ -6,11 +6,10 @@ import {
     Alert,
     View,
     Text,
-    FlatList,
+    // FlatList,
     Modal,
-    Pressable,
 } from 'react-native'
-import { ScrollView } from 'react-native-gesture-handler'
+import { FlatList } from 'react-native-gesture-handler'
 
 //components
 import ScreenWrapper from '../components/ScreenWrapper'
@@ -32,7 +31,6 @@ import {
     setGalleries,
     shouldRefreshSet,
     setTaggedGalleries,
-    deleteGallery,
 } from '../store/event/action'
 import {
     setShouldRefreshProfile,
@@ -49,7 +47,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 // big list
 import BigList from 'react-native-big-list'
 
-const { width } = Dimensions.get('window')
+const { width, height } = Dimensions.get('window')
 
 //expo camera
 import { Camera } from 'expo-camera'
@@ -58,23 +56,22 @@ import { Audio } from 'expo-av'
 //useFocus InteractionManager
 import { InteractionManager } from 'react-native'
 import { useIsFocused, useFocusEffect } from '@react-navigation/native'
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 
 //ionicons
 import { Ionicons } from '@expo/vector-icons'
-import { Icon } from 'react-native-elements'
+import { ScrollView } from 'react-native-gesture-handler'
 
-const loadNumber = 10
+const loadNumber = 15
 let page = 1
 
-const ProfileScreen = (props) => {
+const ProfileTest = (props) => {
     //personal info
     const personalInfo = useSelector((state) => state.signupReducer.userInfo)
     // console.log(
     //     '🚀 ~ file: ProfileScreen.js ~ line 53 ~ ProfileScreen ~ personalInfo',
     //     personalInfo
     // )
-    const showBackButton = props?.route?.params?.showBackButton
+
     //insets
     const insets = useSafeAreaInsets()
 
@@ -93,13 +90,8 @@ const ProfileScreen = (props) => {
     //for scrolling To X position
     const pagerScrollViewRef = useRef()
 
-    //tab bar height
-    const tabBarHeight = useBottomTabBarHeight()
-
     let shouldAnimateProfile
     shouldAnimateProfile = props.route.params?.shouldAnimateProfile
-
-    console.log('loaded profile screen')
 
     //----------------------------------------------------------------ACTION SHEET LOGIC---------------------------------------------------------------
     const [showConfirmationBool, setShowConfirmationBool] = useState()
@@ -137,40 +129,40 @@ const ProfileScreen = (props) => {
 
     const galleries = useSelector((state) => state.galleryReducer.galleries)
 
-    const taggedGalleries = [
+    const galleries2 = [
         {
             eventDate: '2021-07-26',
-            galleryID: '300',
+            galleryID: '34',
             galleryName: 'Gacias Grad',
             thumbnail: 'http://144.126.212.5/uploads/thumb/60fe3ca1c6950.webp',
         },
         {
             eventDate: '2021-08-06',
-            galleryID: '657',
+            galleryID: '24',
             galleryName: 'Fmdjdjd',
             thumbnail: 'none',
         },
         {
             eventDate: '2021-08-06',
-            galleryID: '74',
+            galleryID: '64',
             galleryName: 'Vcff',
             thumbnail: 'none',
         },
         {
             eventDate: '2021-08-11',
-            galleryID: '856',
+            galleryID: '76',
             galleryName: 'Couples Trip ',
             thumbnail: 'http://144.126.212.5/uploads/thumb/61143fa3c8988.webp',
         },
         {
             eventDate: '2021-08-13',
-            galleryID: '8979',
+            galleryID: '87',
             galleryName: 'Test',
             thumbnail: 'http://144.126.212.5/uploads/thumb/6116ac2b68302.webp',
         },
         {
             eventDate: '2021-08-14',
-            galleryID: '4797',
+            galleryID: '47',
             galleryName: 'Yhhhh',
             thumbnail: 'http://144.126.212.5/uploads/thumb/611759a5676dd.webp',
         },
@@ -185,7 +177,7 @@ const ProfileScreen = (props) => {
         // setError(null)
         page = 1
         try {
-            await dispatch(setGalleries(null, loadNumber, page, true))
+            dispatch(setGalleries(null, loadNumber, page, true))
         } catch (error) {
             // setError(error.message)
         }
@@ -211,6 +203,12 @@ const ProfileScreen = (props) => {
     //----------------------------------------------------------------LOAD GALLERIES----------------------------------------------------------------
 
     //----------------------------------------------------------------LOAD TAGGED GALLERIES----------------------------------------------------------------
+    // const [loadingGalleries, setLoadingGalleries] = useState(false)
+
+    const taggedGalleries = useSelector(
+        (state) => state.galleryReducer.galleries
+    )
+
     const shouldRefreshTaggedGalleries = useSelector(
         (state) => state.galleryReducer.shouldRefresh
     )
@@ -235,7 +233,7 @@ const ProfileScreen = (props) => {
 
     useFocusEffect(() => {
         const refreshConditionally = async () => {
-            if (shouldRefreshTaggedGalleries) {
+            if (shouldRefresh) {
                 loadTaggedGalleries()
                 await dispatch(shouldRefreshSet(false))
             }
@@ -244,7 +242,115 @@ const ProfileScreen = (props) => {
     })
     //----------------------------------------------------------------LOAD TAGGED GALLERIES----------------------------------------------------------------
 
+    //----------------------------------------------------------------CAMERA PRESSED HANDLER----------------------------------------------------------------
+    const greenLightOnPermissions = useSelector(
+        (state) => state.permissionsReducer.permissions.camera
+    )
+
+    const cameraPressedHandler = async () => {
+        if (greenLightOnPermissions === 'granted') {
+            props.navigation.navigate('CameraScreen')
+        } else {
+            const { status } = await Camera.getPermissionsAsync()
+            const audioStatus = await Audio.getPermissionsAsync()
+
+            if (status && audioStatus.status === 'granted') {
+                dispatch(loadPermissions('granted'))
+                props.navigation.navigate('CameraScreen')
+            } else if (status || audioStatus.status === 'undetermined') {
+                const results = await Camera.requestPermissionsAsync()
+                const audioResults = await Audio.requestPermissionsAsync()
+                if (results.status && audioResults.status === 'granted') {
+                    props.navigation.navigate('CameraScreen')
+                } else if (results.status || audioResults.status === 'denied') {
+                    sendUserToSettingsHandler()
+                    return
+                }
+            } else if (status || audioResults.status === 'denied') {
+                const results2 = await Camera.requestPermissionsAsync()
+                const audioResults2 = await Audio.requestPermissionsAsync()
+                if (results2.status && audioResults2 === 'granted') {
+                    props.navigation.navigate('CameraScreen')
+                } else {
+                    sendUserToSettingsHandler()
+                    return
+                }
+            }
+        }
+    }
+
+    const openSettings = useCallback(async () => {
+        Platform.OS === 'android' ? Linking.openSettings() : null
+        if (Platform.OS === 'ios') {
+            const supported = await Linking.canOpenURL('app-settings:')
+            try {
+                if (!supported) {
+                    console.log("Can't handle settings url")
+                } else {
+                    return Linking.openURL('app-settings:')
+                }
+            } catch (err) {
+                console.error('An error occurred', err)
+            }
+        }
+    }, [])
+
+    const sendUserToSettingsHandler = useCallback(() => {
+        const alertMessage =
+            'Turn On Camera Permissions to Allow Event Share to Scan QR Codes'
+        Platform.OS === 'android' ? androidAlert() : IOSAlert()
+
+        function IOSAlert() {
+            Alert.alert(alertMessage, '', [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Settings',
+                    onPress: () => {
+                        openSettings()
+                    },
+                },
+            ])
+        }
+        function androidAlert() {
+            Alert.alert('', alertMessage, [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Settings',
+                    onPress: () => {
+                        openSettings()
+                    },
+                },
+            ])
+        }
+    }, [])
+    //----------------------------------------------------------------CAMERA PRESSED HANDLER----------------------------------------------------------------
+
     //----------------------------------------------------------------FLAT LIST FUNCTIONS--------------------------------------------------------------
+    const [listShown, setListShown] = useState('galleries')
+    const render = useCallback(({ item, index }) => {
+        return (
+            <Thumbnail
+                images={item}
+                galleryPressedHandler={() => {
+                    galleryPressedHandler(item.galleryID, item.thumbnail, index)
+                }}
+                navigation={props.navigation}
+                galleryName={item.galleryName}
+                oneEllipsisPressed={() => {
+                    oneEllipsisPressed(item.galleryID, index)
+                }}
+                key={item.galleryID}
+                imageURI={`${item.thumbnail}`}
+            />
+        )
+    }, [])
+
     const galleryPressedHandler = useCallback((galleryID, thumbnail, index) => {
         props.navigation.navigate('GalleryView', {
             galleryID,
@@ -266,27 +372,9 @@ const ProfileScreen = (props) => {
         setOpenModal(false)
     }, [])
 
-    // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><GALLERIES ITEMS><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-    const renderMyGalleries = useCallback(({ item, index }) => {
-        return (
-            <Thumbnail
-                images={item}
-                galleryPressedHandler={() => {
-                    galleryPressedHandler(item.galleryID, item.thumbnail, index)
-                }}
-                navigation={props.navigation}
-                galleryName={item.galleryName}
-                oneEllipsisPressed={() => {
-                    oneEllipsisPressed(item.galleryID, index)
-                }}
-                key={item.galleryID}
-                imageURI={`${item.thumbnail}`}
-            />
-        )
-    }, [])
-    const itemHeightMyGalleries = useMemo(() => width / 2 + 40)
+    const itemHeight = useMemo(() => width / 2 - 5)
 
-    const layOutMyGalleries = useCallback(
+    const layOut = useCallback(
         (data, index) => ({
             length: itemHeight,
             offset: itemHeight * index,
@@ -294,13 +382,9 @@ const ProfileScreen = (props) => {
         }),
         []
     )
-    const keyExtractorMyGalleries = useCallback(
-        (item) => `${item.galleryID}`,
-        []
-    )
-    // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><GALLERIES ITEMS><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-
-    // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><LIKED PICS><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+    console.log('loaded profile screen')
+    const keyExtractor = useCallback((item) => `${item.galleryID}`, [])
+    // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><LIKED PICS<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
     const pics = useSelector((state) => state.galleryReducer.pics)
 
     const keyExtractorLiked = useCallback((item) => item.id, [])
@@ -327,8 +411,8 @@ const ProfileScreen = (props) => {
         )
     }, [])
 
-    const itemHeightLiked = useMemo(() => width / 2 + 40)
-    // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><LIKED PICS><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+    const itemHeightLiked = useMemo(() => width / 2)
+    // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><LIKED PICS<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
     const RenderHeader = useCallback(() => {
         return (
@@ -336,34 +420,12 @@ const ProfileScreen = (props) => {
                 normalizedSource={normalizedSource}
                 handleProfilePhotoPressed={handleProfilePhotoPressed}
                 profileInfo={personalInfo}
-                isCurrentUser={true}
             >
                 <Button
                     text="Edit"
-                    textStyle={{ color: colors.darkGrey }}
                     style={styles.button}
                     onPress={editPressedHandler}
                 />
-                {/* <Pressable
-                    style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 20,
-                        borderWidth: 1,
-                        borderColor: 'white',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginTop: 10,
-                    }}
-                    onPress={editPressedHandler}
-                >
-                    <Icon
-                        name="edit-2"
-                        type="feather"
-                        size={20}
-                        color="white"
-                    />
-                </Pressable> */}
                 <StatsContainer
                     followingCount={personalInfo?.followingCount}
                     followersCount={personalInfo?.followersCount}
@@ -383,7 +445,7 @@ const ProfileScreen = (props) => {
             <ProfileTabBar
                 ref={animatedTabBarRef}
                 onLeftPressed={() => {
-                    // setListShown('galleries')
+                    setListShown('galleries')
                     myGalleriesPressed()
                 }}
                 onMiddlePressed={() => {
@@ -396,47 +458,29 @@ const ProfileScreen = (props) => {
 
     const onEndReached = useCallback(async () => {
         const nextPage = (page += 1)
-        if (activePage === 'myGalleries') {
-            try {
-                await dispatch(setGalleries(null, loadNumber, nextPage))
-            } catch (error) {
-                // setError(error.message)
-            }
+        try {
+            await dispatch(setGalleries(null, loadNumber, nextPage))
+        } catch (error) {
+            // setError(error.message)
         }
-
-        if (activePage === 'taggedGalleries') {
-            // try {
-            //     await dispatch(setGalleries(null, loadNumber, nextPage))
-            // } catch (error) {
-            //     // setError(error.message)
-            // }
-        }
-
-        if (activePage === 'likedContent') {
-            // try {
-            //     await dispatch(setGalleries(null, loadNumber, nextPage))
-            // } catch (error) {
-            //     // setError(error.message)
-            // }
-        }
-    }, [activePage])
+    }, [])
     //----------------------------------------------------------------FLAT LIST FUNCTIONS--------------------------------------------------------------
 
     //----------------------------------------------------------------PROFILE PHOTO PRESSED----------------------------------------------------------------
     const handleProfilePhotoPressed = useCallback(() => {
-        props.navigation.push('PhotoEditScreen', { id: '1' })
+        props.navigation.navigate('PhotoEditScreen', { id: '1' })
     }, [])
     //----------------------------------------------------------------PROFILE PHOTO PRESSED----------------------------------------------------------------
 
     //----------------------------------------------------------------EDIT PRESSED HANDLER----------------------------------------------------------------
     const editPressedHandler = useCallback(() => {
-        props.navigation.push('ProfileEditScreen', { id: '1' })
+        props.navigation.navigate('ProfileEditScreen', { id: '1' })
     }, [])
     //----------------------------------------------------------------EDIT PRESSED HANDLER----------------------------------------------------------------
 
     //----------------------------------------------------------------FOLLOWINGS PRESSED HANDLER----------------------------------------------------------------
     const followingsPressedHandler = useCallback((followType) => {
-        props.navigation.push('ProfileFollowsScreen', {
+        props.navigation.navigate('ProfileFollowsScreen', {
             username: personalInfo?.userName,
             userID: personalInfo?.userID,
             followType: followType,
@@ -456,8 +500,29 @@ const ProfileScreen = (props) => {
         return normalizedSource
     }, [personalInfo?.avatarThumb])
     //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
+    const [disableFirstGallery, setDisableFirstGallery] = useState()
 
-    //----------------------------------------------------------------ANIMATED TAB BAR BUTTONS----------------------------------------------------------------
+    const [shorterGallery, setShorterGallery] = useState()
+    const onMomentumScrollEnd = useCallback((ev) => {
+        const index = Math.round(ev.nativeEvent.contentOffset.x / width)
+        console.log(
+            '🚀 ~ file: ProfileTest.js ~ line 496 ~ onMomentumScrollEnd ~ index',
+            index
+        )
+        if (index === 0) {
+            setDisableFirstGallery(false)
+            animatedTabBarRef.current?.animateToLeft()
+        }
+        if (index === 1) {
+            setDisableFirstGallery(true)
+            console.log(typeof galleries)
+            const shorterGal = [...galleries]
+            const reducedGal = shorterGal.slice(0, 8)
+            setShorterGallery(reducedGal)
+            animatedTabBarRef.current?.animateToMiddle()
+        }
+    }, [])
+
     const myGalleriesPressed = useCallback(() => {
         pagerScrollViewRef.current?.scrollTo({ x: 0, animated: true })
     }, [])
@@ -465,100 +530,39 @@ const ProfileScreen = (props) => {
     const taggedGalleriesPressed = useCallback(() => {
         pagerScrollViewRef.current?.scrollTo({ x: width, animated: true })
     }, [])
-    //----------------------------------------------------------------ANIMATED TAB BAR BUTTONS----------------------------------------------------------------
-
-    //----------------------------------------------------------------SCROLLVIEW FUNCTIONS----------------------------------------------------------------
-    //currently visible slide
-    const [activePage, setActivePage] = useState('myGalleries')
-
-    //bool to control which galleries are shortened
-    const [shortenMyGalleries, setShortenMyGalleries] = useState()
-    const [shortenMyTaggedGalleries, setShortenMyTaggedGalleries] = useState()
-    const [shortenMyLikedContent, setShortenMyLikedContent] = useState()
-
-    //shortenedGalleries
-    const [reducedGalleries, setReducedGalleries] = useState()
-
-    const onMomentumScrollEnd = useCallback((ev) => {
-        const index = Math.round(ev.nativeEvent.contentOffset.x / width)
-
-        if (index === 0) {
-            setActivePage('myGalleries')
-            setShortenMyGalleries(false)
-            setShortenMyLikedContent(true)
-            setShortenMyTaggedGalleries(true)
-            animatedTabBarRef.current?.animateToLeft()
-        }
-        if (index === 1) {
-            setActivePage('taggedGalleries')
-            setShortenMyTaggedGalleries(false)
-            setShortenMyGalleries(true)
-            setShortenMyLikedContent(true)
-
-            const allGalleries = [...galleries]
-            const reducedGal = allGalleries.slice(0, 8)
-            setReducedGalleries(reducedGal)
-            animatedTabBarRef.current?.animateToMiddle()
-        }
-        if (index === 2) {
-            setActivePage('likedContent')
-            setShortenMyLikedContent(false)
-            setShortenMyGalleries(true)
-            setShortenMyTaggedGalleries(true)
-            const allGalleries = [...galleries]
-            const reducedGal = allGalleries.slice(0, 8)
-            setReducedGalleries(reducedGal)
-            animatedTabBarRef.current?.animateToMiddle()
-        }
-    }, [])
-    //----------------------------------------------------------------SCROLLVIEW FUNCTIONS----------------------------------------------------------------
 
     return (
-        <ScreenWrapper
-            style={{
-                paddingBottom: tabBarHeight,
-            }}
-            topColor={{ backgroundColor: colors.currentMainColor }}
-        >
+        <ScreenWrapper>
             <HeaderBasic
-                iconName={
-                    showBackButton ? 'chevron-back-outline' : 'menu-outline'
-                }
+                iconName="menu-outline"
                 goBack={() => {
-                    showBackButton
-                        ? props.navigation.goBack()
-                        : props.navigation.toggleDrawer()
+                    props.navigation.toggleDrawer()
                 }}
                 headerColor={{ color: colors.textColor }}
-                style={{ backgroundColor: colors.currentMainColor }}
-                iconColor="white"
             >
-                {showBackButton ? null : (
-                    <Ionicons
-                        name="notifications-outline"
-                        size={26}
-                        color="white"
-                        style={styles.notifications}
-                        onPress={() => {
-                            props.navigation.navigate('NotificationsScreen')
-                        }}
-                    />
-                )}
+                <Ionicons
+                    name="notifications-outline"
+                    size={30}
+                    style={styles.signOut}
+                    onPress={() => {
+                        props.navigation.navigate('NotificationsScreen')
+                    }}
+                />
             </HeaderBasic>
             <FlatList
-                StickySectionHeadersEnabled={true}
-                nestedScrollEnabled={true}
                 stickyHeaderIndices={[2]}
                 ListHeaderComponent={() => <RenderHeader />}
                 contentContainerStyle={{
                     minHeight: '100%',
                     width: width,
-                    backgroundColor: 'white',
                 }}
                 style={{ flex: 1 }}
                 showsVerticalScrollIndicator={false}
-                onEndReached={onEndReached}
-                onEndReachedThreshold={0.2}
+                // onEndReached={onEndReached}
+                onEndReached={() => {
+                    console.log('end reahced')
+                }}
+                onEndReachedThreshold={0.1}
                 data={[{ id: '1' }, { id: '3' }, { id: '4' }]}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item, index }) => {
@@ -571,57 +575,74 @@ const ProfileScreen = (props) => {
                                 ref={pagerScrollViewRef}
                                 showsHorizontalScrollIndicator={false}
                                 style={{
+                                    left: 0,
                                     width: width,
                                     minHeight: '100%',
                                 }}
                                 horizontal={true}
                                 snapToInterval={width}
-                                snapToAlignment="start"
+                                snapToAlignment={'start'}
                                 decelerationRate="fast"
                                 onMomentumScrollEnd={onMomentumScrollEnd}
-                                bounces={false}
                             >
                                 <View style={styles.bigList}>
-                                    <BigList
+                                    <FlatList
+                                        style={styles.bigList}
                                         data={
-                                            !shortenMyGalleries
+                                            !disableFirstGallery
                                                 ? galleries
-                                                : reducedGalleries
+                                                : shorterGallery
                                         }
-                                        renderItem={renderMyGalleries}
-                                        itemHeight={itemHeightMyGalleries}
-                                        layOut={layOutMyGalleries}
-                                        keyExtractor={keyExtractorMyGalleries}
-                                        numColumns={2}
+                                        renderItem={
+                                            listShown === 'galleries'
+                                                ? render
+                                                : renderLiked
+                                        }
                                         contentContainerStyle={{
-                                            paddingBottom: 10,
+                                            minHeight: '100%',
+                                            width: width,
                                         }}
-                                        // onRefresh={loadGalleries}
-                                        // refreshing={loadingGalleries}
+                                        layOut={
+                                            listShown === 'galleries'
+                                                ? layOut
+                                                : getItemLayoutLiked
+                                        }
+                                        keyExtractor={
+                                            listShown === 'galleries'
+                                                ? keyExtractor
+                                                : keyExtractorLiked
+                                        }
+                                        numColumns={2}
                                         showsVerticalScrollIndicator={false}
                                         scrollEnabled={false}
-                                        // onEndReached={() => {
-                                        //     console.log('End Reached')
-                                        //     onEndReached()
-                                        // }}
                                     />
                                 </View>
                                 <View style={styles.bigList}>
                                     <BigList
-                                        data={taggedGalleries}
-                                        renderItem={renderMyGalleries}
-                                        itemHeight={itemHeightMyGalleries}
-                                        layOut={layOutMyGalleries}
-                                        keyExtractor={keyExtractorMyGalleries}
+                                        data={galleries2}
+                                        renderItem={
+                                            listShown === 'galleries'
+                                                ? render
+                                                : renderLiked
+                                        }
+                                        itemHeight={
+                                            listShown === 'galleries'
+                                                ? itemHeight
+                                                : itemHeightLiked
+                                        }
+                                        layOut={
+                                            listShown === 'galleries'
+                                                ? layOut
+                                                : getItemLayoutLiked
+                                        }
+                                        keyExtractor={
+                                            listShown === 'galleries'
+                                                ? keyExtractor
+                                                : keyExtractorLiked
+                                        }
                                         numColumns={2}
-                                        // onRefresh={loadGalleries}
-                                        // refreshing={loadingGalleries}
-                                        showsVerticalScrollIndicator={false}
                                         scrollEnabled={false}
-                                        // onEndReached={() => {
-                                        //     console.log('End Reached')
-                                        //     onEndReached()
-                                        // }}
+                                        showsVerticalScrollIndicator={false}
                                     />
                                 </View>
                             </ScrollView>
@@ -672,7 +693,6 @@ const styles = StyleSheet.create({
         marginTop: 5,
         height: 30,
         borderRadius: 8,
-        backgroundColor: 'white',
     },
     columCont: {
         height: 50,
@@ -692,7 +712,8 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         paddingBottom: 15,
     },
-    notifications: {
+    signOut: {
+        color: colors.darkColorP1,
         fontFamily: colors.semiBold,
         position: 'absolute',
         top: 0,
@@ -700,4 +721,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default ProfileScreen
+export default ProfileTest

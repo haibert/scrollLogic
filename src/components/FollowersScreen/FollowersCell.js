@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { View, Text, StyleSheet, Pressable } from 'react-native'
 
 //colors
@@ -20,10 +20,20 @@ import { useDispatch, useSelector } from 'react-redux'
 const FollowersCell = (props) => {
     //dispatch
     const dispatch = useDispatch()
-    //----------------------------------------------------------------FOLLOW USER----------------------------------------------------------------
     // if you are going to use props to set the initial state make sure to use useEffect like you did in OtherFollowingCell
+    //----------------------------------------------------------------SET BUTTON TYPE----------------------------------------------------------------
     const [buttonType, setButtonType] = useState(null)
+    console.log(
+        '🚀 ~ file: FollowersCell.js ~ line 26 ~ FollowersCell ~ buttonType',
+        buttonType
+    )
 
+    useEffect(() => {
+        setButtonType(props.follows)
+    }, [props.follows])
+    //----------------------------------------------------------------SET BUTTON TYPE----------------------------------------------------------------
+
+    //----------------------------------------------------------------FOLLOW USER----------------------------------------------------------------
     const followPressedHandler = useCallback(async (userID) => {
         try {
             const results = await dispatch(followUnfollow(userID, 'Follow'))
@@ -98,6 +108,20 @@ const FollowersCell = (props) => {
                     }}
                     textStyle={{
                         color: colors.darkGrey,
+                    }}
+                />
+            ) : null}
+
+            {buttonType === 'unFollowed' ? (
+                <ButtonFlatlist2
+                    buttonContStyle={styles.followButtonCont}
+                    style={styles.followButton}
+                    title={'Follow'}
+                    onPress={() => {
+                        followPressedHandler(props.data.userID)
+                    }}
+                    textStyle={{
+                        color: 'white',
                     }}
                 />
             ) : null}

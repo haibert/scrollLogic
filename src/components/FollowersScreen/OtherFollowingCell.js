@@ -14,7 +14,7 @@ import { useDispatch } from 'react-redux'
 const OtherFollowingCell = ({ data, onPress, isCurrentUser, follows }) => {
     //dispatch
     const dispatch = useDispatch()
-    console.log('rendered cell')
+    // console.log('rendered cell')
     //----------------------------------------------------------------SET BUTTON TYPE----------------------------------------------------------------
     const [buttonType, setButtonType] = useState(follows)
 
@@ -113,7 +113,7 @@ const OtherFollowingCell = ({ data, onPress, isCurrentUser, follows }) => {
                 />
             ) : null}
 
-            {buttonType === 'Follows' || buttonType === 'success' ? (
+            {buttonType === 'follows' || buttonType === 'success' ? (
                 <ButtonFlatlist2
                     buttonContStyle={styles.buttonCont}
                     style={styles.buttonSecondaryStyle}

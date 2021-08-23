@@ -23,14 +23,14 @@ const SearchCell = (props) => {
                 ? null
                 : imageString
         return normalizedSource
-    }, [])
+    }, [props.searchResults.avatar])
     //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
 
     return (
         <TouchableWithoutFeedback onPress={props.onPress}>
             <View style={styles.cellOuter}>
                 <FastImage
-                    style={styles.imageCont}
+                    style={styles.avatar}
                     resizeMode={FastImage.resizeMode.cover}
                     source={{
                         uri: normalizedSource(),
@@ -69,13 +69,15 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
-    imageCont: {
+    avatar: {
         width: 40,
         height: 40,
-        borderRadius: 10,
+        borderRadius: 20,
         backgroundColor: 'rgba(235,235,235,1)',
         position: 'absolute',
         left: 10,
+        borderWidth: 3,
+        borderColor: 'white',
     },
     namesCont: {
         height: 60,

@@ -23,7 +23,6 @@ import { SharedElement } from 'react-navigation-shared-element'
 
 //ionicons
 import { Ionicons } from '@expo/vector-icons'
-import { Icon } from 'react-native-elements'
 import PersonsSVG from '../SVGIcons/PersonsSVG'
 
 //linear gradient
@@ -39,10 +38,10 @@ const { width, height } = Dimensions.get('window')
 
 const textMargins = Platform.select({
     ios: {
-        marginTop: -2,
+        marginTop: 5,
     },
     android: {
-        marginTop: -10,
+        marginTop: -5,
     },
 })
 
@@ -76,15 +75,9 @@ const FeedCell = ({
     //----------------------------------------------------------------NORMALIZE URI----------------------------------------------------------------
 
     //----------------------------------------------------------------PLATFORM SPECIFIC IMAGE COMP----------------------------------------------------------------
-    const ShadowViewComponent = useCallback(
-        Platform.select({
-            ios: () => {
-                return <View style={styles.iosBigImageShadow}></View>
-            },
-            android: () => null,
-        }),
-        []
-    )
+    const ShadowViewComponent = useCallback((props) => {
+        return <View style={styles.polaroidContainer}>{props.children}</View>
+    }, [])
     //----------------------------------------------------------------PLATFORM SPECIFIC IMAGE COMP----------------------------------------------------------------
 
     //----------------------------------------------------------------PLATFORM SPECIFIC AVATAR COMP----------------------------------------------------------------
@@ -139,58 +132,64 @@ const FeedCell = ({
             onPress={onPress}
             springConfig={springConfig}
         >
-            <View style={styles.designLayer1} />
             <View style={styles.designLayer2} />
-            <ShadowViewComponent />
-            <SharedElement
-                id={`${galleryData.galleryID}`}
-                style={styles.sharedElement}
-            >
-                <FastImage
-                    style={styles.image}
-                    resizeMode={FastImage.resizeMode.cover}
-                    source={{
-                        uri: normalizedSource(),
-                        priority: FastImage.priority.normal,
+            <View style={styles.designLayer1} />
+            <ShadowViewComponent>
+                <SharedElement
+                    id={`${galleryData.galleryID}`}
+                    style={styles.sharedElement}
+                >
+                    <FastImage
+                        style={styles.image}
+                        resizeMode={FastImage.resizeMode.cover}
+                        source={{
+                            uri: normalizedSource(),
+                            priority: FastImage.priority.normal,
+                        }}
+                    />
+                </SharedElement>
+                <View style={styles.galDetailCont}>
+                    <Text
+                        maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                        style={styles.galleryTitle}
+                        ellipsizeMode="tail"
+                        numberOfLines={1}
+                    >
+                        {galleryData.galleryName}
+                    </Text>
+                    <Text
+                        maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                        style={styles.galDate}
+                        ellipsizeMode="tail"
+                        numberOfLines={1}
+                    >
+                        {formattedDate}
+                        <Text
+                            maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
+                            style={styles.location}
+                        >
+                            {' Venice Beach CA'}
+                            {/* {galleryData.location} */}
+                        </Text>
+                    </Text>
+                </View>
+                <Pressable
+                    style={styles.ellipsisStyle}
+                    onPress={oneEllipsisPressed}
+                    pressRetentionOffset={{
+                        bottom: 30,
+                        left: 20,
+                        right: 20,
+                        top: 20,
                     }}
-                />
-            </SharedElement>
-            <LinearGradient
-                style={styles.gradient}
-                colors={[
-                    'transparent',
-                    'transparent',
-                    'transparent',
-                    'rgba(0,0,0,1)',
-                ]}
-            />
-            <View style={styles.galDetailCont}>
-                <Text
-                    maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
-                    style={styles.galDate}
-                    ellipsizeMode="tail"
-                    numberOfLines={1}
                 >
-                    {formattedDate}
-                </Text>
-                <Text
-                    maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
-                    style={styles.galleryTitle}
-                    ellipsizeMode="tail"
-                    numberOfLines={1}
-                >
-                    {galleryData.galleryName}
-                </Text>
-                <Text
-                    maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
-                    style={styles.location}
-                    ellipsizeMode="tail"
-                    numberOfLines={1}
-                >
-                    Venice Beach CA
-                    {/* {galleryData.location} */}
-                </Text>
-            </View>
+                    <Ionicons
+                        name="ellipsis-vertical"
+                        size={25}
+                        color={colors.darkGrey}
+                    />
+                </Pressable>
+            </ShadowViewComponent>
             <View style={styles.statsCont}>
                 <AvatarComponent />
                 <Text
@@ -205,6 +204,7 @@ const FeedCell = ({
                 <Heart
                     style={styles.heartIcon}
                     color={colors.currentMainColor}
+                    size={20}
                 />
                 <Text
                     maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
@@ -223,8 +223,8 @@ const FeedCell = ({
                     maxFontSizeMultiplier={colors.maxFontSizeMultiplier}
                 /> */}
                 <PersonsSVG
-                    size={28}
-                    color={colors.darkGrey}
+                    size={25}
+                    color={colors.iOSBlue}
                     style={styles.peopleIcon}
                 />
                 <Text
@@ -237,93 +237,109 @@ const FeedCell = ({
                     15 Stackers
                 </Text>
             </View>
-            <Pressable
-                style={styles.ellipsisStyle}
-                onPress={oneEllipsisPressed}
-                pressRetentionOffset={{
-                    bottom: 30,
-                    left: 20,
-                    right: 20,
-                    top: 20,
-                }}
-            >
-                <Ionicons name="ellipsis-vertical" size={25} color="white" />
-            </Pressable>
         </ScaleButton>
     )
 }
 
 const styles = StyleSheet.create({
     outerCont: {
-        height: width + 20,
+        height: width + 40,
         width: width,
     },
+    polaroidContainer: {
+        shadowRadius: 10,
+        height: width * 0.9,
+        width: width * 0.9,
+        borderRadius: width * 0.9 * 0.05,
+        marginLeft: width / 35,
+        //shadow
+        shadowColor: 'black',
+        shadowOpacity: 0.2,
+        backgroundColor: 'white',
+        shadowOffset: {
+            width: 0,
+            height: 0,
+        },
+        elevation: 12,
+    },
     sharedElement: {
-        height: width * 0.85,
-        width: width * 0.85,
-        marginLeft: width / 20,
-        borderRadius: 15,
+        height: width * 0.9,
+        width: width * 0.9,
+        borderRadius: width * 0.9 * 0.05,
+        backgroundColor: 'white',
     },
     image: {
-        height: width * 0.85,
-        width: width * 0.85,
-        borderRadius: 15,
-        elevation: 10,
-    },
-    gradient: {
-        height: width * 0.852,
-        width: width * 0.852,
-        borderRadius: 15,
-        position: 'absolute',
-        left: 19,
+        height: width * 0.9 - 70 - 20,
+        width: width * 0.9 - 20,
+        borderRadius: width * 0.9 * 0.033,
+        top: 10,
+        left: 10,
+        right: 10,
+        borderColor: 'white',
     },
     designLayer1: {
-        height: width * 0.75,
-        width: width * 0.75,
-        borderRadius: 15,
-        top: (width * 0.95) / 2 - (width * 0.85) / 2,
-        right: width / 15,
-        backgroundColor: colors.currentMainColorOpacity05,
+        height: width * 0.8,
+        width: width * 0.8,
+        top: (width * 0.9) / 2 - (width * 0.8) / 2,
+        right: width / 2 / 10,
+        borderRadius: width * 0.8 * 0.05,
+        backgroundColor: 'white',
+        //shadow
         position: 'absolute',
-        shadowColor: colors.currentMainColor,
-        shadowRadius: 3,
-        shadowOpacity: 0.5,
+        shadowColor: 'black',
+        shadowRadius: 10,
+        shadowOpacity: 0.25,
         shadowOffset: {
             width: 2,
             height: 0,
         },
+        elevation: 6,
     },
     designLayer2: {
-        height: width * 0.65,
-        width: width * 0.65,
-        borderRadius: 15,
-        top: (width * 0.95) / 2 - (width * 0.75) / 2,
-        right: width / 25,
-        backgroundColor: colors.currentMainColorOpacity03,
+        height: width * 0.7,
+        width: width * 0.7,
+        top: (width * 0.9) / 2 - (width * 0.7) / 2,
+        right: width / 2 / 20,
+        borderRadius: width * 0.7 * 0.05,
+        backgroundColor: 'white',
+        ///shadow
         position: 'absolute',
+        shadowColor: 'black',
+        shadowRadius: 10,
+        shadowOpacity: 0.25,
+        shadowOffset: {
+            width: 2,
+            height: 0,
+        },
+        elevation: 5,
     },
     galDetailCont: {
-        position: 'absolute',
-        width: width,
-        paddingHorizontal: width / 10,
-        bottom: width / 4.1,
+        left: 10,
+        width: width * 0.85 - 19,
+        bottom: 80,
+        backgroundColor: 'white',
+        height: 70,
+        paddingTop: 10,
+        paddingLeft: 5,
     },
     galleryTitle: {
-        color: 'white',
-        fontFamily: colors.font,
-        fontSize: 23,
+        color: colors.darkGrey,
+        fontFamily: colors.semiBold,
+        fontSize: 22,
         ...textMargins,
+        width: width / 1.5,
     },
     galDate: {
         fontFamily: colors.font,
         fontSize: 16,
-        color: 'white',
+        color: colors.darkGrey,
         ...textMargins,
+        width: width / 1.5,
     },
     location: {
         fontFamily: colors.font,
         fontSize: 16,
-        color: 'white',
+        color: colors.darkGrey,
         ...textMargins,
     },
     statsCont: {
@@ -370,21 +386,6 @@ const styles = StyleSheet.create({
         fontFamily: colors.font,
         fontSize: 13,
     },
-    iosBigImageShadow: {
-        shadowColor: 'black',
-        shadowOpacity: 0.5,
-        backgroundColor: 'white',
-        shadowOffset: {
-            width: 0,
-            height: 3,
-        },
-        shadowRadius: 3,
-        borderRadius: 15,
-        height: width * 0.85,
-        width: width * 0.85,
-        marginLeft: width / 20,
-        position: 'absolute',
-    },
     iOSShadow: {
         shadowColor: 'black',
         shadowOpacity: 0.2,
@@ -400,8 +401,8 @@ const styles = StyleSheet.create({
     },
     ellipsisStyle: {
         position: 'absolute',
-        right: width / 10,
-        bottom: width / 4.8,
+        right: 0,
+        bottom: 10,
         height: width / 7,
         width: width / 9,
         alignItems: 'center',

@@ -54,7 +54,7 @@ export default {
     currentMainColorOpacity05: 'rgba(237, 88, 94, 0.5)',
     currentMainColorOpacity03: 'rgba(237, 88, 94, 0.3)',
 
-    grey: '#969897',
+    grey: 'rgba(88,88,88,1)',
     darkGrey: 'rgba(71,71,71,1)',
 
     rowHeight: (width * 16) / 9,

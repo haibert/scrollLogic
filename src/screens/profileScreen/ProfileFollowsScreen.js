@@ -182,7 +182,15 @@ const ProfileFollowsScreen = (props) => {
     const renderFollowing = useCallback(({ item, index }) => {
         return (
             <OtherFollowingCell
-                follows={item.follows === true ? 'Follows' : 'unFollowed'}
+                follows={
+                    item.follows === true
+                        ? 'follows'
+                        : item.follows === false
+                        ? 'unFollowed'
+                        : item.follows === 'pending'
+                        ? 'pending'
+                        : null
+                }
                 data={item}
                 onPress={() => {
                     onCellPressed(item.userID)
@@ -207,6 +215,15 @@ const ProfileFollowsScreen = (props) => {
                 onFollowPressed={() => {
                     followPressedHandler(item.userID)
                 }}
+                follows={
+                    item.follows === true
+                        ? 'follows'
+                        : item.follows === false
+                        ? 'unFollowed'
+                        : item.follows === 'pending'
+                        ? 'pending'
+                        : null
+                }
             />
         )
     }, [])
@@ -325,7 +342,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         width: '100%',
         bottom: 0,
-        backgroundColor: colors.overallBackground,
+        backgroundColor: 'white',
     },
 })
 

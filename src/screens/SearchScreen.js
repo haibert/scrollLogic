@@ -53,6 +53,7 @@ import { Audio } from 'expo-av'
 
 //useFocus InteractionManager
 import { useFocusEffect } from '@react-navigation/native'
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 
 //isFocused
 import { useIsFocused } from '@react-navigation/native'
@@ -77,6 +78,14 @@ const SearchScreen = ({ route, ...props }) => {
 
     //searches
     const searches = useSelector((state) => state.signupReducer.searches)
+
+    //tab bar height
+    const tabBarHeight = useBottomTabBarHeight()
+
+    // currentUserID
+    const currentUserID = useSelector(
+        (state) => state.signupReducer.userInfo.userID
+    )
 
     useFocusEffect(
         useCallback(() => {
@@ -358,11 +367,23 @@ const SearchScreen = ({ route, ...props }) => {
         Keyboard.dismiss()
     }, [isAndroid])
 
-    const onSearchPress = useCallback(async (uniqueID) => {
-        props.navigation.navigate('OtherProfileScreen', {
-            uniqueID,
-        })
-    }, [])
+    const onSearchPress = useCallback(
+        async (uniqueID) => {
+            //isCurrentUser
+            const isCurrentUser = uniqueID === currentUserID
+            if (isCurrentUser) {
+                props.navigation.push('ProfileScreen', {
+                    uniqueID,
+                    showBackButton: true,
+                })
+                return
+            }
+            props.navigation.navigate('OtherProfileScreen', {
+                uniqueID,
+            })
+        },
+        [currentUserID]
+    )
 
     //----------------------------------------------------------------FLATlIST OPTIMIZATION----------------------------------------------------------------
 
@@ -385,9 +406,10 @@ const SearchScreen = ({ route, ...props }) => {
     //----------------------------------------------------------------NAV BAR FUNCTIONS----------------------------------------------------------------
     return (
         <ScreenWrapper
-            style={{
-                paddingBottom: Platform.OS === 'android' ? insets.bottom : null,
-            }}
+            // style={{
+            //     paddingBottom: Platform.OS === 'android' ? insets.bottom : null,
+            // }}
+            style={{ paddingBottom: tabBarHeight }}
         >
             <View style={styles.searchCont}>
                 <View style={styles.cancelButtonCont}>

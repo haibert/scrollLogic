@@ -47,6 +47,7 @@ import { SharedElement } from 'react-navigation-shared-element'
 
 //focus effect
 import { useFocusEffect } from '@react-navigation/native'
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 
 //fast image
 import FastImage from 'react-native-fast-image'
@@ -74,6 +75,9 @@ const GalleryDetailScreen = ({ route, navigation }) => {
 
     //dispatch
     const dispatch = useDispatch()
+
+    //tab bar height
+    const tabBarHeight = useBottomTabBarHeight()
 
     //----------------------------------------------------------------COMMENT PRESSED-------------------------------------------------------------
     const onCommentPressed = useCallback(() => {
@@ -327,7 +331,7 @@ const GalleryDetailScreen = ({ route, navigation }) => {
     //----------------------------------------------------------------FLATlIST OPTIMIZATION----------------------------------------------------------------
 
     return (
-        <ScreenWrapper style={{ paddingBottom: 0, paddingTop: 0 }}>
+        <ScreenWrapper style={{ paddingBottom: tabBarHeight, paddingTop: 0 }}>
             <ImageBackground
                 style={{
                     ...StyleSheet.absoluteFill,
@@ -368,11 +372,6 @@ const GalleryDetailScreen = ({ route, navigation }) => {
                     ...styles.bigListFlipperCont,
                     height: height,
                 }}
-                //  style={{
-                //     ...styles.bigListFlipperCont,
-                //     marginTop: insets.top + 40,
-                //     height: rowHeightAdjusted,
-                // }}
             >
                 <Animated.View
                     style={[
@@ -383,10 +382,6 @@ const GalleryDetailScreen = ({ route, navigation }) => {
                         },
                         opacityStyle,
                     ]}
-                    // style={[
-                    //     { ...styles.bigListFlipper, width: rowHeightAdjusted },
-                    //     opacityStyle,
-                    // ]}
                 >
                     <BigList
                         ref={bigListRef}

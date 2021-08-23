@@ -19,24 +19,24 @@ import colors from '../../constants/colors'
 //SVG icons
 import PersonsSVG from '../SVGIcons/PersonsSVG'
 
-const ProfileTabBar = forwardRef((props, ref) => {
+const OtherProfileTabBar = forwardRef((props, ref) => {
     //----------------------------------------------------------------ANIMATION LOGIC----------------------------------------------------------------
     const animatedValue = useSharedValue(0)
     const animatedStyle = useAnimatedStyle(() => {
         return {
             right: animatedValue.value,
             backgroundColor: colors.currentMainColor,
-            width: '33%',
+            width: '50%',
             height: 5,
         }
-    }, [])
+    })
     const startAnimationRight = useCallback(() => {
-        animatedValue.value = withTiming(-(width - width / 3), {
+        animatedValue.value = withTiming(-(width - width / 2), {
             duration: 0,
         })
     }, [])
     const startAnimationMiddle = useCallback(() => {
-        animatedValue.value = withTiming(-(width - width / 3 - width / 3), {
+        animatedValue.value = withTiming(-(width - width / 2 - width / 2), {
             duration: 0,
         })
     }, [])
@@ -74,21 +74,14 @@ const ProfileTabBar = forwardRef((props, ref) => {
             <View
                 style={styles.requestsColumButtons}
                 onTouchStart={() => {
-                    startAnimationMiddle()
-                    props.onMiddlePressed()
-                }}
-            >
-                <PersonsSVG size={28} color={colors.darkGrey} />
-            </View>
-            <View
-                style={styles.requestsColumButtons}
-                onTouchStart={() => {
                     startAnimationRight()
+                    props.onRightPressed()
                 }}
             >
                 {/* <Ionicons name="lock-closed-outline" size={30} /> */}
                 <Ionicons name="heart-outline" size={25} />
             </View>
+
             <View style={styles.animatingBar}>
                 <Animated.View style={animatedStyle}></Animated.View>
             </View>
@@ -117,4 +110,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default ProfileTabBar
+export default OtherProfileTabBar

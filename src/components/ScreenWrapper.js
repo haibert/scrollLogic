@@ -19,6 +19,7 @@ const windowHeight = Dimensions.get('window').height
 const navbarHeight = screenHeight - windowHeight + StatusBar.currentHeight
 
 const ScreenWrapper = (props) => {
+    //insets
     const insets = useSafeAreaInsets()
 
     // const { colors } = useTheme()
@@ -41,6 +42,7 @@ const ScreenWrapper = (props) => {
                         : null,
                 paddingBottom: props.paddingBottom ? insets.bottom : null,
                 backgroundColor: 'white',
+                // ...props.style,
             }}
             // start={{ x: 0, y: 0 }}
             // end={{ x: 1, y: 0 }}
@@ -55,6 +57,7 @@ const ScreenWrapper = (props) => {
                     ...props.style,
                 }}
             >
+                <View style={{ ...styles.topColor, ...props.topColor }}></View>
                 {props.children}
             </View>
         </View>
@@ -62,6 +65,14 @@ const ScreenWrapper = (props) => {
     )
 }
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+    topColor: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 500,
+    },
+})
 
 export default React.memo(ScreenWrapper)

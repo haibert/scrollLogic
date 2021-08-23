@@ -7,7 +7,7 @@ import Animated, {
     useSharedValue,
 } from 'react-native-reanimated'
 //----------------------------------------------------------------BACKDROP COMPONENT----------------------------------------------------------------
-const BottomSheetBackDrop = ({ animatedIndex, style }) => {
+const BottomSheetBackDrop = ({ animatedIndex, style, closeModal }) => {
     const animatedOpacity = useSharedValue(0)
 
     const { close } = useBottomSheet()
@@ -36,6 +36,7 @@ const BottomSheetBackDrop = ({ animatedIndex, style }) => {
             onTouchStart={() => {
                 animatedOpacity.value = 0
                 close()
+                closeModal()
             }}
         />
     )

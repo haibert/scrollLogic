@@ -20,8 +20,8 @@ import SearchSVG from './animatedNavBarTest/SearchSVG'
 import PersonSVG from './animatedNavBarTest/PersonSVG'
 import CameraSVG from './animatedNavBarTest/CameraSVG'
 
-//expo qr scanner
-import { BarCodeScanner } from 'expo-barcode-scanner'
+    //expo qr scanner
+    import { BarCodeScanner } from 'expo-barcode-scanner'
 
 //nav hooks
 import { useNavigation } from '@react-navigation/native'

@@ -80,14 +80,24 @@ const EditNameScreen = ({ route, ...props }) => {
                 <Formik
                     initialValues={{ fullName: namNavPassed }}
                     onSubmit={async (values) => {
-                        const enteredName = values.fullName.split(' ')
-                        const firstName = enteredName[0].trim()
-                        const lastName =
-                            enteredName[enteredName.length - 1].trim()
-                        await dispatch(
-                            editProfile(firstName, lastName, null, null, null)
-                        )
-                        props.navigation.goBack()
+                        try {
+                            const enteredName = values.fullName.split(' ')
+                            const firstName = enteredName[0].trim()
+                            const lastName =
+                                enteredName[enteredName.length - 1].trim()
+                            await dispatch(
+                                editProfile(
+                                    firstName,
+                                    lastName,
+                                    null,
+                                    null,
+                                    null
+                                )
+                            )
+                            props.navigation.goBack()
+                        } catch (error) {
+                            console.log(error)
+                        }
                     }}
                     validationSchema={validationSchema}
                 >

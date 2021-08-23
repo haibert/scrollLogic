@@ -417,16 +417,19 @@ const EditGalleryScreen = ({ route, ...props }) => {
 
     //----------------------------------------------------------------LOAD FOLLOWING----------------------------------------------------------------
     const friends = useSelector((state) => state.signupReducer.following)
+    const currentUserID = useSelector(
+        (state) => state.signupReducer.userInfo.userID
+    )
 
     const loadFriends = useCallback(async () => {
         try {
             // showLoader()
-            await dispatch(loadFollowing())
+            await dispatch(loadFollowing(currentUserID))
         } catch (err) {
             console.log(err)
         }
         // setTimeout(hideLoader, 100)
-    }, [])
+    }, [currentUserID])
 
     useEffect(() => {
         loadFriends()
