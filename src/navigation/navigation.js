@@ -2,7 +2,6 @@ import React, { useMemo } from 'react'
 import { Platform } from 'react-native'
 import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
-import { createSharedElementStackNavigator } from 'react-navigation-shared-element'
 
 import FeedScreen from '../screens/FeedScreen'
 import OtherGalleryView from '../screens/OtherGalleryView'
@@ -31,7 +30,7 @@ const cardStyleInterpolatorFunc = ({ current }) => {
 }
 //----------------------------------------------------------------CHANGING NAV OPTIONS----------------------------------------------------------------
 
-const FeedSEStack = createSharedElementStackNavigator()
+const FeedSEStack = createStackNavigator()
 const FeedSharedElementStack = () => {
     const platformAnimation = useMemo(
         () => (Platform.OS === 'android' ? 'fade-out' : 'move'),
