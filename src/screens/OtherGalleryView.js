@@ -1,41 +1,154 @@
-import React, { useCallback } from 'react'
-import {
-    View,
-    Text,
-    StyleSheet,
-    Dimensions,
-    Platform,
-    Image,
-    FlatList,
-    Pressable,
-} from 'react-native'
+import React, { useState, useRef, useCallback } from 'react'
+import { StyleSheet, Dimensions, Platform } from 'react-native'
 //shared elements
-import { SharedElement } from 'react-navigation-shared-element'
+import { FlatList, PanGestureHandler } from 'react-native-gesture-handler'
+import Animated, {
+    useSharedValue,
+    withTiming,
+    useAnimatedStyle,
+    useAnimatedGestureHandler,
+    runOnJS,
+    Extrapolate,
+    interpolate,
+} from 'react-native-reanimated'
+import { snapPoint } from 'react-native-redash'
+
+//custom components
+import ThumbnailSmall from '../components/ThumbnailSmall'
 
 //safe area
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { View } from 'react-native'
 
 const { width, height } = Dimensions.get('window')
 
 const OtherGalleryView = ({ route, navigation }) => {
-    const { galleryID, thumbnail, galName, index } = route.params
-
     //insets
     const insets = useSafeAreaInsets()
 
-    let tabBarBottomPosition = insets.bottom > 0 ? insets.bottom / 2 + 2 : 10
+    const handleScroll = useCallback((event) => {
+        if (event.nativeEvent.contentOffset.y <= 0) {
+            Platform.OS === 'android' ? navigation.goBack() : null
+        }
+    }, [])
 
-    if (tabBarBottomPosition === 10 && Platform.OS === 'android') {
-        tabBarBottomPosition = 55
-    }
+    //----------------------------------------------------------------PAN ANIMATION LOGIC----------------------------------------------------------------
+    // pan gesture handler
+    // const enable = useSharedValue(false).value
+    const [enable, setEnabled] = useState()
+    const translateX = useSharedValue(0)
+    const translateY = useSharedValue(0)
+    const isGestureActive = useSharedValue(false)
 
-    const picturePressedHandler = useCallback(
-        (scrollIndex, picID, fullPathNav) => {},
-        []
+    const panViewRef = useRef()
+    const scrollViewRef = useRef()
+    let offset = 0
+    const onScroll = useCallback(
+        ({ nativeEvent }) => {
+            let currentOffset = nativeEvent.contentOffset.y
+            let direction = currentOffset > offset ? 'down' : 'up'
+
+            if (
+                direction === 'up' &&
+                nativeEvent.contentOffset.y <= 0 &&
+                !enable
+            ) {
+                console.log('enabled!')
+                setEnabled(true)
+            }
+            if (
+                direction === 'down' &&
+                nativeEvent.contentOffset.y > 0 &&
+                enable
+            ) {
+                console.log('disabled!')
+                setEnabled(false)
+            }
+        },
+        [setEnabled, enable]
     )
 
+    const timeToClose = useCallback(() => {
+        navigation.goBack()
+    }, [])
+
+    function closePage() {
+        'worklet'
+        runOnJS(timeToClose)()
+    }
+
+    const reEnableFlatList = useCallback(() => {
+        setEnabled((prev) => !prev)
+    }, [enable])
+
+    function enableScroll() {
+        'worklet'
+        runOnJS(reEnableFlatList)()
+    }
+
+    const onGestureEvent = useAnimatedGestureHandler(
+        {
+            onStart: () => {
+                if (!enable) return
+                isGestureActive.value = true
+            },
+            onActive: ({ translationX, translationY }) => {
+                if (!enable) return
+                translateY.value = translationY
+                translateX.value = translationX
+            },
+            onEnd: ({ velocityY }) => {
+                if (!enable) return
+                const goBack =
+                    snapPoint(translateY.value, velocityY, [
+                        0,
+                        height - height / 2,
+                    ]) ===
+                    height - height / 2
+                if (goBack) {
+                    closePage()
+                    return
+                } else {
+                    enableScroll()
+                    translateX.value = withTiming(0, { duration: 100 })
+                    translateY.value = withTiming(0, { duration: 100 })
+                }
+                isGestureActive.value = false
+            },
+        },
+        [enable]
+    )
+    const panGestureStyle = useAnimatedStyle(() => {
+        const scale = interpolate(
+            translateY.value,
+            [0, height],
+            [1, 0.62],
+            Extrapolate.CLAMP
+        )
+        return {
+            flex: 1,
+            borderRadius: withTiming(isGestureActive.value ? 30 : 0, {
+                duration: 200,
+            }),
+            transform: [
+                {
+                    /* this is multiplied by scale because that keeps
+                    the finger position in mind while panning around the view */
+                    translateX: translateX.value * scale,
+                },
+                {
+                    translateY: translateY.value * scale,
+                },
+                {
+                    scale,
+                },
+            ],
+        }
+    }, [])
+    //----------------------------------------------------------------PAN ANIMATION LOGIC----------------------------------------------------------------
+
     //----------------------------------------------------------------LOAD PICS--------------------------------------------------------
-    const pics = [
+    const [pics, setPics] = useState([
         {
             id: '226',
             galleryID: '189',
@@ -100,23 +213,26 @@ const OtherGalleryView = ({ route, navigation }) => {
             thumbPath: 'http://164.90.246.1/uploads/thumb/60ccda58d66f6.webp',
             ownerIsMe: 'true',
         },
-    ]
-    const ThumbnailSmall = ({ images }) => {
-        return (
-            <Pressable onPress={picturePressedHandler} style={styles.cont}>
-                <SharedElement id={images.id}>
-                    <Image
-                        style={styles.image}
-                        source={{
-                            uri: images.thumbPath,
-                        }}
-                        resizeMode="cover"
-                    />
-                </SharedElement>
-            </Pressable>
-        )
-    }
+    ])
+
     //----------------------------------------------------------------LOAD PICS--------------------------------------------------------
+
+    //----------------------------------------------------------------PICTURE PRESSED--------------------------------------------------------
+    const picturePressedHandler = useCallback(
+        (scrollIndex, picID, fullPathNav) => {
+            navigation.navigate('OtherGalleryDetailScreen', {
+                scrollIndex,
+                picID,
+                fullPathNav,
+                pics,
+            })
+        },
+        [pics]
+    )
+    //----------------------------------------------------------------PICTURE PRESSED--------------------------------------------------------
+
+    //----------------------------------------------------------------FLAT LIST OPTIMIZATION--------------------------------------------------------
+
     const keyExtractor = useCallback((item) => item.id, [])
 
     const getItemLayout = useCallback(
@@ -128,40 +244,63 @@ const OtherGalleryView = ({ route, navigation }) => {
         []
     )
 
-    const renderItem = useCallback(({ item, index }) => {
-        return <ThumbnailSmall key={item.id} images={item} />
-    }, [])
+    const renderItem = useCallback(
+        ({ item, index }) => {
+            return <ThumbnailSmall key={item.id} images={item} />
+        },
+        [pics]
+    )
     //----------------------------------------------------------------FLAT LIST OPTIMIZATION--------------------------------------------------------
 
     return (
-        <View style={{ flex: 1, backgroundColor: 'white' }}>
-            <SharedElement id={`${galleryID}`} style={styles.sharedElement}>
-                <Image
-                    style={styles.imageBg}
-                    source={{
-                        uri: thumbnail,
+        <PanGestureHandler
+            ref={panViewRef}
+            onGestureEvent={onGestureEvent}
+            enabled={enable}
+            activeOffsetY={5}
+            failOffsetY={-5}
+        >
+            <Animated.View
+                style={[
+                    { flex: 1, backgroundColor: 'white', overflow: 'hidden' },
+                    panGestureStyle,
+                ]}
+            >
+                <FlatList
+                    ref={scrollViewRef}
+                    data={pics}
+                    keyExtractor={keyExtractor}
+                    getItemLayout={getItemLayout}
+                    renderItem={renderItem}
+                    waitFor={enable ? panViewRef : scrollViewRef}
+                    scrollEventThrottle={16}
+                    onScroll={onScroll}
+                    style={styles.flatList}
+                    contentContainerStyle={{
+                        ...styles.flatListContent,
+                        paddingBottom: insets.bottom,
                     }}
-                    resizeMode="cover"
+                    showsVerticalScrollIndicator={false}
+                    numColumns={3}
+                    initialNumToRender={5}
+                    windowSize={7}
+                    updateCellsBatchingPeriod={100}
+                    removeClippedSubviews={true}
+                    maxToRenderPerBatch={12}
+                    onScrollEndDrag={handleScroll}
+                    removeClippedSubviews={
+                        Platform.OS === 'android' ? true : false
+                    }
+                    onEndReachedThreshold={0.1}
                 />
-            </SharedElement>
-            <FlatList
-                data={pics}
-                keyExtractor={keyExtractor}
-                getItemLayout={getItemLayout}
-                renderItem={renderItem}
-                style={styles.flatList}
-                showsVerticalScrollIndicator={false}
-                numColumns={3}
-                contentContainerStyle={{
-                    paddingBottom: tabBarBottomPosition + 60,
-                }}
-            />
-        </View>
+            </Animated.View>
+        </PanGestureHandler>
     )
 }
 
 const styles = StyleSheet.create({
     sharedElement: {
+        flex: 1,
         position: 'absolute',
         right: 0,
         left: 0,
@@ -169,6 +308,17 @@ const styles = StyleSheet.create({
         bottom: 0,
         height: height,
         width: width,
+    },
+    sharedElementText: {
+        position: 'absolute',
+        right: 0,
+        left: 0,
+        top: 0,
+        bottom: 0,
+        height: 40,
+        width: width,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     imageBg: {
         flex: 1,
@@ -179,21 +329,17 @@ const styles = StyleSheet.create({
     flatList: {
         flex: 1,
     },
-    cont: {
-        borderRadius: 8,
-        overflow: 'hidden',
-        width: width / 3,
-        height: width / 2,
-        borderColor: 'white',
-        overflow: 'hidden',
+    flatListContent: {
+        flex: 1,
     },
-    image: {
-        width: width / 3,
-        height: width / 2,
-        borderWidth: 1,
-        borderColor: 'white',
-        borderRadius: 8,
-        overflow: 'hidden',
+    loadingView: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'white',
+        position: 'absolute',
+        width: '100%',
+        bottom: 0,
     },
 })
 

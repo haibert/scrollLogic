@@ -65,17 +65,11 @@ const FeedSharedElementStack = () => {
                         open: iosTransitionSpec,
                         close: iosTransitionSpec,
                     },
+                    headerShown: false,
                 })}
                 sharedElements={(route) => {
                     const { galleryID } = route.params
-                    return [
-                        {
-                            id: [galleryID],
-                            animation: platformAnimation,
-                            resize: 'auto',
-                            align: 'auto',
-                        },
-                    ]
+                    return []
                 }}
                 detachInactiveScreens={false}
             />
